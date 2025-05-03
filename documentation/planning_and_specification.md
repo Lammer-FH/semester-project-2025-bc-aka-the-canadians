@@ -1,5 +1,11 @@
 # 📱 Campus Lost & Found Service – Planning & Specification
 
+The PDF versions of each deliverable can be found here:
+
+- API Specification: [here](pdfs/API_Specification.pdf)
+- DB Design: [here](pdfs/DB_Design.pdf)
+- Paperprototype: [here](pdfs/Paperprototype.pdf)
+
 ## 🎯 Project Idea & Motivation
 
 The Campus Lost & Found Service is a mobile-first full-stack application that helps people on our campus report and recover lost and found items.

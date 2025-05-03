@@ -186,6 +186,6 @@ The following are the key wireframes representing the core user interface of the
 
 ## 🗃️ Database Model (ER Diagram)
 
-📌 *To be added later.*
+[ER Diagram](pdfs/DB_Design.pdf)
 
 ---

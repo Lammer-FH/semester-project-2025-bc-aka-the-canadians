@@ -13,3 +13,4 @@ Our users can use the service to report found items and view existing reports.
 # Contribution Guidelines
 1. Consistent class / variable naming
    - No mixing of snake_case and camelCase
+2. Every feature needs to be based on an issue and developed in a feature branch.

@@ -1,0 +1,44 @@
+@startuml
+skinparam dpi 300
+
+!define Table(name,desc) class name as "desc" << (T,#FFAAAA) >>
+!define primaryKey(field) <u>field</u>
+!define foreignKey(field) <i>field</i>
+
+Table(users, "Users") {
+  primaryKey(id): BIGINT
+  name: VARCHAR(100)
+  email: VARCHAR(255)
+  created_at: TIMESTAMP
+}
+
+Table(locations, "Locations") {
+  primaryKey(id): BIGINT
+  name: VARCHAR(100)
+  description: TEXT
+  created_at: TIMESTAMP
+}
+
+Table(items, "Items") {
+  primaryKey(id): BIGINT
+  name: VARCHAR(100)
+  description: TEXT
+  claimed: BOOLEAN
+  foreignKey(location_id): CHAR(36)
+  created_at: TIMESTAMP
+}
+
+Table(reports, "Reports") {
+  primaryKey(id): BIGINT
+  foreignKey(user_id): BIGINT
+  foreignKey(item_id): BIGINT
+  description: TEXT
+  reported_at: DATETIME
+}
+
+' Relationships
+users ||--o{ reports : creates
+items ||--o{ reports : has
+locations ||--o{ items : contains
+
+@enduml

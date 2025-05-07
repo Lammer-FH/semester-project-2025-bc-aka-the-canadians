@@ -17,7 +17,7 @@ CREATE TABLE items (
     name VARCHAR(100) NOT NULL,
     description TEXT,
     claimed BOOLEAN NOT NULL,
-    location_id CHAR(36) NOT NULL,
+    location_id BIGINT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
     FOREIGN KEY (location_id) REFERENCES locations(id)

@@ -24,7 +24,7 @@ Table(items, "Items") {
   name: VARCHAR(100)
   description: TEXT
   claimed: BOOLEAN
-  foreignKey(location_id): CHAR(36)
+  foreignKey(location_id): BIGINT
   created_at: TIMESTAMP
 }
 

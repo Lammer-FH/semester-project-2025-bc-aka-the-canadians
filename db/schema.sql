@@ -28,7 +28,7 @@ CREATE TABLE reports (
     user_id BIGINT NOT NULL,
     item_id BIGINT NOT NULL,
     description TEXT,
-    reported_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    reported_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
     FOREIGN KEY (user_id) REFERENCES users(id),
     FOREIGN KEY (item_id) REFERENCES items(id)

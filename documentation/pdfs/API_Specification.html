@@ -1,0 +1,127 @@
+<h2>API Specification</h2>
+<h3>Resource: <code>items</code></h3>
+<table>
+    <thead>
+        <tr>
+            <th>Method</th>
+            <th>Endpoint</th>
+            <th>Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>GET</td>
+            <td>/items</td>
+            <td>Retrieve all items with filters/search</td>
+        </tr>
+        <tr>
+            <td>GET</td>
+            <td>/items/:id</td>
+            <td>Retrieve a specific item by ID</td>
+        </tr>
+        <tr>
+            <td>PUT</td>
+            <td>/items/:id</td>
+            <td>Edit item details (e.g. mark as claimed)</td>
+        </tr>
+        <tr>
+            <td>DELETE</td>
+            <td>/items/:id</td>
+            <td>Delete an item</td>
+        </tr>
+    </tbody>
+</table>
+<hr />
+<h3>Resource: <code>reports</code></h3>
+<table>
+    <thead>
+        <tr>
+            <th>Method</th>
+            <th>Endpoint</th>
+            <th>Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>GET</td>
+            <td>/reports/:id</td>
+            <td>Retrieve a specific report by ID</td>
+        </tr>
+        <tr>
+            <td>POST</td>
+            <td>/reports</td>
+            <td>Create a new report (and related item/location)</td>
+        </tr>
+        <tr>
+            <td>PUT</td>
+            <td>/reports/:id</td>
+            <td>Edit report details</td>
+        </tr>
+        <tr>
+            <td>DELETE</td>
+            <td>/reports/:id</td>
+            <td>Delete a report</td>
+        </tr>
+    </tbody>
+</table>
+<hr />
+<h3>Resource: <code>locations</code></h3>
+<table>
+    <thead>
+        <tr>
+            <th>Method</th>
+            <th>Endpoint</th>
+            <th>Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>GET</td>
+            <td>/locations</td>
+            <td>Retrieve all locations</td>
+        </tr>
+        <tr>
+            <td>GET</td>
+            <td>/locations/:id/items</td>
+            <td>Retrieve items at a specific location</td>
+        </tr>
+        <tr>
+            <td>POST</td>
+            <td>/locations</td>
+            <td>Add a new location</td>
+        </tr>
+        <tr>
+            <td>PUT</td>
+            <td>/locations/:id</td>
+            <td>Edit location details</td>
+        </tr>
+        <tr>
+            <td>DELETE</td>
+            <td>/locations/:id</td>
+            <td>Delete a location</td>
+        </tr>
+    </tbody>
+</table>
+<hr />
+<h3>Resource: <code>users</code></h3>
+<table>
+    <thead>
+        <tr>
+            <th>Method</th>
+            <th>Endpoint</th>
+            <th>Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>POST</td>
+            <td>/users</td>
+            <td>Create user</td>
+        </tr>
+        <tr>
+            <td>PUT</td>
+            <td>/users/:id</td>
+            <td>Edit user details</td>
+        </tr>
+    </tbody>
+</table>

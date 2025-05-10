@@ -7,21 +7,21 @@ skinparam dpi 300
 
 Table(users, "Users") {
   primaryKey(id): BIGINT
-  name: VARCHAR(100)
+  name: VARCHAR(255)
   email: VARCHAR(255)
   created_at: TIMESTAMP
 }
 
 Table(locations, "Locations") {
   primaryKey(id): BIGINT
-  name: VARCHAR(100)
+  name: VARCHAR(255)
   description: TEXT
   created_at: TIMESTAMP
 }
 
 Table(items, "Items") {
   primaryKey(id): BIGINT
-  name: VARCHAR(100)
+  name: VARCHAR(255)
   description: TEXT
   claimed: BOOLEAN
   foreignKey(location_id): BIGINT

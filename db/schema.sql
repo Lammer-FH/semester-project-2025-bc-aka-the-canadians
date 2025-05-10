@@ -29,6 +29,7 @@ CREATE TABLE reports (
     user_id BIGINT NOT NULL,
     location_id BIGINT NOT NULL,
     reported_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    status BOOLEAN NOT NULL,
 
     FOREIGN KEY (user_id) REFERENCES users(id),
     FOREIGN KEY (location_id) REFERENCES locations(id)

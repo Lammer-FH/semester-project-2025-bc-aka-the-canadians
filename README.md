@@ -13,8 +13,6 @@ Our users can use the service to report found items and view existing reports.
 
 You can find the documentation for the planning and specification [here](documentation/planning_and_specification.md)
 
-# [API Specification](documentation/api_specification.md)
-
 # Contribution Guidelines
 
 1. Consistent class / variable naming

@@ -23,24 +23,23 @@ Table(items, "items") {
   primaryKey(id): BIGINT
   name: VARCHAR(255)
   description: TEXT
-  claimed: BOOLEAN
+  foreignKey(report_id): BIGINT
   foreignKey(claimed_by_user_id): BIGINT
-  foreignKey(location_id): BIGINT
   created_at: TIMESTAMP
 }
 
 Table(reports, "reports") {
   primaryKey(id): BIGINT
   foreignKey(user_id): BIGINT
-  foreignKey(item_id): BIGINT
-  description: TEXT
+  foreignKey(location_id): BIGINT
   reported_at: TIMESTAMP
+  status: BOOLEAN
 }
 
 ' Relationships
-reports }o--|| users : is created by
-items }o--|| locations : is located at
-reports }o--|| items : refers to
-items }o--|| users : is claimed by
+users ||--o{ reports : creates
+locations ||--o{ reports : has
+reports ||--o{ items : includes
+users ||--o{ items : may claim
 
 @enduml

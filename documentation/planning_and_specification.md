@@ -23,9 +23,8 @@ Misplaced belongings are a common issue on large campuses. This app simplifies a
 
 ## 🧩 Resource Description
 
-
 | Resource    | Description                                                | Relationships                                 |
-| ------------- | ------------------------------------------------------------ | ----------------------------------------------- |
+| ----------- | ---------------------------------------------------------- | --------------------------------------------- |
 | `items`     | Data about found objects (name, brand, color, photo, etc.) | Linked to one`location`, created via `report` |
 | `reports`   | Submission of a found item by a user                       | Creates a new`item`, references `location`    |
 | `locations` | Campus areas (e.g., library, cafeteria, lecture hall)      | Can have many`items`                          |
@@ -41,7 +40,7 @@ Misplaced belongings are a common issue on large campuses. This app simplifies a
 As an interested user, I want to receive general information about the Lost & Found app, so that I can decide whether or not it is useful.
 
 **Affected Resources:**
-*(none)*
+_(none)_
 
 **Planned Implementation:**
 Static homepage with an overview of functionality, benefits, and how to contribute.
@@ -167,20 +166,32 @@ As a user who has retrieved their missing item, I want to delete the report, so 
 The following are the key wireframes representing the core user interface of the app:
 
 1. **Home (Items Tab)**
-   Displays a searchable list of all found items. Users can filter by "All", "Lost", or "Found", and select individual items to view more details.
+   Displays a searchable list of all found items. Users can search for items and select individual items to view more details.
    ![Home Items](images/home_items.png)
 2. **Home (Locations Tab)**
-   Lists all predefined campus locations where items were found. Each location can be selected to view associated items.
+   Lists all predefined campus locations where items were found or lost. Users can search for locations and select individual locations to view more details.
    ![Home Locations](images/home_locations.png)
-3. **Report Found Item Form**
-   Form for reporting a found item, including fields for name, description, location (dropdown), date, time, and image upload.
-   ![Report Item](images/report_items.png)
-4. **Location Detail Page**
-   Shows all items found at a specific location, listed by name and found date.
-   ![Details Location](images/details_location.png)
-5. **Item Detail Page**
-   Displays full item details: brand, color, location, image, and includes action buttons like "Claim".
-   ![Details Item](images/details_item.png)
+3. **User Profile**
+   Allows editing of User Data.
+   ![User Profile](images/user_profile.png)
+4. **Report Item**
+   Allows reporting of lost or found items.
+   ![Report Item](images/report_item.png)
+5. **Item Details**
+   Displays item details and allows for deleting, editing and claiming the item.
+   ![Item Details](images/item_details.png)
+6. **Edit Item**
+   Allows for editing previously reported items.
+   ![Edit Item](images/edit_item.png)
+7. **Add Location**
+   Allows adding of new locations.
+   ![Add Location](images/add_location.png)
+8. **Location Details**
+   Displays location details and allows for deleting and editing the location.
+   ![Location Details](images/location_details.png)
+9. **Edit Location**
+   Allows for editing previously added locations.
+   ![Edit Location](images/edit_location.png)
 
 ---
 

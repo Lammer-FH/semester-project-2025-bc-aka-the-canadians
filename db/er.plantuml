@@ -5,40 +5,42 @@ skinparam dpi 300
 !define primaryKey(field) <u>field</u>
 !define foreignKey(field) <i>field</i>
 
-Table(users, "Users") {
+Table(users, "users") {
   primaryKey(id): BIGINT
-  name: VARCHAR(100)
+  name: VARCHAR(255)
   email: VARCHAR(255)
   created_at: TIMESTAMP
 }
 
-Table(locations, "Locations") {
+Table(locations, "locations") {
   primaryKey(id): BIGINT
-  name: VARCHAR(100)
+  name: VARCHAR(255)
   description: TEXT
   created_at: TIMESTAMP
 }
 
-Table(items, "Items") {
+Table(items, "items") {
   primaryKey(id): BIGINT
-  name: VARCHAR(100)
+  name: VARCHAR(255)
   description: TEXT
   claimed: BOOLEAN
+  foreignKey(claimed_by_user_id): BIGINT
   foreignKey(location_id): BIGINT
   created_at: TIMESTAMP
 }
 
-Table(reports, "Reports") {
+Table(reports, "reports") {
   primaryKey(id): BIGINT
   foreignKey(user_id): BIGINT
   foreignKey(item_id): BIGINT
   description: TEXT
-  reported_at: DATETIME
+  reported_at: TIMESTAMP
 }
 
 ' Relationships
-users ||--o{ reports : creates
-items ||--o{ reports : has
-locations ||--o{ items : contains
+reports }o--|| users : is created by
+items }o--|| locations : is located at
+reports }o--|| items : refers to
+items }o--|| users : is claimed by
 
 @enduml

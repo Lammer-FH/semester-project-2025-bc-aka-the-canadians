@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://campus-lost-found.example.com/sitemap.xml 

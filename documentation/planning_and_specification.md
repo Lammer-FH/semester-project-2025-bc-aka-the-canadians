@@ -53,12 +53,16 @@ Static homepage with an overview of functionality, benefits, and how to contribu
 As a student looking for something I lost, I want to see all found items, so that I can find my lost item.
 
 **Affected Resources:**
-`items`
+`items`, `reports`, `locations`, `users`
 
 **Planned Implementation:**
 
 - List view with filters and search
-- `GET /items`
+  + `GET /items`
+- Item detail view
+  + `GET /items/:id`
+- Report detail view
+  + `GET /reports/:id`
 
 ---
 

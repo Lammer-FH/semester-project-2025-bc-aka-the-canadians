@@ -33,6 +33,7 @@ Table(reports, "reports") {
   foreignKey(user_id): BIGINT
   foreignKey(location_id): BIGINT
   reported_at: TIMESTAMP
+  status: BOOLEAN
 }
 
 ' Relationships

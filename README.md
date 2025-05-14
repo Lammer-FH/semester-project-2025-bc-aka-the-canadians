@@ -18,3 +18,5 @@ You can find the documentation for the planning and specification [here](documen
 1. Consistent class / variable naming
    - No mixing of snake_case and camelCase
 2. Every feature needs to be based on an issue and developed in a feature branch.
+
+

@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   frontend:
     build:
@@ -5,19 +7,11 @@ services:
       dockerfile: Dockerfile
     ports:
       - "3000:80"
-    depends_on:
-      backend:
-        condition: service_healthy
     environment:
-      - VITE_API_URL=${VITE_API_URL}
-      - VITE_MINIO_URL=${VITE_MINIO_URL}
-    volumes:
-      - frontend_node_modules:/app/node_modules
-    healthcheck:
-      test: ["CMD", "wget", "--spider", "http://localhost:80"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+      - VITE_API_URL=http://localhost:8080
+      - VITE_MINIO_URL=http://localhost:9000
+    depends_on:
+      - backend
 
   backend:
     build:
@@ -25,81 +19,40 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8080:8080"
-    depends_on:
-      db:
-        condition: service_healthy
-      minio:
-        condition: service_started
     environment:
-      - MYSQL_HOST=${MYSQL_HOST}
-      - MYSQL_PORT=${MYSQL_PORT}
-      - MYSQL_DATABASE=${MYSQL_DATABASE}
-      - MYSQL_USER=${MYSQL_USER}
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
-      - HIBERNATE_DDL_AUTO=${HIBERNATE_DDL_AUTO}
-      - SHOW_SQL=${SHOW_SQL}
-      - FORMAT_SQL=${FORMAT_SQL}
-      - LOG_LEVEL=${LOG_LEVEL}
-      - SERVER_PORT=${SERVER_PORT}
-      - SPRING_DATASOURCE_INITIALIZATION_MODE=${SPRING_DATASOURCE_INITIALIZATION_MODE}
-      - SPRING_DATASOURCE_HIKARI_CONNECTION_TIMEOUT=${SPRING_DATASOURCE_HIKARI_CONNECTION_TIMEOUT}
-      - SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE=${SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE}
-      - MINIO_ENDPOINT=${MINIO_ENDPOINT}
-      - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY}
-      - MINIO_SECRET_KEY=${MINIO_SECRET_KEY}
-      - MINIO_BUCKET_NAME=${MINIO_BUCKET_NAME}
-    volumes:
-      - backend_maven_repo:/root/.m2
-    healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8080/api/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 120s
+      - DB_URL=jdbc:mysql://mysql:3306/campus_lost_found?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC
+      - DB_USERNAME=root
+      - DB_PASSWORD=root
+      - MINIO_ENDPOINT=http://minio:9000
+      - MINIO_ACCESS_KEY=minioadmin
+      - MINIO_SECRET_KEY=minioadmin
+      - MINIO_BUCKET_NAME=campus-lost-found
+    depends_on:
+      - mysql
+      - minio
 
   minio:
-    image: minio/minio:latest
+    image: minio/minio
     ports:
       - "9000:9000"
       - "9001:9001"
     environment:
-      - MINIO_ROOT_USER=${MINIO_ROOT_USER}
-      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
-      - MINIO_BROWSER_REDIRECT_URL=${MINIO_BROWSER_REDIRECT_URL}
+      - MINIO_ROOT_USER=minioadmin
+      - MINIO_ROOT_PASSWORD=minioadmin
     volumes:
       - minio_data:/data
     command: server /data --console-address ":9001"
-    healthcheck:
-      disable: true
 
-  db:
+  mysql:
     image: mysql:8.0
     ports:
       - "3306:3306"
     environment:
-      - MYSQL_DATABASE=${MYSQL_DATABASE}
-      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
-      - MYSQL_INITDB_SKIP_TZINFO=1
-    command: >
-      --authentication-policy=caching_sha2_password
-      --character-set-server=utf8mb4
-      --collation-server=utf8mb4_unicode_ci
-      --innodb-file-per-table=ON
-      --pid-file=/var/private/mysql/mysql.pid
-      --host-cache-size=0
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=campus_lost_found
     volumes:
       - mysql_data:/var/lib/mysql
-      - mysql_private:/var/private/mysql
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p$$MYSQL_ROOT_PASSWORD"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
 
 volumes:
   mysql_data:
-  mysql_private:
-  frontend_node_modules:
-  backend_maven_repo:
   minio_data: 

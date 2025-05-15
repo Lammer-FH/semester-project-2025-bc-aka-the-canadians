@@ -4,28 +4,23 @@ import com.campuslostfound.dto.UserDTO;
 import com.campuslostfound.mapper.UserMapper;
 import com.campuslostfound.model.User;
 import com.campuslostfound.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import lombok.RequiredArgsConstructor;
+
 
 import java.util.Optional;
 
-/**
- * REST-Controller für User-Operationen.
- */
+
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/v1/users")
 public class UserController {
 
     private final UserService userService;
     private final UserMapper userMapper;
-
-    @Autowired
-    public UserController(UserService userService, UserMapper userMapper) {
-        this.userService = userService;
-        this.userMapper = userMapper;
-    }
 
     /**
      * Erstellt einen neuen Benutzer.

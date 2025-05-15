@@ -8,19 +8,17 @@ import com.campuslostfound.model.Item;
 import com.campuslostfound.model.Location;
 import com.campuslostfound.service.ItemService;
 import com.campuslostfound.service.LocationService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import lombok.RequiredArgsConstructor;
+
 
 import java.util.List;
 import java.util.Optional;
 
-/**
- * REST-Controller für Location-Operationen.
- * Kommuniziert ausschließlich mit DTOs gemäß Clean Architecture.
- */
-@RestController
+@RestController 
+@RequiredArgsConstructor
 @RequestMapping("/api/v1/locations")
 public class LocationController {
 
@@ -28,15 +26,6 @@ public class LocationController {
     private final ItemService itemService;
     private final LocationMapper locationMapper;
     private final ItemMapper itemMapper;
-
-    @Autowired
-    public LocationController(LocationService locationService, ItemService itemService,
-                              LocationMapper locationMapper, ItemMapper itemMapper) {
-        this.locationService = locationService;
-        this.itemService = itemService;
-        this.locationMapper = locationMapper;
-        this.itemMapper = itemMapper;
-    }
 
     /**
      * Gibt alle Locations zurück, optional gefiltert nach Gebäude.

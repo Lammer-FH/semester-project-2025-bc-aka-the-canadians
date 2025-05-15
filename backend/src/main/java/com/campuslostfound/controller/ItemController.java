@@ -5,7 +5,7 @@ import com.campuslostfound.mapper.ItemMapper;
 import com.campuslostfound.model.Item;
 import com.campuslostfound.model.ItemStatus;
 import com.campuslostfound.service.ItemService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,12 +13,9 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * REST-Controller für Item-Operationen.
- * Kommuniziert ausschließlich mit DTOs gemäß Clean Architecture.
- */
+
 @RestController
-@Require
+@RequiredArgsConstructor
 @RequestMapping("/api/v1/items")
 public class ItemController {
 

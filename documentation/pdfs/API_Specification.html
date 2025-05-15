@@ -1,4 +1,32 @@
 <h2>API Specification</h2>
+<h3>Resource: <code>files</code></h3>
+<table>
+    <thead>
+        <tr>
+            <th>Method</th>
+            <th>Endpoint</th>
+            <th>Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>POST</td>
+            <td>/api/files/upload</td>
+            <td>Upload a new image file (max 10MB)</td>
+        </tr>
+        <tr>
+            <td>GET</td>
+            <td>/api/files/{fileName}</td>
+            <td>Retrieve an image file by filename</td>
+        </tr>
+        <tr>
+            <td>DELETE</td>
+            <td>/api/files/{fileName}</td>
+            <td>Delete an image file</td>
+        </tr>
+    </tbody>
+</table>
+<hr />
 <h3>Resource: <code>items</code></h3>
 <table>
     <thead>

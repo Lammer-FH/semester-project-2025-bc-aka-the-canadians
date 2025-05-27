@@ -18,6 +18,17 @@ server:
   servlet:
     context-path: /api
 
+# OpenAPI Konfiguration
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+    tagsSorter: alpha
+    tryItOutEnabled: true
+    filter: true
+
 logging:
   level:
     root: ${LOG_LEVEL:INFO}

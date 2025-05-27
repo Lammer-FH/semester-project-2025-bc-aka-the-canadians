@@ -6,6 +6,8 @@ export interface Item {
   status: string;
   createdAt: string;
   updatedAt: string;
+  imageUrl?: string;
+  imageData?: string; // Base64 encoded image for upload
 }
 
 export interface ItemFilters {

@@ -26,13 +26,18 @@
 					<ion-button
 						expand="block"
 						class="footer-btn"
-						:color="leftFooterButton.color">
+						:color="leftFooterButton.color"
+						@click="$emit('leftFooterButtonClicked')">
+						<ion-icon v-if="leftFooterButton.icon" :icon="leftFooterButton.icon" slot="start"></ion-icon>
 						{{ leftFooterButton.name }}
 					</ion-button>
 					<ion-button
 						expand="block"
 						class="footer-btn"
-						:color="rightFooterButton.color">
+						:color="rightFooterButton.color"
+						:disabled="rightFooterButton.disabled"
+						@click="$emit('rightFooterButtonClicked')">
+						<ion-icon v-if="rightFooterButton.icon" :icon="rightFooterButton.icon" slot="start"></ion-icon>
 						{{ rightFooterButton.name }}
 					</ion-button>
 				</div>
@@ -78,11 +83,23 @@ const props = defineProps({
 		default: undefined,
 	},
 	leftFooterButton: {
-		type: Object as () => { name?: string; color?: string; path?: string },
+		type: Object as () => { 
+			name?: string; 
+			color?: string; 
+			path?: string; 
+			icon?: any; 
+			disabled?: boolean 
+		},
 		default: () => ({}),
 	},
 	rightFooterButton: {
-		type: Object as () => { name?: string; color?: string; path?: string },
+		type: Object as () => { 
+			name?: string; 
+			color?: string; 
+			path?: string; 
+			icon?: any; 
+			disabled?: boolean 
+		},
 		default: () => ({}),
 	},
 	headline: {
@@ -90,6 +107,8 @@ const props = defineProps({
 		default: '',
 	},
 });
+
+defineEmits(['leftFooterButtonClicked', 'rightFooterButtonClicked']);
 
 const router = useRouter();
 

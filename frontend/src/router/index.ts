@@ -29,12 +29,12 @@ const routes: Array<RouteRecordRaw> = [
 		component: ReportItemPage,
 	},
 	{
-		path: '/items/details',
+		path: '/items/:id',
 		name: 'item-details',
 		component: ItemDetailsPage,
 	},
 	{
-		path: '/items/edit',
+		path: '/items/:id/edit',
 		name: 'edit-item',
 		component: EditItemPage,
 	},
@@ -53,12 +53,12 @@ const routes: Array<RouteRecordRaw> = [
 		component: AddLocationPage,
 	},
 	{
-		path: '/locations/details',
+		path: '/locations/:id',
 		name: 'location-details',
 		component: LocationDetailsPage,
 	},
 	{
-		path: '/locations/edit',
+		path: '/locations/:id/edit',
 		name: 'edit-location',
 		component: EditLocationPage,
 	},

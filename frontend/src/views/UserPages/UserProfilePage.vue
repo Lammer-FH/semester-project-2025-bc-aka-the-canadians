@@ -3,64 +3,808 @@
 		:showProfileButton="false"
 		:leftFooterButton="leftFooterButton"
 		:rightFooterButton="rightFooterButton"
-		:headline="'User Profile'">
-		<ion-list class="ion-padding">
-			<ion-item>
-				<ion-label position="stacked">Name</ion-label>
-				<div class="input-row">
-					<ion-input readonly :value="user.name"></ion-input>
-					<ion-button color="success" size="small">Edit</ion-button>
+		:headline="'Mein Profil'"
+		@leftFooterButtonClicked="handleCancel"
+		@rightFooterButtonClicked="handleSave">
+		
+		<div class="profile-container">
+			<!-- Loading State -->
+			<div v-if="isLoading" class="loading-container">
+				<ion-spinner name="crescent" color="primary"></ion-spinner>
+				<p>Lade Profil...</p>
+			</div>
+
+			<div v-else class="content-wrapper">
+				<!-- Profile Header -->
+				<div class="profile-header">
+					<div class="avatar-section">
+						<div class="avatar-container">
+							<img 
+								v-if="user.avatar" 
+								:src="user.avatar" 
+								:alt="user.name"
+								class="avatar-image"
+							/>
+							<div v-else class="avatar-placeholder">
+								<ion-icon :icon="personOutline" class="avatar-icon"></ion-icon>
+							</div>
+							<ion-button 
+								fill="clear" 
+								size="small" 
+								class="avatar-edit-button"
+								@click="handleAvatarEdit"
+							>
+								<ion-icon :icon="cameraOutline" slot="icon-only"></ion-icon>
+							</ion-button>
+						</div>
+						<div class="user-info">
+							<h1>{{ user.name }}</h1>
+							<p>{{ user.email }}</p>
+							<ion-chip color="primary" outline>
+								<ion-icon :icon="timeOutline" class="chip-icon"></ion-icon>
+								Mitglied seit {{ formatDate(user.joinedAt) }}
+							</ion-chip>
+						</div>
+					</div>
 				</div>
-			</ion-item>
-			<ion-item>
-				<ion-label position="stacked">Phone</ion-label>
-				<div class="input-row">
-					<ion-input readonly :value="user.phone"></ion-input>
-					<ion-button color="success" size="small">Edit</ion-button>
+
+				<!-- Profile Form -->
+				<div class="profile-form">
+					<h3>Persönliche Informationen</h3>
+					
+					<!-- Name Field -->
+					<div class="form-group">
+						<ion-item 
+							class="modern-item" 
+							:class="{ 
+								'item-editing': editingField === 'name',
+								'item-error': errors.name,
+								'item-filled': user.name 
+							}"
+						>
+							<ion-label position="stacked" class="custom-label">
+								<ion-icon :icon="personOutline" class="label-icon"></ion-icon>
+								Vollständiger Name *
+							</ion-label>
+							<ion-input
+								v-if="editingField === 'name'"
+								v-model="editData.name"
+								placeholder="Gib deinen Namen ein"
+								@ionBlur="validateField('name')"
+								:class="{ 'input-error': errors.name }"
+								autofocus
+							></ion-input>
+							<div v-else class="display-value">{{ user.name }}</div>
+							<ion-button 
+								fill="clear" 
+								size="small" 
+								slot="end"
+								:color="editingField === 'name' ? 'success' : 'primary'"
+								@click="toggleEdit('name')"
+							>
+								<ion-icon 
+									:icon="editingField === 'name' ? checkmarkOutline : createOutline" 
+									slot="icon-only"
+								></ion-icon>
+							</ion-button>
+						</ion-item>
+						<div v-if="errors.name" class="error-message">
+							<ion-icon :icon="alertCircleOutline"></ion-icon>
+							{{ errors.name }}
+						</div>
+					</div>
+
+					<!-- Email Field -->
+					<div class="form-group">
+						<ion-item 
+							class="modern-item" 
+							:class="{ 
+								'item-editing': editingField === 'email',
+								'item-error': errors.email,
+								'item-filled': user.email 
+							}"
+						>
+							<ion-label position="stacked" class="custom-label">
+								<ion-icon :icon="mailOutline" class="label-icon"></ion-icon>
+								E-Mail-Adresse *
+							</ion-label>
+							<ion-input
+								v-if="editingField === 'email'"
+								v-model="editData.email"
+								type="email"
+								placeholder="deine.email@example.com"
+								@ionBlur="validateField('email')"
+								:class="{ 'input-error': errors.email }"
+								autofocus
+							></ion-input>
+							<div v-else class="display-value">{{ user.email }}</div>
+							<ion-button 
+								fill="clear" 
+								size="small" 
+								slot="end"
+								:color="editingField === 'email' ? 'success' : 'primary'"
+								@click="toggleEdit('email')"
+							>
+								<ion-icon 
+									:icon="editingField === 'email' ? checkmarkOutline : createOutline" 
+									slot="icon-only"
+								></ion-icon>
+							</ion-button>
+						</ion-item>
+						<div v-if="errors.email" class="error-message">
+							<ion-icon :icon="alertCircleOutline"></ion-icon>
+							{{ errors.email }}
+						</div>
+					</div>
+
+					<!-- Phone Field -->
+					<div class="form-group">
+						<ion-item 
+							class="modern-item" 
+							:class="{ 
+								'item-editing': editingField === 'phone',
+								'item-filled': user.phone 
+							}"
+						>
+							<ion-label position="stacked" class="custom-label">
+								<ion-icon :icon="callOutline" class="label-icon"></ion-icon>
+								Telefonnummer
+							</ion-label>
+							<ion-input
+								v-if="editingField === 'phone'"
+								v-model="editData.phone"
+								type="tel"
+								placeholder="+43 123 456789"
+								autofocus
+							></ion-input>
+							<div v-else class="display-value">{{ user.phone || 'Nicht angegeben' }}</div>
+							<ion-button 
+								fill="clear" 
+								size="small" 
+								slot="end"
+								:color="editingField === 'phone' ? 'success' : 'primary'"
+								@click="toggleEdit('phone')"
+							>
+								<ion-icon 
+									:icon="editingField === 'phone' ? checkmarkOutline : createOutline" 
+									slot="icon-only"
+								></ion-icon>
+							</ion-button>
+						</ion-item>
+					</div>
 				</div>
-			</ion-item>
-			<ion-item>
-				<ion-label position="stacked">Email</ion-label>
-				<div class="input-row">
-					<ion-input readonly :value="user.email"></ion-input>
-					<ion-button color="success" size="small">Edit</ion-button>
+
+				<!-- Account Actions -->
+				<div class="account-actions">
+					<h3>Konto-Einstellungen</h3>
+					
+					<ion-list class="action-list">
+						<ion-item button @click="changePassword" class="action-item">
+							<ion-icon :icon="lockClosedOutline" slot="start" color="primary"></ion-icon>
+							<ion-label>
+								<h4>Passwort ändern</h4>
+								<p>Dein Passwort für mehr Sicherheit aktualisieren</p>
+							</ion-label>
+							<ion-icon :icon="chevronForwardOutline" slot="end" color="medium"></ion-icon>
+						</ion-item>
+
+						<ion-item button @click="notificationSettings" class="action-item">
+							<ion-icon :icon="notificationsOutline" slot="start" color="primary"></ion-icon>
+							<ion-label>
+								<h4>Benachrichtigungen</h4>
+								<p>E-Mail- und Push-Benachrichtigungen verwalten</p>
+							</ion-label>
+							<ion-icon :icon="chevronForwardOutline" slot="end" color="medium"></ion-icon>
+						</ion-item>
+
+						<ion-item button @click="privacySettings" class="action-item">
+							<ion-icon :icon="shieldCheckmarkOutline" slot="start" color="primary"></ion-icon>
+							<ion-label>
+								<h4>Datenschutz</h4>
+								<p>Datenschutz- und Sicherheitseinstellungen</p>
+							</ion-label>
+							<ion-icon :icon="chevronForwardOutline" slot="end" color="medium"></ion-icon>
+						</ion-item>
+					</ion-list>
 				</div>
-			</ion-item>
-		</ion-list>
+
+				<!-- Statistics Section -->
+				<div class="statistics-section">
+					<h3>Deine Aktivität</h3>
+					<div class="stats-grid">
+						<div class="stat-card">
+							<ion-icon :icon="bagOutline" class="stat-icon"></ion-icon>
+							<div class="stat-content">
+								<span class="stat-number">{{ userStats.itemsReported }}</span>
+								<span class="stat-label">Gegenstände gemeldet</span>
+							</div>
+						</div>
+						<div class="stat-card">
+							<ion-icon :icon="checkmarkCircleOutline" class="stat-icon"></ion-icon>
+							<div class="stat-content">
+								<span class="stat-number">{{ userStats.itemsClaimed }}</span>
+								<span class="stat-label">Gegenstände abgeholt</span>
+							</div>
+						</div>
+						<div class="stat-card">
+							<ion-icon :icon="trophyOutline" class="stat-icon"></ion-icon>
+							<div class="stat-content">
+								<span class="stat-number">{{ userStats.helpfulReports }}</span>
+								<span class="stat-label">Hilfreiche Meldungen</span>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- Danger Zone -->
+				<div class="danger-zone">
+					<h3>Gefährlicher Bereich</h3>
+					<ion-button 
+						fill="outline" 
+						color="danger" 
+						expand="block"
+						@click="deleteAccount"
+						class="delete-button"
+					>
+						<ion-icon :icon="trashOutline" slot="start"></ion-icon>
+						Konto löschen
+					</ion-button>
+				</div>
+			</div>
+		</div>
+
+		<!-- Delete Account Confirmation -->
+		<ion-alert
+			:is-open="showDeleteAlert"
+			header="Konto löschen"
+			message="Bist du sicher, dass du dein Konto löschen möchtest? Diese Aktion kann nicht rückgängig gemacht werden und alle deine Daten werden dauerhaft gelöscht."
+			:buttons="deleteAlertButtons"
+			@didDismiss="showDeleteAlert = false"
+		></ion-alert>
 	</template-page>
 </template>
 
 <script setup lang="ts">
 import TemplatePage from '@/components/TemplatePage.vue';
-import { IonList, IonItem, IonLabel, IonInput, IonButton } from '@ionic/vue';
+import {
+	IonItem,
+	IonLabel,
+	IonInput,
+	IonButton,
+	IonIcon,
+	IonChip,
+	IonSpinner,
+	IonAlert,
+	IonList,
+} from '@ionic/vue';
+import {
+	personOutline,
+	cameraOutline,
+	timeOutline,
+	createOutline,
+	checkmarkOutline,
+	mailOutline,
+	callOutline,
+	alertCircleOutline,
+	lockClosedOutline,
+	notificationsOutline,
+	shieldCheckmarkOutline,
+	chevronForwardOutline,
+	bagOutline,
+	checkmarkCircleOutline,
+	trophyOutline,
+	trashOutline,
+	closeOutline,
+	saveOutline,
+} from 'ionicons/icons';
+import { ref, computed, reactive, watch } from 'vue';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
 
-//replace with actual data later on
-const user = {
-	name: 'John Doe',
+const user = ref({
+	name: 'Max Mustermann',
 	phone: '+43 123 456789',
-	email: 'john.doe@example.com',
+	email: 'max.mustermann@example.com',
+	avatar: '',
+	joinedAt: '2023-09-15T10:00:00Z',
+});
+
+const userStats = ref({
+	itemsReported: 12,
+	itemsClaimed: 8,
+	helpfulReports: 15,
+});
+
+const editData = reactive({
+	name: '',
+	email: '',
+	phone: '',
+});
+
+const errors = ref({
+	name: '',
+	email: '',
+});
+
+const isLoading = ref(false);
+const editingField = ref<string | null>(null);
+const hasChanges = ref(false);
+const showDeleteAlert = ref(false);
+
+const leftFooterButton = computed(() => ({
+	name: 'Zurück',
+	color: 'medium',
+	icon: closeOutline,
+}));
+
+const rightFooterButton = computed(() => ({
+	name: hasChanges.value ? 'Änderungen speichern' : 'Gespeichert',
+	color: hasChanges.value ? 'primary' : 'medium',
+	icon: saveOutline,
+	disabled: !hasChanges.value,
+}));
+
+const deleteAlertButtons = [
+	{
+		text: 'Abbrechen',
+		role: 'cancel',
+		cssClass: 'alert-button-cancel',
+	},
+	{
+		text: 'Konto löschen',
+		role: 'destructive',
+		cssClass: 'alert-button-confirm',
+		handler: () => confirmDeleteAccount(),
+	},
+];
+
+const formatDate = (dateString: string) => {
+	return new Date(dateString).toLocaleDateString('de-DE', {
+		month: 'long',
+		year: 'numeric',
+	});
 };
 
-const leftFooterButton = {
-	name: 'Cancel',
-	color: 'danger',
+const validateField = (fieldName: keyof typeof errors.value) => {
+	const value = editData[fieldName as keyof typeof editData].trim();
+	
+	switch (fieldName) {
+		case 'name':
+			if (!value) {
+				errors.value.name = 'Name ist erforderlich';
+			} else if (value.length < 2) {
+				errors.value.name = 'Name muss mindestens 2 Zeichen haben';
+			} else {
+				errors.value.name = '';
+			}
+			break;
+		case 'email':
+			const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+			if (!value) {
+				errors.value.email = 'E-Mail ist erforderlich';
+			} else if (!emailRegex.test(value)) {
+				errors.value.email = 'Ungültige E-Mail-Adresse';
+			} else {
+				errors.value.email = '';
+			}
+			break;
+	}
 };
-const rightFooterButton = {
-	name: 'Save',
-	color: 'primary',
+
+const toggleEdit = (fieldName: string) => {
+	if (editingField.value === fieldName) {
+		// Save the field
+		if (fieldName === 'name' || fieldName === 'email') {
+			validateField(fieldName as keyof typeof errors.value);
+			if (errors.value[fieldName as keyof typeof errors.value]) {
+				return; // Don't save if there are errors
+			}
+		}
+		
+		user.value[fieldName as keyof typeof user.value] = editData[fieldName as keyof typeof editData];
+		editingField.value = null;
+		hasChanges.value = true;
+	} else {
+		// Start editing
+		editData[fieldName as keyof typeof editData] = user.value[fieldName as keyof typeof user.value];
+		editingField.value = fieldName;
+	}
 };
+
+const handleCancel = () => {
+	if (hasChanges.value) {
+		// Show confirmation dialog
+		// For now, just navigate back
+	}
+	router.back();
+};
+
+const handleSave = async () => {
+	if (!hasChanges.value) return;
+	
+	try {
+		// TODO: Implement actual save logic
+		console.log('Saving user profile:', user.value);
+		
+		// Simulate API call
+		await new Promise(resolve => setTimeout(resolve, 1000));
+		
+		hasChanges.value = false;
+		// TODO: Show success toast
+	} catch (error) {
+		console.error('Error saving profile:', error);
+		// TODO: Show error toast
+	}
+};
+
+const handleAvatarEdit = () => {
+	// TODO: Implement avatar upload functionality
+	console.log('Avatar edit clicked');
+};
+
+const changePassword = () => {
+	// TODO: Navigate to change password page
+	console.log('Change password clicked');
+};
+
+const notificationSettings = () => {
+	// TODO: Navigate to notification settings
+	console.log('Notification settings clicked');
+};
+
+const privacySettings = () => {
+	// TODO: Navigate to privacy settings
+	console.log('Privacy settings clicked');
+};
+
+const deleteAccount = () => {
+	showDeleteAlert.value = true;
+};
+
+const confirmDeleteAccount = async () => {
+	try {
+		// TODO: Implement account deletion
+		console.log('Deleting account');
+		
+		// Simulate API call
+		await new Promise(resolve => setTimeout(resolve, 1000));
+		
+		// TODO: Navigate to login or home
+		router.push('/');
+	} catch (error) {
+		console.error('Error deleting account:', error);
+		// TODO: Show error toast
+	}
+};
+
+// Watch for changes to update hasChanges
+watch(
+	[() => editData.name, () => editData.email, () => editData.phone],
+	() => {
+		// Check if any field has changed
+		const hasNameChanged = editData.name !== user.value.name;
+		const hasEmailChanged = editData.email !== user.value.email;
+		const hasPhoneChanged = editData.phone !== user.value.phone;
+		
+		hasChanges.value = hasNameChanged || hasEmailChanged || hasPhoneChanged;
+	},
+	{ deep: true }
+);
 </script>
 
 <style scoped>
-.input-row {
+.profile-container {
+	min-height: 100vh;
+	background: var(--ion-color-light-tint);
+}
+
+.loading-container {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	padding: 60px 20px;
+	text-align: center;
+}
+
+.loading-container p {
+	margin-top: 16px;
+	color: var(--ion-color-medium);
+}
+
+.content-wrapper {
+	padding: 20px;
+	animation: fadeInUp 0.6s ease-out;
+}
+
+.profile-header {
+	background: linear-gradient(135deg, var(--ion-color-primary), var(--ion-color-primary-shade));
+	color: white;
+	padding: 30px 24px;
+	border-radius: 16px;
+	margin-bottom: 24px;
+	box-shadow: 0 8px 24px rgba(var(--ion-color-primary-rgb), 0.3);
+}
+
+.avatar-section {
 	display: flex;
 	align-items: center;
-	width: 100%;
+	gap: 20px;
 }
-.input-row ion-input {
-	flex: 1;
+
+.avatar-container {
+	position: relative;
+	flex-shrink: 0;
+}
+
+.avatar-image,
+.avatar-placeholder {
+	width: 80px;
+	height: 80px;
+	border-radius: 50%;
+	object-fit: cover;
+}
+
+.avatar-placeholder {
+	background: rgba(255, 255, 255, 0.2);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.avatar-icon {
+	font-size: 40px;
+	color: rgba(255, 255, 255, 0.8);
+}
+
+.avatar-edit-button {
+	position: absolute;
+	bottom: -2px;
+	right: -2px;
+	width: 32px;
+	height: 32px;
+	border-radius: 50%;
+	background: var(--ion-color-primary-shade);
+	border: 2px solid white;
+}
+
+.user-info h1 {
+	color: white;
+	margin: 0 0 8px 0;
+	font-size: 1.5em;
+	font-weight: 600;
+}
+
+.user-info p {
+	color: rgba(255, 255, 255, 0.9);
+	margin: 0 0 12px 0;
+	font-size: 0.95em;
+}
+
+.chip-icon {
+	font-size: 14px;
+	margin-right: 4px;
+}
+
+.profile-form,
+.account-actions,
+.statistics-section,
+.danger-zone {
+	background: white;
+	border-radius: 12px;
+	padding: 20px;
+	margin-bottom: 16px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.profile-form h3,
+.account-actions h3,
+.statistics-section h3,
+.danger-zone h3 {
+	color: var(--ion-color-dark);
+	margin: 0 0 20px 0;
+	font-size: 1.1em;
+	font-weight: 600;
+}
+
+.form-group {
+	margin-bottom: 20px;
+}
+
+.modern-item {
+	--background: var(--ion-color-light-tint);
+	--border-radius: 12px;
+	--padding-start: 16px;
+	--padding-end: 16px;
+	--padding-top: 12px;
+	--padding-bottom: 12px;
+	border: 2px solid var(--ion-color-light-shade);
+	border-radius: 12px;
+	margin-bottom: 8px;
+	transition: all 0.3s ease;
+}
+
+.modern-item.item-filled {
+	border-color: var(--ion-color-primary-tint);
+	--background: rgba(var(--ion-color-primary-rgb), 0.05);
+}
+
+.modern-item.item-editing {
+	border-color: var(--ion-color-primary);
+	box-shadow: 0 0 0 3px rgba(var(--ion-color-primary-rgb), 0.1);
+}
+
+.modern-item.item-error {
+	border-color: var(--ion-color-danger);
+	--background: rgba(var(--ion-color-danger-rgb), 0.05);
+}
+
+.custom-label {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	font-weight: 600;
+	color: var(--ion-color-dark);
+	margin-bottom: 4px;
+}
+
+.label-icon {
+	font-size: 16px;
+	color: var(--ion-color-primary);
+}
+
+.display-value {
+	color: var(--ion-color-dark);
+	font-size: 16px;
+	padding: 8px 0;
+}
+
+.input-error {
+	color: var(--ion-color-danger);
+}
+
+.error-message {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	color: var(--ion-color-danger);
+	font-size: 0.85em;
+	margin-top: 4px;
+	padding-left: 4px;
+	animation: shake 0.3s ease-in-out;
+}
+
+.action-list {
+	background: transparent;
+}
+
+.action-item {
+	--background: var(--ion-color-light-tint);
+	--border-radius: 8px;
+	margin-bottom: 8px;
+	border-radius: 8px;
+	transition: all 0.3s ease;
+}
+
+.action-item:hover {
+	transform: translateX(4px);
+}
+
+.action-item h4 {
+	margin: 0 0 4px 0;
+	color: var(--ion-color-dark);
+	font-weight: 600;
+}
+
+.action-item p {
+	margin: 0;
+	color: var(--ion-color-medium);
+	font-size: 0.9em;
+}
+
+.stats-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+	gap: 16px;
+}
+
+.stat-card {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 16px;
+	background: var(--ion-color-light-tint);
+	border-radius: 8px;
+	border-left: 4px solid var(--ion-color-primary);
+}
+
+.stat-icon {
+	font-size: 24px;
+	color: var(--ion-color-primary);
+}
+
+.stat-content {
+	display: flex;
+	flex-direction: column;
+}
+
+.stat-number {
+	font-size: 1.5em;
+	font-weight: 700;
+	color: var(--ion-color-dark);
+	line-height: 1;
+}
+
+.stat-label {
+	font-size: 0.8em;
+	color: var(--ion-color-medium);
+	margin-top: 2px;
+}
+
+.delete-button {
+	--border-radius: 12px;
+	height: 48px;
+	font-weight: 600;
+}
+
+@keyframes fadeInUp {
+	from {
+		opacity: 0;
+		transform: translateY(30px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+@keyframes shake {
+	0%, 100% { transform: translateX(0); }
+	25% { transform: translateX(-5px); }
+	75% { transform: translateX(5px); }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+	.content-wrapper {
+		padding: 16px;
+	}
+	
+	.avatar-section {
+		flex-direction: column;
+		text-align: center;
+		gap: 16px;
+	}
+	
+	.stats-grid {
+		grid-template-columns: 1fr;
+		gap: 12px;
+	}
+	
+	.stat-card {
+		justify-content: center;
+		text-align: center;
+	}
+}
+
+@media (max-width: 480px) {
+	.profile-header {
+		padding: 24px 20px;
+	}
+	
+	.avatar-image,
+	.avatar-placeholder {
+		width: 60px;
+		height: 60px;
+	}
+	
+	.avatar-icon {
+		font-size: 30px;
+	}
+	
+	.user-info h1 {
+		font-size: 1.3em;
+	}
 }
 </style>

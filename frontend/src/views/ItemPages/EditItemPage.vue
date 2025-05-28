@@ -5,199 +5,214 @@
 		:rightFooterButton="rightFooterButton"
 		@leftFooterButtonClicked="handleCancel"
 		@rightFooterButtonClicked="handleSave">
-		
 		<div class="form-container">
 			<!-- Loading State -->
 			<div v-if="isLoading" class="loading-container">
 				<ion-spinner name="crescent" color="primary"></ion-spinner>
-				<p>Lade Gegenstand-Daten...</p>
+				<p>Lade Gegenstand...</p>
 			</div>
 
-			<div v-else>
+			<!-- Error State -->
+			<div v-else-if="error && !item.name" class="empty-state">
+				<ion-icon :icon="alertCircleOutline" class="empty-icon"></ion-icon>
+				<h2>Fehler beim Laden</h2>
+				<p>{{ error }}</p>
+				<ion-button @click="loadItem">
+					<ion-icon :icon="refreshOutline" slot="start"></ion-icon>
+					Erneut versuchen
+				</ion-button>
+			</div>
+
+			<div v-else class="form-content">
 				<!-- Form Header -->
 				<div class="form-header">
 					<ion-icon :icon="createOutline" class="header-icon"></ion-icon>
 					<h2>Gegenstand bearbeiten</h2>
 					<p>Aktualisiere die Details für diesen Gegenstand</p>
-					
-					<!-- Last Modified Info -->
 					<div v-if="item.updatedAt" class="last-modified">
 						<ion-icon :icon="timeOutline" class="time-icon"></ion-icon>
-						<span>Zuletzt geändert: {{ formatDate(item.updatedAt) }}</span>
+						Zuletzt bearbeitet: {{ formatDate(item.updatedAt) }}
 					</div>
 				</div>
 
-				<!-- Form Content -->
-				<div class="form-content">
-					<!-- Name Field -->
-					<div class="input-group">
-						<ion-item 
-							class="modern-item" 
-							:class="{ 'item-error': errors.name, 'item-filled': item.name }"
-						>
-							<ion-label position="stacked" class="custom-label">
-								<ion-icon :icon="textOutline" class="label-icon"></ion-icon>
-								Gegenstand-Name *
-							</ion-label>
-							<ion-input
-								v-model="item.name"
-								placeholder="z.B. Schwarzer Rucksack"
-								@ionBlur="validateField('name')"
-								:class="{ 'input-error': errors.name }"
-							></ion-input>
-						</ion-item>
-						<div v-if="errors.name" class="error-message">
-							<ion-icon :icon="alertCircleOutline"></ion-icon>
-							{{ errors.name }}
+				<!-- Name Field -->
+				<div class="input-group">
+					<ion-item
+						class="modern-item"
+						:class="{
+							'item-error': errors.name,
+							'item-filled': item.name,
+						}">
+						<ion-label position="stacked" class="custom-label">
+							<ion-icon :icon="textOutline" class="label-icon"></ion-icon>
+							Name des Gegenstands *
+						</ion-label>
+						<ion-input
+							v-model="item.name"
+							placeholder="z.B. Schwarzer Rucksack"
+							@ionBlur="validateField('name')"
+							:class="{ 'input-error': errors.name }"></ion-input>
+					</ion-item>
+					<div v-if="errors.name" class="error-message">
+						<ion-icon :icon="alertCircleOutline"></ion-icon>
+						{{ errors.name }}
+					</div>
+				</div>
+
+				<!-- Description Field -->
+				<div class="input-group">
+					<ion-item
+						class="modern-item textarea-item"
+						:class="{
+							'item-filled': item.description,
+						}">
+						<ion-label position="stacked" class="custom-label">
+							<ion-icon
+								:icon="documentTextOutline"
+								class="label-icon"></ion-icon>
+							Beschreibung
+						</ion-label>
+						<ion-textarea
+							v-model="item.description"
+							placeholder="Detaillierte Beschreibung des Gegenstands..."
+							class="custom-textarea"
+							:auto-grow="true"></ion-textarea>
+					</ion-item>
+				</div>
+
+				<!-- Location Field -->
+				<div class="input-group">
+					<ion-item
+						class="modern-item"
+						:class="{
+							'item-error': errors.location,
+							'item-filled': item.location,
+						}">
+						<ion-label position="stacked" class="custom-label">
+							<ion-icon :icon="locationOutline" class="label-icon"></ion-icon>
+							Fundort/Verlustort *
+						</ion-label>
+						<ion-input
+							v-model="item.location"
+							placeholder="z.B. Bibliothek, Hörsaal A1, Mensa"
+							@ionBlur="validateField('location')"
+							:class="{ 'input-error': errors.location }"></ion-input>
+					</ion-item>
+					<div v-if="errors.location" class="error-message">
+						<ion-icon :icon="alertCircleOutline"></ion-icon>
+						{{ errors.location }}
+					</div>
+				</div>
+
+				<!-- Status Field -->
+				<div class="input-group">
+					<ion-item
+						class="modern-item"
+						:class="{
+							'item-error': errors.status,
+							'item-filled': item.status,
+						}">
+						<ion-label position="stacked" class="custom-label">
+							<ion-icon :icon="flagOutline" class="label-icon"></ion-icon>
+							Status *
+						</ion-label>
+						<ion-select
+							v-model="item.status"
+							placeholder="Wähle den Status"
+							@ionChange="validateField('status')">
+							<ion-select-option value="LOST">Verloren</ion-select-option>
+							<ion-select-option value="FOUND">Gefunden</ion-select-option>
+							<ion-select-option value="CLAIMED">Abgeholt</ion-select-option>
+						</ion-select>
+					</ion-item>
+					<div v-if="errors.status" class="error-message">
+						<ion-icon :icon="alertCircleOutline"></ion-icon>
+						{{ errors.status }}
+					</div>
+				</div>
+
+				<!-- Image Upload Section -->
+				<div class="input-group">
+					<div class="image-upload-section">
+						<h4 class="upload-title">
+							<ion-icon :icon="cameraOutline" class="title-icon"></ion-icon>
+							Bild (optional)
+						</h4>
+						<p class="upload-description">
+							Füge ein Bild hinzu, um den Gegenstand besser identifizieren zu
+							können.
+						</p>
+
+						<!-- Image Preview -->
+						<div
+							v-if="imagePreview || item.imageUrl"
+							class="image-preview-container">
+							<img
+								:src="imagePreview || item.imageUrl"
+								:alt="item.name"
+								class="image-preview" />
+							<ion-button
+								fill="clear"
+								color="danger"
+								class="remove-image-btn"
+								@click="removeImage">
+								<ion-icon :icon="trashOutline" slot="icon-only"></ion-icon>
+							</ion-button>
 						</div>
-					</div>
 
-					<!-- Description Field -->
-					<div class="input-group">
-						<ion-item 
-							class="modern-item textarea-item" 
-							:class="{ 'item-filled': item.description }"
-						>
-							<ion-label position="stacked" class="custom-label">
-								<ion-icon :icon="documentTextOutline" class="label-icon"></ion-icon>
-								Beschreibung
-							</ion-label>
-							<ion-textarea
-								v-model="item.description"
-								placeholder="Detaillierte Beschreibung des Gegenstands..."
-								:rows="3"
-								:auto-grow="true"
-								class="custom-textarea"
-							></ion-textarea>
-						</ion-item>
-					</div>
-
-					<!-- Location Field -->
-					<div class="input-group">
-						<ion-item 
-							class="modern-item" 
-							:class="{ 'item-error': errors.location, 'item-filled': item.location }"
-						>
-							<ion-label position="stacked" class="custom-label">
-								<ion-icon :icon="locationOutline" class="label-icon"></ion-icon>
-								Standort *
-							</ion-label>
-							<ion-input
-								v-model="item.location"
-								placeholder="z.B. Bibliothek"
-								@ionBlur="validateField('location')"
-								:class="{ 'input-error': errors.location }"
-							></ion-input>
-						</ion-item>
-						<div v-if="errors.location" class="error-message">
-							<ion-icon :icon="alertCircleOutline"></ion-icon>
-							{{ errors.location }}
+						<!-- Upload Buttons -->
+						<div class="upload-buttons">
+							<ion-button fill="outline" class="upload-btn" @click="takePhoto">
+								<ion-icon :icon="cameraOutline" slot="start"></ion-icon>
+								Foto aufnehmen
+							</ion-button>
+							<ion-button
+								fill="outline"
+								class="upload-btn"
+								@click="triggerFileInput">
+								<ion-icon :icon="cloudUploadOutline" slot="start"></ion-icon>
+								Datei hochladen
+							</ion-button>
 						</div>
-					</div>
 
-					<!-- Status Field -->
-					<div class="input-group">
-						<ion-item 
-							class="modern-item" 
-							:class="{ 'item-error': errors.status, 'item-filled': item.status }"
-						>
-							<ion-label position="stacked" class="custom-label">
-								<ion-icon :icon="flagOutline" class="label-icon"></ion-icon>
-								Status *
-							</ion-label>
-							<ion-select 
-								v-model="item.status" 
-								placeholder="Status auswählen"
-								@ionChange="validateField('status')"
-								:class="{ 'input-error': errors.status }"
-							>
-								<ion-select-option value="lost">Verloren</ion-select-option>
-								<ion-select-option value="found">Gefunden</ion-select-option>
-								<ion-select-option value="claimed">Abgeholt</ion-select-option>
-							</ion-select>
-						</ion-item>
-						<div v-if="errors.status" class="error-message">
-							<ion-icon :icon="alertCircleOutline"></ion-icon>
-							{{ errors.status }}
+						<!-- Hidden file input -->
+						<input
+							ref="fileInput"
+							type="file"
+							accept="image/*"
+							style="display: none"
+							@change="handleFileSelect" />
+					</div>
+				</div>
+
+				<!-- Action Buttons -->
+				<div class="action-buttons">
+					<ion-button
+						fill="outline"
+						color="danger"
+						expand="block"
+						class="delete-button"
+						@click="handleDelete">
+						<ion-icon :icon="trashOutline" slot="start"></ion-icon>
+						Gegenstand löschen
+					</ion-button>
+				</div>
+
+				<!-- Form Footer Info -->
+				<div class="form-footer-info">
+					<ion-item class="info-item">
+						<ion-icon
+							:icon="informationCircleOutline"
+							slot="start"
+							color="primary"></ion-icon>
+						<div class="info-text">
+							<p>
+								Alle Änderungen werden automatisch gespeichert, wenn du auf
+								"Änderungen speichern" klickst.
+							</p>
+							<p>Mit * markierte Felder sind Pflichtfelder.</p>
 						</div>
-					</div>
-
-					<!-- Image Upload Field -->
-					<div class="input-group">
-						<div class="image-upload-section">
-							<h3 class="upload-title">
-								<ion-icon :icon="cameraOutline" class="title-icon"></ion-icon>
-								Bild bearbeiten
-							</h3>
-							<p class="upload-description">Aktualisiere das Bild oder füge ein neues hinzu</p>
-							
-							<!-- Image Preview -->
-							<div v-if="imagePreview" class="image-preview-container">
-								<img :src="imagePreview" alt="Gegenstand Vorschau" class="image-preview" />
-								<ion-button 
-									fill="clear" 
-									color="danger" 
-									@click="removeImage"
-									class="remove-image-btn"
-								>
-									<ion-icon :icon="trashOutline" slot="icon-only"></ion-icon>
-								</ion-button>
-							</div>
-
-							<!-- Upload Buttons -->
-							<div v-else class="upload-buttons">
-								<input 
-									ref="fileInput"
-									type="file" 
-									accept="image/*" 
-									@change="handleFileSelect"
-									style="display: none"
-								/>
-								<ion-button 
-									fill="outline" 
-									color="primary" 
-									@click="triggerFileInput"
-									class="upload-btn"
-								>
-									<ion-icon :icon="cloudUploadOutline" slot="start"></ion-icon>
-									Neues Bild hochladen
-								</ion-button>
-								<ion-button 
-									fill="outline" 
-									color="secondary" 
-									@click="takePhoto"
-									class="upload-btn"
-								>
-									<ion-icon :icon="cameraOutline" slot="start"></ion-icon>
-									Foto aufnehmen
-								</ion-button>
-							</div>
-						</div>
-					</div>
-
-					<!-- Action Buttons -->
-					<div class="action-buttons">
-						<ion-button 
-							fill="outline" 
-							color="danger" 
-							@click="handleDelete"
-							:disabled="isSaving"
-							class="delete-button"
-						>
-							<ion-icon :icon="trashOutline" slot="start"></ion-icon>
-							Gegenstand löschen
-						</ion-button>
-					</div>
-
-					<!-- Form Footer Info -->
-					<div class="form-footer-info">
-						<ion-item lines="none" class="info-item">
-							<ion-icon :icon="informationCircleOutline" slot="start" color="primary"></ion-icon>
-							<ion-label class="info-text">
-								<p>Felder mit * sind Pflichtfelder</p>
-							</ion-label>
-						</ion-item>
-					</div>
+					</ion-item>
 				</div>
 			</div>
 		</div>
@@ -208,8 +223,7 @@
 			header="Gegenstand löschen"
 			message="Bist du sicher, dass du diesen Gegenstand löschen möchtest? Diese Aktion kann nicht rückgängig gemacht werden."
 			:buttons="alertButtons"
-			@didDismiss="showDeleteAlert = false"
-		></ion-alert>
+			@didDismiss="showDeleteAlert = false"></ion-alert>
 	</template-page>
 </template>
 
@@ -241,23 +255,26 @@ import {
 	timeOutline,
 	cameraOutline,
 	cloudUploadOutline,
+	refreshOutline,
 } from 'ionicons/icons';
 import { ref, computed, watch, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
+import { useItemStore } from '@/stores/itemStore';
 import type { Item } from '@/models/item';
 
 const router = useRouter();
 const route = useRoute();
+const itemStore = useItemStore();
 
 const item = ref<Item>({
-	id: 1,
+	id: 0,
 	name: '',
 	description: '',
 	location: '',
-	status: 'lost',
+	status: '',
 	createdAt: '',
 	updatedAt: '',
-	imageData: '',
+	imageUrl: '',
 });
 
 const errors = ref({
@@ -266,7 +283,8 @@ const errors = ref({
 	status: '',
 });
 
-const isLoading = ref(true);
+const isLoading = computed(() => itemStore.isLoading);
+const error = computed(() => itemStore.getError);
 const isSaving = ref(false);
 const showDeleteAlert = ref(false);
 const imagePreview = ref('');
@@ -279,7 +297,11 @@ const leftFooterButton = computed(() => ({
 }));
 
 const rightFooterButton = computed(() => ({
-	name: isSaving.value ? 'Speichere...' : (isValid.value ? 'Änderungen speichern' : 'Felder ausfüllen'),
+	name: isSaving.value
+		? 'Speichere...'
+		: isValid.value
+		? 'Änderungen speichern'
+		: 'Felder ausfüllen',
 	color: isValid.value ? 'primary' : 'medium',
 	icon: checkmarkCircleOutline,
 	disabled: !isValid.value || isSaving.value,
@@ -290,7 +312,7 @@ const isValid = computed(() => {
 		item.value.name.trim() !== '' &&
 		item.value.location.trim() !== '' &&
 		item.value.status.trim() !== '' &&
-		Object.values(errors.value).every(error => error === '')
+		Object.values(errors.value).every((error) => error === '')
 	);
 });
 
@@ -319,8 +341,10 @@ const formatDate = (dateString: string) => {
 };
 
 const validateField = (fieldName: keyof typeof errors.value) => {
-	const value = String(item.value[fieldName as keyof typeof item.value] || '').trim();
-	
+	const value = String(
+		item.value[fieldName as keyof typeof item.value] || ''
+	).trim();
+
 	switch (fieldName) {
 		case 'name':
 			if (!value) {
@@ -355,39 +379,25 @@ const validateAllFields = () => {
 };
 
 const loadItem = async () => {
-	isLoading.value = true;
-	
 	try {
-		const itemId = route.params.id as string;
-		
-		// TODO: Replace with actual API call
-		console.log('Loading item with ID:', itemId);
-		
-		// Simulate API call
-		await new Promise(resolve => setTimeout(resolve, 1000));
-		
-		// Mock data - replace with actual API data
-		item.value = {
-			id: Number(itemId),
-			name: 'Schwarzer Rucksack',
-			description: 'Großer schwarzer Rucksack mit Laptop-Fach, Marke Eastpak',
-			location: 'Bibliothek',
-			status: 'found',
-			createdAt: '2024-01-15T10:00:00Z',
-			updatedAt: '2024-01-16T14:30:00Z',
-			imageUrl: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjY2NjIi8+CiAgPHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxOCIgZmlsbD0iIzMzMyIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkJlaXNwaWVsIEJpbGQ8L3RleHQ+Cjwvc3ZnPg==',
-		};
-		
-		// Set existing image if available
-		if (item.value.imageUrl) {
-			imagePreview.value = item.value.imageUrl;
+		const itemId = Number(route.params.id);
+		if (!itemId) {
+			throw new Error('Invalid item ID');
+		}
+
+		await itemStore.fetchItemById(itemId);
+		const loadedItem = itemStore.getCurrentItem;
+
+		if (loadedItem) {
+			// Create a copy to avoid direct mutation of store data
+			item.value = { ...loadedItem };
+		} else {
+			throw new Error('Item not found');
 		}
 	} catch (error) {
 		console.error('Error loading item:', error);
-		// TODO: Show error toast and navigate back
+		// Navigate back if item cannot be loaded
 		router.back();
-	} finally {
-		isLoading.value = false;
 	}
 };
 
@@ -402,15 +412,24 @@ const handleSave = async () => {
 	}
 
 	isSaving.value = true;
-	
+
 	try {
-		// TODO: Implement actual save logic
-		console.log('Saving item:', item.value);
-		
-		// Simulate API call
-		await new Promise(resolve => setTimeout(resolve, 1500));
-		
-		// Navigate back to item details
+		// Prepare update data - only send changed fields
+		const updateData: Partial<Item> = {
+			name: item.value.name.trim(),
+			description: item.value.description?.trim() || '',
+			location: item.value.location.trim(),
+			status: item.value.status,
+		};
+
+		// Include image data if there's a new image
+		if (imagePreview.value) {
+			updateData.imageData = imagePreview.value;
+		}
+
+		await itemStore.updateItem(item.value.id, updateData);
+
+		// Navigate to item details page
 		router.push(`/items/${item.value.id}`);
 	} catch (error) {
 		console.error('Error saving item:', error);
@@ -426,13 +445,8 @@ const handleDelete = () => {
 
 const confirmDelete = async () => {
 	try {
-		// TODO: Implement actual delete logic
-		console.log('Deleting item:', item.value.id);
-		
-		// Simulate API call
-		await new Promise(resolve => setTimeout(resolve, 1000));
-		
-		// Navigate back to items
+		await itemStore.deleteItem(item.value.id);
+		// Navigate back to items list
 		router.push('/items/home');
 	} catch (error) {
 		console.error('Error deleting item:', error);
@@ -448,18 +462,26 @@ const triggerFileInput = () => {
 const handleFileSelect = (event: Event) => {
 	const target = event.target as HTMLInputElement;
 	const file = target.files?.[0];
-	
+
 	if (file) {
-		if (file.size > 5 * 1024 * 1024) { // 5MB limit
-			console.error('File too large. Maximum size is 5MB.');
+		// Validate file type
+		if (!file.type.startsWith('image/')) {
+			// TODO: Show error toast
+			console.error('Please select an image file');
 			return;
 		}
-		
+
+		// Validate file size (max 5MB)
+		const maxSize = 5 * 1024 * 1024; // 5MB
+		if (file.size > maxSize) {
+			// TODO: Show error toast
+			console.error('File size must be less than 5MB');
+			return;
+		}
+
 		const reader = new FileReader();
 		reader.onload = (e) => {
-			const result = e.target?.result as string;
-			imagePreview.value = result;
-			item.value.imageData = result;
+			imagePreview.value = e.target?.result as string;
 		};
 		reader.readAsDataURL(file);
 	}
@@ -467,16 +489,18 @@ const handleFileSelect = (event: Event) => {
 
 const takePhoto = async () => {
 	try {
-		console.log('Camera functionality not yet implemented');
+		// For now, just trigger file input
+		// In a real mobile app, you could use Capacitor Camera plugin
 		triggerFileInput();
 	} catch (error) {
 		console.error('Error taking photo:', error);
+		// TODO: Show error toast
 	}
 };
 
 const removeImage = () => {
 	imagePreview.value = '';
-	item.value.imageData = '';
+	item.value.imageUrl = '';
 	if (fileInput.value) {
 		fileInput.value.value = '';
 	}
@@ -528,6 +552,21 @@ onMounted(() => {
 .loading-container p {
 	margin-top: 16px;
 	color: var(--ion-color-medium);
+}
+
+.empty-state {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+	padding: 60px 20px;
+}
+
+.empty-icon {
+	font-size: 64px;
+	color: var(--ion-color-medium);
+	margin-bottom: 20px;
 }
 
 .form-header {
@@ -770,9 +809,16 @@ onMounted(() => {
 }
 
 @keyframes shake {
-	0%, 100% { transform: translateX(0); }
-	25% { transform: translateX(-5px); }
-	75% { transform: translateX(5px); }
+	0%,
+	100% {
+		transform: translateX(0);
+	}
+	25% {
+		transform: translateX(-5px);
+	}
+	75% {
+		transform: translateX(5px);
+	}
 }
 
 /* Responsive Design */
@@ -780,19 +826,18 @@ onMounted(() => {
 	.form-container {
 		padding: 16px;
 	}
-	
+
 	.form-header {
 		margin-bottom: 30px;
 	}
-	
+
 	.header-icon {
 		font-size: 40px;
 	}
-	
+
 	.last-modified {
-		flex-direction: column;
-		gap: 4px;
-		text-align: center;
+		padding: 6px 12px;
+		font-size: 0.8em;
 	}
 }
 
@@ -800,11 +845,11 @@ onMounted(() => {
 	.form-header {
 		margin-bottom: 20px;
 	}
-	
+
 	.input-group {
 		margin-bottom: 20px;
 	}
-	
+
 	.action-buttons {
 		margin: 30px 0;
 		padding: 16px;

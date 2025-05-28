@@ -56,6 +56,29 @@ export const useItemStore = defineStore('item', () => {
 		}
 	};
 
+	const createItem = async (
+		itemData: Omit<Item, 'id' | 'createdAt' | 'updatedAt'>
+	): Promise<Item | null> => {
+		try {
+			loading.value = true;
+			error.value = null;
+			const newItem = await itemService.createItem(itemData);
+
+			// Add the new item to the store
+			items.value.unshift(newItem); // Add to beginning of array
+			currentItem.value = newItem;
+
+			return newItem;
+		} catch (err) {
+			error.value =
+				err instanceof Error ? err.message : 'Failed to create item';
+			console.error('Error creating item:', err);
+			return null;
+		} finally {
+			loading.value = false;
+		}
+	};
+
 	const updateItem = async (
 		id: number,
 		itemData: Partial<Item>
@@ -126,6 +149,7 @@ export const useItemStore = defineStore('item', () => {
 		// Actions
 		fetchItems,
 		fetchItemById,
+		createItem,
 		updateItem,
 		deleteItem,
 		clearError,

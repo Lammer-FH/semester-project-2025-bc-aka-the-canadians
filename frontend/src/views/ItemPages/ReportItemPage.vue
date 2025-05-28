@@ -5,41 +5,46 @@
 		:rightFooterButton="rightFooterButton"
 		@leftFooterButtonClicked="handleCancel"
 		@rightFooterButtonClicked="handleSubmit">
-		
 		<div class="form-container">
+			<!-- Progress Indicator -->
+			<div class="progress-section">
+				<div class="progress-bar">
+					<div
+						class="progress-fill"
+						:style="{ width: `${completionPercentage}%` }"></div>
+				</div>
+				<p class="progress-text">{{ completionPercentage }}% ausgefüllt</p>
+			</div>
+
 			<!-- Form Header -->
 			<div class="form-header">
 				<ion-icon :icon="megaphoneOutline" class="header-icon"></ion-icon>
 				<h2>Gegenstand melden</h2>
-				<p>Hast du etwas verloren oder gefunden? Melde es hier!</p>
-				
-				<!-- Progress Info -->
-				<div class="progress-info">
-					<div class="progress-bar">
-						<div class="progress-fill" :style="{ width: `${completionPercentage}%` }"></div>
-					</div>
-					<span class="progress-text">{{ completionPercentage }}% ausgefüllt</span>
-				</div>
+				<p>
+					Hilf anderen dabei, ihre verlorenen Gegenstände wiederzufinden oder
+					melde einen Fund
+				</p>
 			</div>
 
 			<!-- Form Content -->
 			<div class="form-content">
 				<!-- Name Field -->
 				<div class="input-group">
-					<ion-item 
-						class="modern-item" 
-						:class="{ 'item-error': errors.name, 'item-filled': item.name }"
-					>
+					<ion-item
+						class="modern-item"
+						:class="{
+							'item-error': errors.name,
+							'item-filled': item.name,
+						}">
 						<ion-label position="stacked" class="custom-label">
 							<ion-icon :icon="textOutline" class="label-icon"></ion-icon>
-							Gegenstand-Name *
+							Name des Gegenstands *
 						</ion-label>
 						<ion-input
 							v-model="item.name"
-							placeholder="z.B. Schwarzer Rucksack, iPhone 14, Schlüsselbund..."
+							placeholder="z.B. Schwarzer Rucksack, iPhone 13, Schlüsselbund"
 							@ionBlur="validateField('name')"
-							:class="{ 'input-error': errors.name }"
-						></ion-input>
+							:class="{ 'input-error': errors.name }"></ion-input>
 					</ion-item>
 					<div v-if="errors.name" class="error-message">
 						<ion-icon :icon="alertCircleOutline"></ion-icon>
@@ -49,40 +54,40 @@
 
 				<!-- Description Field -->
 				<div class="input-group">
-					<ion-item 
-						class="modern-item textarea-item" 
-						:class="{ 'item-filled': item.description }"
-					>
+					<ion-item
+						class="modern-item textarea-item"
+						:class="{ 'item-filled': item.description }">
 						<ion-label position="stacked" class="custom-label">
-							<ion-icon :icon="documentTextOutline" class="label-icon"></ion-icon>
+							<ion-icon
+								:icon="documentTextOutline"
+								class="label-icon"></ion-icon>
 							Beschreibung
 						</ion-label>
 						<ion-textarea
 							v-model="item.description"
-							placeholder="Beschreibe den Gegenstand so detailliert wie möglich: Farbe, Marke, besondere Merkmale, Inhalt..."
-							:rows="3"
-							:auto-grow="true"
+							placeholder="Detaillierte Beschreibung: Farbe, Größe, Marke, besondere Merkmale..."
 							class="custom-textarea"
-						></ion-textarea>
+							:auto-grow="true"></ion-textarea>
 					</ion-item>
 				</div>
 
 				<!-- Location Field -->
 				<div class="input-group">
-					<ion-item 
-						class="modern-item" 
-						:class="{ 'item-error': errors.location, 'item-filled': item.location }"
-					>
+					<ion-item
+						class="modern-item"
+						:class="{
+							'item-error': errors.location,
+							'item-filled': item.location,
+						}">
 						<ion-label position="stacked" class="custom-label">
 							<ion-icon :icon="locationOutline" class="label-icon"></ion-icon>
-							Standort *
+							Fundort/Verlustort *
 						</ion-label>
 						<ion-input
 							v-model="item.location"
-							placeholder="z.B. Bibliothek, Cafeteria, Sporthalle, Gebäude A..."
+							placeholder="z.B. Bibliothek, Hörsaal A1, Mensa, Parkplatz"
 							@ionBlur="validateField('location')"
-							:class="{ 'input-error': errors.location }"
-						></ion-input>
+							:class="{ 'input-error': errors.location }"></ion-input>
 					</ion-item>
 					<div v-if="errors.location" class="error-message">
 						<ion-icon :icon="alertCircleOutline"></ion-icon>
@@ -92,22 +97,22 @@
 
 				<!-- Status Field -->
 				<div class="input-group">
-					<ion-item 
-						class="modern-item" 
-						:class="{ 'item-error': errors.status, 'item-filled': item.status }"
-					>
+					<ion-item
+						class="modern-item"
+						:class="{
+							'item-error': errors.status,
+							'item-filled': item.status,
+						}">
 						<ion-label position="stacked" class="custom-label">
 							<ion-icon :icon="flagOutline" class="label-icon"></ion-icon>
 							Status *
 						</ion-label>
-						<ion-select 
-							v-model="item.status" 
-							placeholder="Was ist passiert?"
-							@ionChange="validateField('status')"
-							:class="{ 'input-error': errors.status }"
-						>
-							<ion-select-option value="lost">Ich habe etwas verloren</ion-select-option>
-							<ion-select-option value="found">Ich habe etwas gefunden</ion-select-option>
+						<ion-select
+							v-model="item.status"
+							placeholder="Wähle den Status"
+							@ionChange="validateField('status')">
+							<ion-select-option value="LOST">Verloren</ion-select-option>
+							<ion-select-option value="FOUND">Gefunden</ion-select-option>
 						</ion-select>
 					</ion-item>
 					<div v-if="errors.status" class="error-message">
@@ -116,64 +121,69 @@
 					</div>
 				</div>
 
-				<!-- Image Upload Field -->
+				<!-- Image Upload Section -->
 				<div class="input-group">
 					<div class="image-upload-section">
-						<h3 class="upload-title">
+						<h4 class="upload-title">
 							<ion-icon :icon="cameraOutline" class="title-icon"></ion-icon>
 							Bild hinzufügen (optional)
-						</h3>
-						<p class="upload-description">Ein Bild hilft anderen dabei, deinen Gegenstand schneller zu identifizieren</p>
-						
+						</h4>
+						<p class="upload-description">
+							Ein Bild hilft anderen dabei, den Gegenstand besser zu
+							identifizieren.
+						</p>
+
 						<!-- Image Preview -->
 						<div v-if="imagePreview" class="image-preview-container">
-							<img :src="imagePreview" alt="Gegenstand Vorschau" class="image-preview" />
-							<ion-button 
-								fill="clear" 
-								color="danger" 
-								@click="removeImage"
+							<img :src="imagePreview" :alt="item.name" class="image-preview" />
+							<ion-button
+								fill="clear"
+								color="danger"
 								class="remove-image-btn"
-							>
+								@click="removeImage">
 								<ion-icon :icon="trashOutline" slot="icon-only"></ion-icon>
 							</ion-button>
 						</div>
 
 						<!-- Upload Buttons -->
-						<div v-else class="upload-buttons">
-							<input 
-								ref="fileInput"
-								type="file" 
-								accept="image/*" 
-								@change="handleFileSelect"
-								style="display: none"
-							/>
-							<ion-button 
-								fill="outline" 
-								color="primary" 
-								@click="triggerFileInput"
-								class="upload-btn"
-							>
-								<ion-icon :icon="cloudUploadOutline" slot="start"></ion-icon>
-								Bild hochladen
-							</ion-button>
-							<ion-button 
-								fill="outline" 
-								color="secondary" 
-								@click="takePhoto"
-								class="upload-btn"
-							>
+						<div class="upload-buttons">
+							<ion-button fill="outline" class="upload-btn" @click="takePhoto">
 								<ion-icon :icon="cameraOutline" slot="start"></ion-icon>
 								Foto aufnehmen
 							</ion-button>
+							<ion-button
+								fill="outline"
+								class="upload-btn"
+								@click="triggerFileInput">
+								<ion-icon :icon="cloudUploadOutline" slot="start"></ion-icon>
+								Datei hochladen
+							</ion-button>
 						</div>
+
+						<!-- Hidden file input -->
+						<input
+							ref="fileInput"
+							type="file"
+							accept="image/*"
+							style="display: none"
+							@change="handleFileSelect" />
 
 						<!-- Upload Tips -->
 						<div class="upload-tips">
-							<ion-item lines="none" class="tip-item">
-								<ion-icon :icon="bulbOutline" slot="start" color="warning"></ion-icon>
-								<ion-label class="tip-text">
-									<p><strong>Tipp:</strong> Achte auf gute Beleuchtung und zeige charakteristische Merkmale</p>
-								</ion-label>
+							<ion-item class="tip-item">
+								<ion-icon
+									:icon="bulbOutline"
+									slot="start"
+									color="warning"></ion-icon>
+								<div class="tip-text">
+									<p>
+										<strong>Tipp:</strong> Gute Bilder erhöhen die Chance, dass
+										dein Gegenstand gefunden wird!
+									</p>
+									<p>• Verwende gute Beleuchtung</p>
+									<p>• Zeige charakteristische Details</p>
+									<p>• Maximal 5MB Dateigröße</p>
+								</div>
 							</ion-item>
 						</div>
 					</div>
@@ -181,12 +191,21 @@
 
 				<!-- Form Footer Info -->
 				<div class="form-footer-info">
-					<ion-item lines="none" class="info-item">
-						<ion-icon :icon="informationCircleOutline" slot="start" color="primary"></ion-icon>
-						<ion-label class="info-text">
-							<p><strong>Tipp:</strong> Je genauer deine Beschreibung, desto schneller kann dein Gegenstand gefunden werden!</p>
-							<p class="required-note">Felder mit * sind Pflichtfelder</p>
-						</ion-label>
+					<ion-item class="info-item">
+						<ion-icon
+							:icon="informationCircleOutline"
+							slot="start"
+							color="primary"></ion-icon>
+						<div class="info-text">
+							<p>
+								Deine Meldung wird sofort veröffentlicht und ist für alle Nutzer
+								sichtbar.
+							</p>
+							<p>Du kannst sie jederzeit bearbeiten oder löschen.</p>
+							<p class="required-note">
+								* Pflichtfelder müssen ausgefüllt werden.
+							</p>
+						</div>
 					</ion-item>
 				</div>
 			</div>
@@ -223,8 +242,11 @@ import {
 } from 'ionicons/icons';
 import { ref, computed, watch } from 'vue';
 import { useRouter } from 'vue-router';
+import { useItemStore } from '@/stores/itemStore';
+import type { Item } from '@/models/item';
 
 const router = useRouter();
+const itemStore = useItemStore();
 
 const item = ref({
 	name: '',
@@ -240,7 +262,7 @@ const errors = ref({
 	status: '',
 });
 
-const isSubmitting = ref(false);
+const isSubmitting = computed(() => itemStore.isLoading);
 const imagePreview = ref('');
 const fileInput = ref<HTMLInputElement>();
 
@@ -251,7 +273,11 @@ const leftFooterButton = computed(() => ({
 }));
 
 const rightFooterButton = computed(() => ({
-	name: isSubmitting.value ? 'Wird gemeldet...' : (isValid.value ? 'Gegenstand melden' : 'Felder ausfüllen'),
+	name: isSubmitting.value
+		? 'Wird gemeldet...'
+		: isValid.value
+		? 'Gegenstand melden'
+		: 'Felder ausfüllen',
 	color: isValid.value ? 'primary' : 'medium',
 	icon: checkmarkCircleOutline,
 	disabled: !isValid.value || isSubmitting.value,
@@ -262,21 +288,23 @@ const isValid = computed(() => {
 		item.value.name.trim() !== '' &&
 		item.value.location.trim() !== '' &&
 		item.value.status.trim() !== '' &&
-		Object.values(errors.value).every(error => error === '')
+		Object.values(errors.value).every((error) => error === '')
 	);
 });
 
 const completionPercentage = computed(() => {
 	const fields = ['name', 'description', 'location', 'status'];
-	const filledFields = fields.filter(field => 
-		item.value[field as keyof typeof item.value].trim() !== ''
+	const filledFields = fields.filter(
+		(field) => item.value[field as keyof typeof item.value].trim() !== ''
 	).length;
 	return Math.round((filledFields / fields.length) * 100);
 });
 
 const validateField = (fieldName: keyof typeof errors.value) => {
-	const value = String(item.value[fieldName as keyof typeof item.value] || '').trim();
-	
+	const value = String(
+		item.value[fieldName as keyof typeof item.value] || ''
+	).trim();
+
 	switch (fieldName) {
 		case 'name':
 			if (!value) {
@@ -320,22 +348,33 @@ const handleSubmit = async () => {
 		return;
 	}
 
-	isSubmitting.value = true;
-	
 	try {
-		// TODO: Implement actual submission logic
-		console.log('Submitting item:', item.value);
-		
-		// Simulate API call
-		await new Promise(resolve => setTimeout(resolve, 2000));
-		
-		// Navigate back to items
-		router.push('/items/home');
+		// Prepare the item data for creation
+		const itemData: Omit<Item, 'id' | 'createdAt' | 'updatedAt'> = {
+			name: item.value.name.trim(),
+			description: item.value.description.trim(),
+			location: item.value.location.trim(),
+			status: item.value.status,
+			imageUrl: '', // Will be set by backend if image is uploaded
+		};
+
+		// Add image data if available
+		if (imagePreview.value) {
+			itemData.imageData = imagePreview.value;
+		}
+
+		// Create the item via the store
+		const newItem = await itemStore.createItem(itemData);
+
+		if (newItem) {
+			// Navigate to the newly created item's details page
+			router.push(`/items/${newItem.id}`);
+		} else {
+			throw new Error('Failed to create item');
+		}
 	} catch (error) {
-		console.error('Error submitting item:', error);
+		console.error('Error creating item:', error);
 		// TODO: Show error toast
-	} finally {
-		isSubmitting.value = false;
 	}
 };
 
@@ -347,19 +386,27 @@ const triggerFileInput = () => {
 const handleFileSelect = (event: Event) => {
 	const target = event.target as HTMLInputElement;
 	const file = target.files?.[0];
-	
+
 	if (file) {
-		if (file.size > 5 * 1024 * 1024) { // 5MB limit
+		// Validate file type
+		if (!file.type.startsWith('image/')) {
 			// TODO: Show error toast
-			console.error('File too large. Maximum size is 5MB.');
+			console.error('Please select an image file');
 			return;
 		}
-		
+
+		// Validate file size (max 5MB)
+		const maxSize = 5 * 1024 * 1024; // 5MB
+		if (file.size > maxSize) {
+			// TODO: Show error toast
+			console.error('File size must be less than 5MB');
+			return;
+		}
+
 		const reader = new FileReader();
 		reader.onload = (e) => {
-			const result = e.target?.result as string;
-			imagePreview.value = result;
-			item.value.imageData = result;
+			imagePreview.value = e.target?.result as string;
+			item.value.imageData = imagePreview.value;
 		};
 		reader.readAsDataURL(file);
 	}
@@ -367,12 +414,12 @@ const handleFileSelect = (event: Event) => {
 
 const takePhoto = async () => {
 	try {
-		// TODO: Implement camera functionality with Capacitor
-		console.log('Camera functionality not yet implemented');
-		// For now, trigger file input as fallback
+		// For now, just trigger file input
+		// In a real mobile app, you could use Capacitor Camera plugin
 		triggerFileInput();
 	} catch (error) {
 		console.error('Error taking photo:', error);
+		// TODO: Show error toast
 	}
 };
 
@@ -414,6 +461,37 @@ watch(
 	margin: 0 auto;
 }
 
+.progress-section {
+	margin-bottom: 30px;
+	text-align: center;
+}
+
+.progress-bar {
+	width: 100%;
+	height: 8px;
+	background: var(--ion-color-light-shade);
+	border-radius: 4px;
+	overflow: hidden;
+	margin-bottom: 8px;
+}
+
+.progress-fill {
+	height: 100%;
+	background: linear-gradient(
+		90deg,
+		var(--ion-color-primary),
+		var(--ion-color-primary-tint)
+	);
+	border-radius: 4px;
+	transition: width 0.3s ease;
+}
+
+.progress-text {
+	font-size: 0.85em;
+	color: var(--ion-color-medium);
+	font-weight: 600;
+}
+
 .form-header {
 	text-align: center;
 	margin-bottom: 40px;
@@ -437,35 +515,6 @@ watch(
 	margin: 0 0 24px 0;
 	font-size: 1em;
 	line-height: 1.4;
-}
-
-.progress-info {
-	background: var(--ion-color-light-tint);
-	padding: 16px;
-	border-radius: 12px;
-	border: 1px solid var(--ion-color-light-shade);
-}
-
-.progress-bar {
-	width: 100%;
-	height: 8px;
-	background: var(--ion-color-light-shade);
-	border-radius: 4px;
-	overflow: hidden;
-	margin-bottom: 8px;
-}
-
-.progress-fill {
-	height: 100%;
-	background: linear-gradient(90deg, var(--ion-color-primary), var(--ion-color-primary-tint));
-	border-radius: 4px;
-	transition: width 0.3s ease;
-}
-
-.progress-text {
-	font-size: 0.85em;
-	color: var(--ion-color-medium);
-	font-weight: 600;
 }
 
 .form-content {
@@ -546,7 +595,11 @@ watch(
 .form-footer-info {
 	margin-top: 20px;
 	padding: 20px;
-	background: linear-gradient(135deg, var(--ion-color-light-tint), var(--ion-color-light));
+	background: linear-gradient(
+		135deg,
+		var(--ion-color-light-tint),
+		var(--ion-color-light)
+	);
 	border-radius: 12px;
 	border-left: 4px solid var(--ion-color-primary);
 	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
@@ -659,6 +712,7 @@ watch(
 .upload-tips {
 	background: rgba(var(--ion-color-warning-rgb), 0.1);
 	border-radius: 12px;
+	padding: 16px;
 	border-left: 4px solid var(--ion-color-warning);
 }
 
@@ -669,10 +723,14 @@ watch(
 }
 
 .tip-text p {
-	margin: 0;
+	margin: 0 0 4px 0;
 	color: var(--ion-color-medium-shade);
 	font-size: 0.85em;
 	line-height: 1.4;
+}
+
+.tip-text p:last-child {
+	margin-bottom: 0;
 }
 
 @keyframes slideInUp {
@@ -687,9 +745,16 @@ watch(
 }
 
 @keyframes shake {
-	0%, 100% { transform: translateX(0); }
-	25% { transform: translateX(-5px); }
-	75% { transform: translateX(5px); }
+	0%,
+	100% {
+		transform: translateX(0);
+	}
+	25% {
+		transform: translateX(-5px);
+	}
+	75% {
+		transform: translateX(5px);
+	}
 }
 
 /* Responsive Design */
@@ -697,21 +762,21 @@ watch(
 	.form-container {
 		padding: 16px;
 	}
-	
+
 	.form-header {
 		margin-bottom: 30px;
 	}
-	
+
 	.header-icon {
 		font-size: 48px;
 	}
-	
+
 	.form-header h2 {
-		font-size: 1.6em;
+		font-size: 1.5em;
 	}
-	
-	.progress-info {
-		padding: 12px;
+
+	.progress-section {
+		margin-bottom: 20px;
 	}
 }
 
@@ -719,12 +784,13 @@ watch(
 	.form-header {
 		margin-bottom: 20px;
 	}
-	
+
 	.input-group {
 		margin-bottom: 20px;
 	}
-	
+
 	.form-footer-info {
+		margin-top: 16px;
 		padding: 16px;
 	}
 }

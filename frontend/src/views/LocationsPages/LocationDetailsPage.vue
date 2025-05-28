@@ -1,19 +1,30 @@
 <template>
 	<template-page
-		:headline="location.name || 'Standort-Details'"
+		:headline="location?.name || 'Standort-Details'"
 		:leftFooterButton="leftFooterButton"
 		:rightFooterButton="rightFooterButton"
 		@leftFooterButtonClicked="handleDelete"
 		@rightFooterButtonClicked="handleEdit">
-		
 		<div class="details-container">
 			<!-- Loading State -->
 			<div v-if="isLoading" class="loading-container">
 				<ion-spinner name="crescent" color="primary"></ion-spinner>
-				<p>Lade Standort-Details...</p>
+				<p>Lade Standort...</p>
 			</div>
 
-			<div v-else class="content-wrapper">
+			<!-- Error State -->
+			<div v-else-if="error && !location" class="empty-state">
+				<ion-icon :icon="alertCircleOutline" class="empty-icon"></ion-icon>
+				<h2>Fehler beim Laden</h2>
+				<p>{{ error }}</p>
+				<ion-button @click="loadLocation">
+					<ion-icon :icon="refreshOutline" slot="start"></ion-icon>
+					Erneut versuchen
+				</ion-button>
+			</div>
+
+			<!-- Location Details -->
+			<div v-else-if="location" class="content-wrapper">
 				<!-- Location Header -->
 				<div class="location-header">
 					<div class="header-content">
@@ -22,28 +33,25 @@
 							<h1>{{ location.name }}</h1>
 							<div class="location-info">
 								<div class="info-item">
-									<ion-icon :icon="businessOutline" class="info-icon"></ion-icon>
-									<span>Gebäude {{ location.building }}</span>
+									<ion-icon
+										:icon="businessOutline"
+										class="info-icon"></ion-icon>
+									{{ location.building }}
 								</div>
 								<div class="info-item">
 									<ion-icon :icon="layersOutline" class="info-icon"></ion-icon>
-									<span>{{ location.floor }}. Etage</span>
+									Etage {{ location.floor }}
 								</div>
 								<div class="info-item">
 									<ion-icon :icon="homeOutline" class="info-icon"></ion-icon>
-									<span>Raum {{ location.room }}</span>
+									Raum {{ location.room }}
 								</div>
 							</div>
 						</div>
 					</div>
-					
-					<!-- Quick Actions -->
 					<div class="quick-actions">
 						<ion-button fill="clear" size="small" @click="handleEdit">
 							<ion-icon :icon="createOutline" slot="icon-only"></ion-icon>
-						</ion-button>
-						<ion-button fill="clear" size="small" color="danger" @click="handleDelete">
-							<ion-icon :icon="trashOutline" slot="icon-only"></ion-icon>
 						</ion-button>
 					</div>
 				</div>
@@ -56,91 +64,111 @@
 
 				<!-- Metadata Section -->
 				<div class="metadata-section">
-					<h3>Details</h3>
+					<h3>Standort-Details</h3>
 					<div class="metadata-grid">
+						<div class="metadata-item">
+							<ion-icon
+								:icon="businessOutline"
+								class="metadata-icon"></ion-icon>
+							<div class="metadata-content">
+								<span class="metadata-label">Gebäude</span>
+								<span class="metadata-value">{{ location.building }}</span>
+							</div>
+						</div>
+						<div class="metadata-item">
+							<ion-icon :icon="layersOutline" class="metadata-icon"></ion-icon>
+							<div class="metadata-content">
+								<span class="metadata-label">Etage</span>
+								<span class="metadata-value">{{ location.floor }}</span>
+							</div>
+						</div>
+						<div class="metadata-item">
+							<ion-icon :icon="homeOutline" class="metadata-icon"></ion-icon>
+							<div class="metadata-content">
+								<span class="metadata-label">Raum</span>
+								<span class="metadata-value">{{ location.room }}</span>
+							</div>
+						</div>
 						<div class="metadata-item">
 							<ion-icon :icon="timeOutline" class="metadata-icon"></ion-icon>
 							<div class="metadata-content">
-								<span class="metadata-label">Erstellt</span>
-								<span class="metadata-value">{{ formatDate(location.createdAt) }}</span>
-							</div>
-						</div>
-						<div class="metadata-item" v-if="location.updatedAt !== location.createdAt">
-							<ion-icon :icon="refreshOutline" class="metadata-icon"></ion-icon>
-							<div class="metadata-content">
-								<span class="metadata-label">Zuletzt geändert</span>
-								<span class="metadata-value">{{ formatDate(location.updatedAt) }}</span>
+								<span class="metadata-label">Erstellt am</span>
+								<span class="metadata-value">{{
+									formatDate(location.createdAt)
+								}}</span>
 							</div>
 						</div>
 					</div>
 				</div>
 
-				<!-- Items at Location Section -->
+				<!-- Items Section -->
 				<div class="items-section">
 					<div class="section-header">
 						<h3>Gegenstände an diesem Standort</h3>
-						<ion-chip color="primary" outline>
+						<ion-chip color="primary">
 							<ion-icon :icon="bagOutline" class="chip-icon"></ion-icon>
 							{{ itemsAtLocation.length }}
 						</ion-chip>
 					</div>
 
-					<div v-if="itemsAtLocation.length === 0" class="empty-state">
+					<!-- Items Loading State -->
+					<div v-if="itemsLoading" class="loading-container">
+						<ion-spinner name="crescent" color="primary"></ion-spinner>
+						<p>Lade Gegenstände...</p>
+					</div>
+
+					<!-- No Items State -->
+					<div v-else-if="itemsAtLocation.length === 0" class="empty-state">
 						<ion-icon :icon="bagOutline" class="empty-icon"></ion-icon>
 						<h4>Keine Gegenstände gefunden</h4>
 						<p>An diesem Standort wurden noch keine Gegenstände gemeldet.</p>
-						<ion-button 
-							fill="outline" 
-							color="primary" 
-							@click="navigateToReportItem"
-							class="ion-margin-top"
-						>
+						<ion-button fill="outline" @click="navigateToReportItem">
 							<ion-icon :icon="addOutline" slot="start"></ion-icon>
 							Gegenstand melden
 						</ion-button>
 					</div>
 
+					<!-- Items Grid -->
 					<div v-else class="items-grid">
 						<ion-card
 							v-for="(item, index) in itemsAtLocation"
 							:key="item.id"
 							class="item-card"
 							:style="{ '--animation-delay': `${index * 0.1}s` }"
-							@click="navigateToItem(item.id)"
-							button
-						>
+							@click="navigateToItem(item.id)">
 							<ion-card-header>
 								<div class="item-header">
-									<ion-card-title class="item-name">
-										{{ item.name }}
-									</ion-card-title>
-									<ion-chip 
-										:color="getStatusColor(item.status)" 
-										class="status-chip"
-									>
+									<ion-card-title class="item-name">{{
+										item.name
+									}}</ion-card-title>
+									<ion-chip
+										:color="getStatusColor(item.status)"
+										class="status-chip">
+										<ion-icon
+											:icon="getStatusIcon(item.status)"
+											class="chip-icon"></ion-icon>
 										{{ getStatusText(item.status) }}
 									</ion-chip>
 								</div>
 							</ion-card-header>
-							
 							<ion-card-content>
-								<p class="item-description">{{ item.description }}</p>
-								
+								<p v-if="item.description" class="item-description">
+									{{ item.description }}
+								</p>
 								<div class="item-metadata">
 									<div class="metadata-row">
-										<ion-icon :icon="timeOutline" class="item-metadata-icon"></ion-icon>
-										<span>{{ formatDate(item.reportedAt) }}</span>
+										<ion-icon
+											:icon="timeOutline"
+											class="item-metadata-icon"></ion-icon>
+										{{ formatDate(item.createdAt) }}
 									</div>
 								</div>
 							</ion-card-content>
-
 							<div class="item-actions">
-								<ion-button 
-									fill="clear" 
-									size="small" 
-									color="primary"
-									@click.stop="navigateToItem(item.id)"
-								>
+								<ion-button
+									fill="clear"
+									size="small"
+									@click.stop="navigateToItem(item.id)">
 									<ion-icon :icon="eyeOutline" slot="start"></ion-icon>
 									Details
 								</ion-button>
@@ -157,8 +185,7 @@
 			header="Standort löschen"
 			message="Bist du sicher, dass du diesen Standort löschen möchtest? Diese Aktion kann nicht rückgängig gemacht werden."
 			:buttons="alertButtons"
-			@didDismiss="showDeleteAlert = false"
-		></ion-alert>
+			@didDismiss="showDeleteAlert = false"></ion-alert>
 	</template-page>
 </template>
 
@@ -187,53 +214,33 @@ import {
 	bagOutline,
 	addOutline,
 	eyeOutline,
+	handRightOutline,
 	checkmarkCircleOutline,
 	closeCircleOutline,
+	alertCircleOutline,
+	eyeOffOutline,
+	flagOutline,
+	checkmarkOutline,
 } from 'ionicons/icons';
 import { ref, computed, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
+import { useLocationStore } from '@/stores/locationStore';
 import type { Location } from '@/models/location';
+import type { Item } from '@/models/item';
 
 const router = useRouter();
 const route = useRoute();
+const locationStore = useLocationStore();
 
-const location = ref<Location>({
-	id: 1,
-	name: '',
-	description: '',
-	building: '',
-	floor: '',
-	room: '',
-	createdAt: '',
-	updatedAt: '',
-});
-
-const itemsAtLocation = ref([
-	{ 
-		id: 1, 
-		name: 'Schwarzer Rucksack', 
-		description: 'Schwarzer Rucksack mit Laptop-Fach und mehreren Taschen',
-		status: 'found',
-		reportedAt: '2024-01-15T10:30:00Z'
-	},
-	{ 
-		id: 2, 
-		name: 'Blaue Wasserflasche', 
-		description: 'Blaue Metallflasche mit Universitäts-Logo',
-		status: 'claimed',
-		reportedAt: '2024-01-14T14:20:00Z'
-	},
-	{ 
-		id: 3, 
-		name: 'Rote Jacke', 
-		description: 'Rote Winterjacke, Größe M, Marke North Face',
-		status: 'found',
-		reportedAt: '2024-01-13T16:45:00Z'
-	},
-]);
-
-const isLoading = ref(true);
+// State
+const location = ref<Location | null>(null);
+const itemsAtLocation = ref<Item[]>([]);
 const showDeleteAlert = ref(false);
+const itemsLoading = ref(false);
+
+// Computed
+const isLoading = computed(() => locationStore.isLoading && !location.value);
+const error = computed(() => locationStore.getError);
 
 const leftFooterButton = computed(() => ({
 	name: 'Löschen',
@@ -261,6 +268,7 @@ const alertButtons = [
 	},
 ];
 
+// Methods
 const formatDate = (dateString: string) => {
 	return new Date(dateString).toLocaleDateString('de-DE', {
 		day: '2-digit',
@@ -272,57 +280,82 @@ const formatDate = (dateString: string) => {
 };
 
 const getStatusColor = (status: string) => {
-	switch (status) {
-		case 'found': return 'success';
-		case 'claimed': return 'medium';
-		case 'lost': return 'warning';
-		default: return 'primary';
+	switch (status.toUpperCase()) {
+		case 'FOUND':
+			return 'success';
+		case 'CLAIMED':
+			return 'medium';
+		case 'LOST':
+			return 'warning';
+		default:
+			return 'primary';
+	}
+};
+
+const getStatusIcon = (status: string) => {
+	switch (status.toUpperCase()) {
+		case 'LOST':
+			return eyeOffOutline;
+		case 'FOUND':
+			return eyeOutline;
+		case 'CLAIMED':
+			return checkmarkOutline;
+		default:
+			return flagOutline;
 	}
 };
 
 const getStatusText = (status: string) => {
-	switch (status) {
-		case 'found': return 'Gefunden';
-		case 'claimed': return 'Abgeholt';
-		case 'lost': return 'Verloren';
-		default: return 'Unbekannt';
+	switch (status.toUpperCase()) {
+		case 'FOUND':
+			return 'Gefunden';
+		case 'CLAIMED':
+			return 'Abgeholt';
+		case 'LOST':
+			return 'Verloren';
+		default:
+			return status;
 	}
 };
 
 const loadLocation = async () => {
-	isLoading.value = true;
-	
 	try {
-		const locationId = route.params.id as string;
-		
-		// TODO: Replace with actual API call
-		console.log('Loading location with ID:', locationId);
-		
-		// Simulate API call
-		await new Promise(resolve => setTimeout(resolve, 1000));
-		
-		// Mock data - replace with actual API data
-		location.value = {
-			id: Number(locationId),
-			name: 'Hauptbibliothek',
-			description: 'Zentrale Bibliothek des Campus mit über 100.000 Büchern und modernen Arbeitsplätzen',
-			building: 'A',
-			floor: '1',
-			room: '101',
-			createdAt: '2024-01-01T10:00:00Z',
-			updatedAt: '2024-01-02T12:00:00Z',
-		};
+		const locationId = Number(route.params.id);
+		if (!locationId) {
+			throw new Error('Invalid location ID');
+		}
+
+		const loadedLocation = await locationStore.fetchLocationById(locationId);
+		if (loadedLocation) {
+			location.value = loadedLocation;
+			await loadItemsAtLocation(locationId);
+		} else {
+			throw new Error('Location not found');
+		}
 	} catch (error) {
 		console.error('Error loading location:', error);
-		// TODO: Show error toast and navigate back
+		// Navigate back if location cannot be loaded
 		router.back();
+	}
+};
+
+const loadItemsAtLocation = async (locationId: number) => {
+	try {
+		itemsLoading.value = true;
+		const items = await locationStore.fetchItemsByLocation(locationId);
+		itemsAtLocation.value = items;
+	} catch (error) {
+		console.error('Error loading items at location:', error);
+		itemsAtLocation.value = [];
 	} finally {
-		isLoading.value = false;
+		itemsLoading.value = false;
 	}
 };
 
 const handleEdit = () => {
-	router.push(`/locations/${location.value.id}/edit`);
+	if (location.value) {
+		router.push(`/locations/${location.value.id}/edit`);
+	}
 };
 
 const handleDelete = () => {
@@ -330,14 +363,10 @@ const handleDelete = () => {
 };
 
 const confirmDelete = async () => {
+	if (!location.value) return;
+
 	try {
-		// TODO: Implement actual delete logic
-		console.log('Deleting location:', location.value.id);
-		
-		// Simulate API call
-		await new Promise(resolve => setTimeout(resolve, 1000));
-		
-		// Navigate back to locations
+		await locationStore.deleteLocation(location.value.id);
 		router.push('/locations/home');
 	} catch (error) {
 		console.error('Error deleting location:', error);
@@ -378,13 +407,44 @@ onMounted(() => {
 	color: var(--ion-color-medium);
 }
 
+.empty-state {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+	padding: 60px 20px;
+}
+
+.empty-icon {
+	font-size: 64px;
+	color: var(--ion-color-medium);
+	margin-bottom: 20px;
+}
+
+.empty-state h2 {
+	color: var(--ion-color-dark);
+	margin-bottom: 10px;
+	font-weight: 600;
+}
+
+.empty-state p {
+	color: var(--ion-color-medium);
+	margin-bottom: 30px;
+	line-height: 1.5;
+}
+
 .content-wrapper {
 	padding: 20px;
 	animation: fadeInUp 0.6s ease-out;
 }
 
 .location-header {
-	background: linear-gradient(135deg, var(--ion-color-primary), var(--ion-color-primary-shade));
+	background: linear-gradient(
+		135deg,
+		var(--ion-color-primary),
+		var(--ion-color-primary-shade)
+	);
 	color: white;
 	padding: 24px;
 	border-radius: 16px;
@@ -393,6 +453,25 @@ onMounted(() => {
 	display: flex;
 	justify-content: space-between;
 	align-items: flex-start;
+	position: relative;
+	overflow: hidden;
+}
+
+.location-header::before {
+	content: '';
+	position: absolute;
+	top: -50%;
+	right: -50%;
+	width: 100%;
+	height: 200%;
+	background: linear-gradient(
+		45deg,
+		transparent,
+		rgba(255, 255, 255, 0.1),
+		transparent
+	);
+	transform: rotate(45deg);
+	transition: all 0.6s ease;
 }
 
 .header-content {
@@ -466,6 +545,7 @@ onMounted(() => {
 
 .metadata-grid {
 	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
 	gap: 16px;
 }
 
@@ -511,31 +591,15 @@ onMounted(() => {
 	margin-right: 4px;
 }
 
-.empty-state {
-	text-align: center;
-	padding: 40px 20px;
-}
-
-.empty-icon {
-	font-size: 48px;
-	color: var(--ion-color-medium);
-	margin-bottom: 16px;
-}
-
 .empty-state h4 {
 	color: var(--ion-color-dark);
 	margin: 0 0 8px 0;
 	font-weight: 600;
 }
 
-.empty-state p {
-	color: var(--ion-color-medium);
-	margin: 0 0 20px 0;
-	line-height: 1.5;
-}
-
 .items-grid {
 	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
 	gap: 16px;
 }
 
@@ -577,6 +641,10 @@ onMounted(() => {
 	color: var(--ion-color-medium-shade);
 	line-height: 1.5;
 	margin: 0 0 16px 0;
+	display: -webkit-box;
+	-webkit-line-clamp: 2;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
 }
 
 .item-metadata {
@@ -616,7 +684,7 @@ onMounted(() => {
 @keyframes slideInUp {
 	from {
 		opacity: 0;
-		transform: translateY(20px);
+		transform: translateY(40px);
 	}
 	to {
 		opacity: 1;
@@ -629,56 +697,56 @@ onMounted(() => {
 	.content-wrapper {
 		padding: 16px;
 	}
-	
+
 	.location-header {
 		flex-direction: column;
 		gap: 16px;
-		align-items: stretch;
 	}
-	
+
 	.header-content {
 		flex-direction: column;
-		align-items: flex-start;
 		gap: 12px;
 	}
-	
+
 	.quick-actions {
 		align-self: flex-end;
+		margin-top: -12px;
 	}
-	
+
 	.location-info {
-		flex-direction: row;
-		flex-wrap: wrap;
-		gap: 12px;
+		gap: 6px;
 	}
-	
+
 	.metadata-grid {
-		gap: 12px;
+		grid-template-columns: 1fr;
 	}
-	
+
 	.section-header {
 		flex-direction: column;
 		align-items: flex-start;
-		gap: 12px;
+		gap: 8px;
+	}
+
+	.items-grid {
+		grid-template-columns: 1fr;
 	}
 }
 
 @media (max-width: 480px) {
 	.header-content {
-		align-items: center;
-		text-align: center;
+		gap: 8px;
 	}
-	
+
 	.location-info {
-		justify-content: center;
+		gap: 4px;
 	}
-	
+
 	.item-header {
 		flex-direction: column;
 		align-items: flex-start;
 		gap: 8px;
 	}
-	
+
 	.status-chip {
 		align-self: flex-start;
 	}
@@ -686,9 +754,9 @@ onMounted(() => {
 
 @media (min-width: 768px) {
 	.items-grid {
-		grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+		grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
 	}
-	
+
 	.metadata-grid {
 		grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
 	}

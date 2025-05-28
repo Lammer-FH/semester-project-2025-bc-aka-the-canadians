@@ -5,179 +5,191 @@
 		:rightFooterButton="rightFooterButton"
 		@leftFooterButtonClicked="handleCancel"
 		@rightFooterButtonClicked="handleSave">
-		
 		<div class="form-container">
 			<!-- Loading State -->
 			<div v-if="isLoading" class="loading-container">
 				<ion-spinner name="crescent" color="primary"></ion-spinner>
-				<p>Lade Standort-Daten...</p>
+				<p>Lade Standort...</p>
 			</div>
 
-			<div v-else>
+			<!-- Error State -->
+			<div v-else-if="error && !location.name" class="empty-state">
+				<ion-icon :icon="alertCircleOutline" class="empty-icon"></ion-icon>
+				<h2>Fehler beim Laden</h2>
+				<p>{{ error }}</p>
+				<ion-button @click="loadLocation">
+					<ion-icon :icon="refreshOutline" slot="start"></ion-icon>
+					Erneut versuchen
+				</ion-button>
+			</div>
+
+			<div v-else class="form-content">
 				<!-- Form Header -->
 				<div class="form-header">
 					<ion-icon :icon="createOutline" class="header-icon"></ion-icon>
 					<h2>Standort bearbeiten</h2>
 					<p>Aktualisiere die Details für diesen Standort</p>
-					
-					<!-- Last Modified Info -->
 					<div v-if="location.updatedAt" class="last-modified">
 						<ion-icon :icon="timeOutline" class="time-icon"></ion-icon>
-						<span>Zuletzt geändert: {{ formatDate(location.updatedAt) }}</span>
+						Zuletzt bearbeitet: {{ formatDate(location.updatedAt) }}
 					</div>
 				</div>
 
-				<!-- Form Content -->
-				<div class="form-content">
-					<!-- Name Field -->
-					<div class="input-group">
-						<ion-item 
-							class="modern-item" 
-							:class="{ 'item-error': errors.name, 'item-filled': location.name }"
-						>
+				<!-- Name Field -->
+				<div class="input-group">
+					<ion-item
+						class="modern-item"
+						:class="{
+							'item-error': errors.name,
+							'item-filled': location.name,
+						}">
+						<ion-label position="stacked" class="custom-label">
+							<ion-icon :icon="textOutline" class="label-icon"></ion-icon>
+							Name des Standorts *
+						</ion-label>
+						<ion-input
+							v-model="location.name"
+							placeholder="z.B. Hauptbibliothek, Mensa Nord, Hörsaal A"
+							@ionBlur="validateField('name')"
+							:class="{ 'input-error': errors.name }"></ion-input>
+					</ion-item>
+					<div v-if="errors.name" class="error-message">
+						<ion-icon :icon="alertCircleOutline"></ion-icon>
+						{{ errors.name }}
+					</div>
+				</div>
+
+				<!-- Description Field -->
+				<div class="input-group">
+					<ion-item
+						class="modern-item textarea-item"
+						:class="{ 'item-filled': location.description }">
+						<ion-label position="stacked" class="custom-label">
+							<ion-icon
+								:icon="documentTextOutline"
+								class="label-icon"></ion-icon>
+							Beschreibung
+						</ion-label>
+						<ion-textarea
+							v-model="location.description"
+							placeholder="Detaillierte Beschreibung des Standorts und seiner Besonderheiten..."
+							class="custom-textarea"
+							:auto-grow="true"></ion-textarea>
+					</ion-item>
+				</div>
+
+				<!-- Building Field -->
+				<div class="input-group">
+					<ion-item
+						class="modern-item"
+						:class="{
+							'item-error': errors.building,
+							'item-filled': location.building,
+						}">
+						<ion-label position="stacked" class="custom-label">
+							<ion-icon :icon="businessOutline" class="label-icon"></ion-icon>
+							Gebäude *
+						</ion-label>
+						<ion-input
+							v-model="location.building"
+							placeholder="z.B. Hauptgebäude, Neubau, Labor"
+							@ionBlur="validateField('building')"
+							:class="{ 'input-error': errors.building }"></ion-input>
+					</ion-item>
+					<div v-if="errors.building" class="error-message">
+						<ion-icon :icon="alertCircleOutline"></ion-icon>
+						{{ errors.building }}
+					</div>
+				</div>
+
+				<!-- Floor & Room Row -->
+				<div class="input-row">
+					<div class="input-group half-width">
+						<ion-item
+							class="modern-item"
+							:class="{
+								'item-error': errors.floor,
+								'item-filled': location.floor,
+							}">
 							<ion-label position="stacked" class="custom-label">
-								<ion-icon :icon="textOutline" class="label-icon"></ion-icon>
-								Standort-Name *
+								<ion-icon :icon="layersOutline" class="label-icon"></ion-icon>
+								Etage *
 							</ion-label>
 							<ion-input
-								v-model="location.name"
-								placeholder="z.B. Hauptbibliothek"
-								@ionBlur="validateField('name')"
-								:class="{ 'input-error': errors.name }"
-							></ion-input>
+								v-model="location.floor"
+								placeholder="z.B. EG, 1, 2, UG"
+								@ionBlur="validateField('floor')"
+								:class="{ 'input-error': errors.floor }"></ion-input>
 						</ion-item>
-						<div v-if="errors.name" class="error-message">
+						<div v-if="errors.floor" class="error-message">
 							<ion-icon :icon="alertCircleOutline"></ion-icon>
-							{{ errors.name }}
+							{{ errors.floor }}
 						</div>
 					</div>
 
-					<!-- Description Field -->
-					<div class="input-group">
-						<ion-item 
-							class="modern-item textarea-item" 
-							:class="{ 'item-filled': location.description }"
-						>
+					<div class="input-group half-width">
+						<ion-item
+							class="modern-item"
+							:class="{
+								'item-error': errors.room,
+								'item-filled': location.room,
+							}">
 							<ion-label position="stacked" class="custom-label">
-								<ion-icon :icon="documentTextOutline" class="label-icon"></ion-icon>
-								Beschreibung
-							</ion-label>
-							<ion-textarea
-								v-model="location.description"
-								placeholder="Kurze Beschreibung des Standorts..."
-								:rows="3"
-								:auto-grow="true"
-								class="custom-textarea"
-							></ion-textarea>
-						</ion-item>
-					</div>
-
-					<!-- Building Field -->
-					<div class="input-group">
-						<ion-item 
-							class="modern-item" 
-							:class="{ 'item-error': errors.building, 'item-filled': location.building }"
-						>
-							<ion-label position="stacked" class="custom-label">
-								<ion-icon :icon="businessOutline" class="label-icon"></ion-icon>
-								Gebäude *
+								<ion-icon :icon="homeOutline" class="label-icon"></ion-icon>
+								Raum *
 							</ion-label>
 							<ion-input
-								v-model="location.building"
-								placeholder="z.B. Gebäude A"
-								@ionBlur="validateField('building')"
-								:class="{ 'input-error': errors.building }"
-							></ion-input>
+								v-model="location.room"
+								placeholder="z.B. 101, A-15, Foyer"
+								@ionBlur="validateField('room')"
+								:class="{ 'input-error': errors.room }"></ion-input>
 						</ion-item>
-						<div v-if="errors.building" class="error-message">
+						<div v-if="errors.room" class="error-message">
 							<ion-icon :icon="alertCircleOutline"></ion-icon>
-							{{ errors.building }}
+							{{ errors.room }}
 						</div>
 					</div>
+				</div>
 
-					<!-- Floor & Room Row -->
-					<div class="input-row">
-						<div class="input-group half-width">
-							<ion-item 
-								class="modern-item" 
-								:class="{ 'item-error': errors.floor, 'item-filled': location.floor }"
-							>
-								<ion-label position="stacked" class="custom-label">
-									<ion-icon :icon="layersOutline" class="label-icon"></ion-icon>
-									Etage *
-								</ion-label>
-								<ion-input
-									v-model="location.floor"
-									placeholder="z.B. 1"
-									type="number"
-									@ionBlur="validateField('floor')"
-									:class="{ 'input-error': errors.floor }"
-								></ion-input>
-							</ion-item>
-							<div v-if="errors.floor" class="error-message">
-								<ion-icon :icon="alertCircleOutline"></ion-icon>
-								{{ errors.floor }}
-							</div>
+				<!-- Action Buttons -->
+				<div class="action-buttons">
+					<ion-button
+						fill="outline"
+						color="danger"
+						expand="block"
+						class="delete-button"
+						@click="handleDelete">
+						<ion-icon :icon="trashOutline" slot="start"></ion-icon>
+						Standort löschen
+					</ion-button>
+				</div>
+
+				<!-- Form Footer Info -->
+				<div class="form-footer-info">
+					<ion-item class="info-item">
+						<ion-icon
+							:icon="informationCircleOutline"
+							slot="start"
+							color="primary"></ion-icon>
+						<div class="info-text">
+							<p>
+								Alle Änderungen werden automatisch gespeichert, wenn du auf
+								"Änderungen speichern" klickst.
+							</p>
+							<p>Mit * markierte Felder sind Pflichtfelder.</p>
 						</div>
-
-						<div class="input-group half-width">
-							<ion-item 
-								class="modern-item" 
-								:class="{ 'item-error': errors.room, 'item-filled': location.room }"
-							>
-								<ion-label position="stacked" class="custom-label">
-									<ion-icon :icon="homeOutline" class="label-icon"></ion-icon>
-									Raum *
-								</ion-label>
-								<ion-input
-									v-model="location.room"
-									placeholder="z.B. 101"
-									@ionBlur="validateField('room')"
-									:class="{ 'input-error': errors.room }"
-								></ion-input>
-							</ion-item>
-							<div v-if="errors.room" class="error-message">
-								<ion-icon :icon="alertCircleOutline"></ion-icon>
-								{{ errors.room }}
-							</div>
-						</div>
-					</div>
-
-					<!-- Action Buttons -->
-					<div class="action-buttons">
-						<ion-button 
-							fill="outline" 
-							color="danger" 
-							@click="handleDelete"
-							:disabled="isSaving"
-							class="delete-button"
-						>
-							<ion-icon :icon="trashOutline" slot="start"></ion-icon>
-							Standort löschen
-						</ion-button>
-					</div>
-
-					<!-- Form Footer Info -->
-					<div class="form-footer-info">
-						<ion-item lines="none" class="info-item">
-							<ion-icon :icon="informationCircleOutline" slot="start" color="primary"></ion-icon>
-							<ion-label class="info-text">
-								<p>Felder mit * sind Pflichtfelder</p>
-							</ion-label>
-						</ion-item>
-					</div>
+					</ion-item>
 				</div>
 			</div>
 		</div>
 
-		<!-- Delete Confirmation Modal -->
+		<!-- Delete Confirmation Alert -->
 		<ion-alert
 			:is-open="showDeleteAlert"
 			header="Standort löschen"
 			message="Bist du sicher, dass du diesen Standort löschen möchtest? Diese Aktion kann nicht rückgängig gemacht werden."
 			:buttons="alertButtons"
-			@didDismiss="showDeleteAlert = false"
-		></ion-alert>
+			@didDismiss="showDeleteAlert = false"></ion-alert>
 	</template-page>
 </template>
 
@@ -206,15 +218,19 @@ import {
 	closeCircleOutline,
 	trashOutline,
 	timeOutline,
+	refreshOutline,
 } from 'ionicons/icons';
 import { ref, computed, watch, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
+import { useLocationStore } from '@/stores/locationStore';
+import type { Location } from '@/models/location';
 
 const router = useRouter();
 const route = useRoute();
+const locationStore = useLocationStore();
 
-const location = ref({
-	id: null as number | null,
+const location = ref<Location>({
+	id: 0,
 	name: '',
 	description: '',
 	building: '',
@@ -231,7 +247,8 @@ const errors = ref({
 	room: '',
 });
 
-const isLoading = ref(true);
+const isLoading = computed(() => locationStore.isLoading);
+const error = computed(() => locationStore.getError);
 const isSaving = ref(false);
 const showDeleteAlert = ref(false);
 
@@ -242,7 +259,11 @@ const leftFooterButton = computed(() => ({
 }));
 
 const rightFooterButton = computed(() => ({
-	name: isSaving.value ? 'Speichere...' : (isValid.value ? 'Änderungen speichern' : 'Felder ausfüllen'),
+	name: isSaving.value
+		? 'Speichere...'
+		: isValid.value
+		? 'Änderungen speichern'
+		: 'Felder ausfüllen',
 	color: isValid.value ? 'primary' : 'medium',
 	icon: checkmarkCircleOutline,
 	disabled: !isValid.value || isSaving.value,
@@ -254,7 +275,7 @@ const isValid = computed(() => {
 		location.value.building.trim() !== '' &&
 		location.value.floor.trim() !== '' &&
 		location.value.room.trim() !== '' &&
-		Object.values(errors.value).every(error => error === '')
+		Object.values(errors.value).every((error) => error === '')
 	);
 });
 
@@ -283,8 +304,10 @@ const formatDate = (dateString: string) => {
 };
 
 const validateField = (fieldName: keyof typeof errors.value) => {
-	const value = String(location.value[fieldName as keyof typeof location.value] || '').trim();
-	
+	const value = String(
+		location.value[fieldName as keyof typeof location.value] || ''
+	).trim();
+
 	switch (fieldName) {
 		case 'name':
 			if (!value) {
@@ -305,8 +328,6 @@ const validateField = (fieldName: keyof typeof errors.value) => {
 		case 'floor':
 			if (!value) {
 				errors.value.floor = 'Etage ist erforderlich';
-			} else if (isNaN(Number(value))) {
-				errors.value.floor = 'Etage muss eine Zahl sein';
 			} else {
 				errors.value.floor = '';
 			}
@@ -329,34 +350,23 @@ const validateAllFields = () => {
 };
 
 const loadLocation = async () => {
-	isLoading.value = true;
-	
 	try {
-		const locationId = route.params.id as string;
-		
-		// TODO: Replace with actual API call
-		console.log('Loading location with ID:', locationId);
-		
-		// Simulate API call
-		await new Promise(resolve => setTimeout(resolve, 1000));
-		
-		// Mock data - replace with actual API data
-		location.value = {
-			id: Number(locationId),
-			name: 'Bibliothek',
-			description: 'Hauptbibliothek des Campus mit umfangreicher Sammlung',
-			building: 'A',
-			floor: '1',
-			room: '101',
-			createdAt: '2024-01-01T10:00:00Z',
-			updatedAt: '2024-01-02T12:00:00Z',
-		};
+		const locationId = Number(route.params.id);
+		if (!locationId) {
+			throw new Error('Invalid location ID');
+		}
+
+		const loadedLocation = await locationStore.fetchLocationById(locationId);
+		if (loadedLocation) {
+			// Create a copy to avoid direct mutation of store data
+			location.value = { ...loadedLocation };
+		} else {
+			throw new Error('Location not found');
+		}
 	} catch (error) {
 		console.error('Error loading location:', error);
-		// TODO: Show error toast and navigate back
+		// Navigate back if location cannot be loaded
 		router.back();
-	} finally {
-		isLoading.value = false;
 	}
 };
 
@@ -371,16 +381,21 @@ const handleSave = async () => {
 	}
 
 	isSaving.value = true;
-	
+
 	try {
-		// TODO: Implement actual save logic
-		console.log('Saving location:', location.value);
-		
-		// Simulate API call
-		await new Promise(resolve => setTimeout(resolve, 1500));
-		
-		// Navigate back to locations
-		router.push('/locations/home');
+		// Prepare update data - only send changed fields
+		const updateData = {
+			name: location.value.name.trim(),
+			description: location.value.description.trim(),
+			building: location.value.building.trim(),
+			floor: location.value.floor.trim(),
+			room: location.value.room.trim(),
+		};
+
+		await locationStore.updateLocation(location.value.id, updateData);
+
+		// Navigate to location details page
+		router.push(`/locations/${location.value.id}`);
 	} catch (error) {
 		console.error('Error saving location:', error);
 		// TODO: Show error toast
@@ -395,13 +410,8 @@ const handleDelete = () => {
 
 const confirmDelete = async () => {
 	try {
-		// TODO: Implement actual delete logic
-		console.log('Deleting location:', location.value.id);
-		
-		// Simulate API call
-		await new Promise(resolve => setTimeout(resolve, 1000));
-		
-		// Navigate back to locations
+		await locationStore.deleteLocation(location.value.id);
+		// Navigate back to locations list
 		router.push('/locations/home');
 	} catch (error) {
 		console.error('Error deleting location:', error);
@@ -462,6 +472,21 @@ onMounted(() => {
 .loading-container p {
 	margin-top: 16px;
 	color: var(--ion-color-medium);
+}
+
+.empty-state {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+	padding: 60px 20px;
+}
+
+.empty-icon {
+	font-size: 64px;
+	color: var(--ion-color-medium);
+	margin-bottom: 20px;
 }
 
 .form-header {
@@ -632,9 +657,16 @@ onMounted(() => {
 }
 
 @keyframes shake {
-	0%, 100% { transform: translateX(0); }
-	25% { transform: translateX(-5px); }
-	75% { transform: translateX(5px); }
+	0%,
+	100% {
+		transform: translateX(0);
+	}
+	25% {
+		transform: translateX(-5px);
+	}
+	75% {
+		transform: translateX(5px);
+	}
 }
 
 /* Responsive Design */
@@ -642,28 +674,27 @@ onMounted(() => {
 	.form-container {
 		padding: 16px;
 	}
-	
+
 	.input-row {
 		flex-direction: column;
 		gap: 0;
 	}
-	
+
 	.half-width {
 		flex: none;
 	}
-	
+
 	.form-header {
 		margin-bottom: 30px;
 	}
-	
+
 	.header-icon {
 		font-size: 40px;
 	}
-	
+
 	.last-modified {
-		flex-direction: column;
-		gap: 4px;
-		text-align: center;
+		padding: 6px 12px;
+		font-size: 0.8em;
 	}
 }
 
@@ -671,11 +702,11 @@ onMounted(() => {
 	.form-header {
 		margin-bottom: 20px;
 	}
-	
+
 	.input-group {
 		margin-bottom: 20px;
 	}
-	
+
 	.action-buttons {
 		margin: 30px 0;
 		padding: 16px;

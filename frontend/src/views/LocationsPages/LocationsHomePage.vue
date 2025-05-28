@@ -1,23 +1,44 @@
 <template>
-	<template-page addButtonPath="/locations/add" addButtonText="Neuen Standort hinzufügen">
+	<template-page
+		addButtonPath="/locations/add"
+		addButtonText="Neuen Standort hinzufügen">
 		<template #header>
 			<ion-toolbar>
-				<navigation-tabs v-model="activeTab" class="full-width-tabs" />
+				<navigation-tabs
+					:modelValue="activeTab"
+					@update:modelValue="activeTab = $event"
+					class="full-width-tabs" />
 			</ion-toolbar>
 			<ion-toolbar>
-				<ion-searchbar 
-					v-model="searchTerm" 
-					placeholder="Standorte durchsuchen..." 
+				<ion-searchbar
+					v-model="searchTerm"
+					placeholder="Standorte durchsuchen..."
 					show-clear-button="focus"
 					:debounce="300"
-					class="custom-searchbar"
-				/>
+					class="custom-searchbar" />
 			</ion-toolbar>
 		</template>
 
 		<div v-if="activeTab === 'locations'" class="locations-container">
+			<!-- Error State -->
+			<div v-if="error && !isLoading" class="empty-state">
+				<ion-icon :icon="alertCircleOutline" class="empty-icon"></ion-icon>
+				<h2>Fehler beim Laden</h2>
+				<p>{{ error }}</p>
+				<ion-button @click="locationStore.fetchLocations()">
+					<ion-icon :icon="refreshOutline" slot="start"></ion-icon>
+					Erneut versuchen
+				</ion-button>
+			</div>
+
+			<!-- Loading State -->
+			<div v-else-if="isLoading" class="loading-container">
+				<ion-spinner name="crescent" color="primary"></ion-spinner>
+				<p>Lade Standorte...</p>
+			</div>
+
 			<!-- Empty State -->
-			<div v-if="filteredLocations.length === 0" class="empty-state">
+			<div v-else-if="filteredLocations.length === 0" class="empty-state">
 				<ion-icon :icon="locationOutline" class="empty-icon"></ion-icon>
 				<h2>Keine Standorte gefunden</h2>
 				<p v-if="searchTerm">
@@ -26,13 +47,12 @@
 				<p v-else>
 					Noch keine Standorte vorhanden. Füge den ersten Standort hinzu!
 				</p>
-				<ion-button 
-					v-if="!searchTerm" 
-					fill="solid" 
-					color="primary" 
+				<ion-button
+					v-if="!searchTerm"
+					fill="solid"
+					color="primary"
 					@click="$router.push('/locations/add')"
-					class="ion-margin-top"
-				>
+					class="ion-margin-top">
 					<ion-icon :icon="addOutline" slot="start"></ion-icon>
 					Ersten Standort hinzufügen
 				</ion-button>
@@ -46,8 +66,7 @@
 					class="location-card"
 					:style="{ '--animation-delay': `${index * 0.1}s` }"
 					@click="navigateToLocation(location.id)"
-					button
-				>
+					button>
 					<div class="card-header">
 						<ion-card-header>
 							<div class="header-content">
@@ -55,13 +74,17 @@
 									{{ location.name }}
 								</ion-card-title>
 								<ion-chip class="building-chip" color="primary" outline>
-									<ion-icon :icon="businessOutline" class="chip-icon"></ion-icon>
+									<ion-icon
+										:icon="businessOutline"
+										class="chip-icon"></ion-icon>
 									{{ location.building }}
 								</ion-chip>
 							</div>
 							<ion-card-subtitle class="location-details">
 								<div class="detail-item">
-									<ion-icon :icon="layersOutline" class="detail-icon"></ion-icon>
+									<ion-icon
+										:icon="layersOutline"
+										class="detail-icon"></ion-icon>
 									<span>{{ location.floor }}. Etage</span>
 								</div>
 								<div class="detail-item">
@@ -74,7 +97,7 @@
 
 					<ion-card-content class="card-content">
 						<p class="description">{{ location.description }}</p>
-						
+
 						<div class="metadata">
 							<div class="metadata-item">
 								<ion-icon :icon="timeOutline" class="metadata-icon"></ion-icon>
@@ -82,8 +105,12 @@
 									Erstellt: {{ formatDate(location.createdAt) }}
 								</span>
 							</div>
-							<div class="metadata-item" v-if="location.updatedAt !== location.createdAt">
-								<ion-icon :icon="refreshOutline" class="metadata-icon"></ion-icon>
+							<div
+								class="metadata-item"
+								v-if="location.updatedAt !== location.createdAt">
+								<ion-icon
+									:icon="refreshOutline"
+									class="metadata-icon"></ion-icon>
 								<span class="metadata-text">
 									Aktualisiert: {{ formatDate(location.updatedAt) }}
 								</span>
@@ -93,32 +120,24 @@
 
 					<!-- Action Buttons -->
 					<div class="card-actions">
-						<ion-button 
-							fill="clear" 
-							size="small" 
+						<ion-button
+							fill="clear"
+							size="small"
 							color="primary"
-							@click.stop="navigateToLocation(location.id)"
-						>
+							@click.stop="navigateToLocation(location.id)">
 							<ion-icon :icon="eyeOutline" slot="start"></ion-icon>
 							Details
 						</ion-button>
-						<ion-button 
-							fill="clear" 
-							size="small" 
+						<ion-button
+							fill="clear"
+							size="small"
 							color="medium"
-							@click.stop="editLocation(location.id)"
-						>
+							@click.stop="editLocation(location.id)">
 							<ion-icon :icon="createOutline" slot="start"></ion-icon>
 							Bearbeiten
 						</ion-button>
 					</div>
 				</ion-card>
-			</div>
-
-			<!-- Loading State -->
-			<div v-if="isLoading" class="loading-container">
-				<ion-spinner name="crescent" color="primary"></ion-spinner>
-				<p>Lade Standorte...</p>
 			</div>
 		</div>
 	</template-page>
@@ -138,6 +157,7 @@ import {
 	IonIcon,
 	IonChip,
 	IonSpinner,
+	IonToolbar,
 } from '@ionic/vue';
 import {
 	locationOutline,
@@ -149,69 +169,46 @@ import {
 	refreshOutline,
 	eyeOutline,
 	createOutline,
+	alertCircleOutline,
 } from 'ionicons/icons';
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { useLocationStore } from '@/stores/locationStore';
 import type { Location } from '@/models/location';
 
 const router = useRouter();
+const locationStore = useLocationStore();
 const activeTab = ref('locations');
 const searchTerm = ref('');
-const isLoading = ref(false);
 
-// Replace mock data with actual data later on
-const locations = ref<Location[]>([
-	{
-		id: 1,
-		name: 'Bibliothek',
-		description: 'Hauptbibliothek des Campus mit umfangreicher Sammlung',
-		building: 'A',
-		floor: '1',
-		room: '101',
-		createdAt: '2024-01-01T10:00:00Z',
-		updatedAt: '2024-01-02T12:00:00Z',
-	},
-	{
-		id: 2,
-		name: 'Cafeteria',
-		description: 'Studentencafeteria mit vielfältigem Angebot',
-		building: 'B',
-		floor: '2',
-		room: '201',
-		createdAt: '2024-01-03T09:00:00Z',
-		updatedAt: '2024-01-04T11:00:00Z',
-	},
-	{
-		id: 3,
-		name: 'Sporthalle',
-		description: 'Sport- und Fitnesszentrum für alle Studierenden',
-		building: 'C',
-		floor: '3',
-		room: '301',
-		createdAt: '2024-01-05T08:00:00Z',
-		updatedAt: '2024-01-06T10:00:00Z',
-	},
-	{
-		id: 4,
-		name: 'Computerlabor',
-		description: 'Hochmodernes Computerlabor mit neuester Technik',
-		building: 'A',
-		floor: '2',
-		room: '205',
-		createdAt: '2024-01-07T14:00:00Z',
-		updatedAt: '2024-01-07T14:00:00Z',
-	},
-]);
+// Replace mock data with store data
+const locations = computed(() => locationStore.getLocations || []);
+const isLoading = computed(() => locationStore.isLoading);
+const error = computed(() => locationStore.getError);
 
-const filteredLocations = computed(() =>
-	locations.value.filter(
+// Load locations when component mounts
+onMounted(async () => {
+	try {
+		await locationStore.fetchLocations();
+	} catch (error) {
+		console.error('Error loading locations:', error);
+	}
+});
+
+const filteredLocations = computed(() => {
+	const locationsArray = locations.value;
+	if (!Array.isArray(locationsArray)) {
+		return [];
+	}
+
+	return locationsArray.filter(
 		(loc) =>
 			loc.name.toLowerCase().includes(searchTerm.value.toLowerCase()) ||
 			loc.description.toLowerCase().includes(searchTerm.value.toLowerCase()) ||
 			loc.building.toLowerCase().includes(searchTerm.value.toLowerCase()) ||
 			loc.room.toLowerCase().includes(searchTerm.value.toLowerCase())
-	)
-);
+	);
+});
 
 const formatDate = (dateString: string) => {
 	return new Date(dateString).toLocaleDateString('de-DE', {
@@ -236,6 +233,7 @@ watch(activeTab, (tab) => {
 });
 </script>
 
+<!-- Keep your existing styles -->
 <style scoped>
 .locations-container {
 	padding: 16px;
@@ -302,7 +300,11 @@ watch(activeTab, (tab) => {
 }
 
 .card-header {
-	background: linear-gradient(135deg, var(--ion-color-primary-tint), var(--ion-color-primary));
+	background: linear-gradient(
+		135deg,
+		var(--ion-color-primary-tint),
+		var(--ion-color-primary)
+	);
 	color: white;
 	position: relative;
 	overflow: hidden;
@@ -315,7 +317,12 @@ watch(activeTab, (tab) => {
 	right: -50%;
 	width: 100%;
 	height: 200%;
-	background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+	background: linear-gradient(
+		45deg,
+		transparent,
+		rgba(255, 255, 255, 0.1),
+		transparent
+	);
 	transform: rotate(45deg);
 	transition: all 0.6s ease;
 }
@@ -459,21 +466,21 @@ watch(activeTab, (tab) => {
 		grid-template-columns: 1fr;
 		gap: 12px;
 	}
-	
+
 	.locations-container {
 		padding: 12px;
 	}
-	
+
 	.header-content {
 		flex-direction: column;
 		align-items: flex-start;
 		gap: 8px;
 	}
-	
+
 	.building-chip {
 		margin-left: 0;
 	}
-	
+
 	.card-actions {
 		flex-direction: column;
 		gap: 8px;

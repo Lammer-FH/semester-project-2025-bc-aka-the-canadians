@@ -1,87 +1,96 @@
 <template>
-	<template-page addButtonPath="/items/report" addButtonText="Gegenstand melden">
+	<template-page
+		addButtonPath="/items/report"
+		addButtonText="Gegenstand melden">
 		<template #header>
-			<ion-toolbar>
-				<navigation-tabs v-model="activeTab" class="full-width-tabs" />
-			</ion-toolbar>
-			<ion-toolbar>
-				<div class="search-and-filter">
-					<ion-searchbar 
-						v-model="searchTerm" 
-						placeholder="Gegenstände durchsuchen..." 
-						show-clear-button="focus"
-						:debounce="300"
-						class="custom-searchbar"
-					/>
-					<ion-button 
-						fill="clear" 
-						@click="toggleFilterModal"
-						class="filter-button"
-					>
-						<ion-icon :icon="funnelOutline" slot="icon-only"></ion-icon>
-						<ion-badge 
-							v-if="activeFiltersCount > 0" 
-							color="primary" 
-							class="filter-badge"
-						>
-							{{ activeFiltersCount }}
-						</ion-badge>
-					</ion-button>
-				</div>
-			</ion-toolbar>
+			<NavigationTabs
+				:modelValue="activeTab"
+				@update:modelValue="activeTab = $event"
+				:foundCount="foundItemsCount"
+				:lostCount="lostItemsCount" />
 		</template>
 
 		<div v-if="activeTab === 'items'" class="items-container">
-			<!-- Filter Chips -->
-			<div v-if="activeFiltersCount > 0" class="filter-chips">
-				<ion-chip 
-					v-if="selectedStatus" 
-					color="primary" 
-					@click="clearStatusFilter"
-					class="filter-chip"
-				>
-					{{ getStatusText(selectedStatus) }}
-					<ion-icon :icon="closeOutline" slot="end"></ion-icon>
-				</ion-chip>
-				<ion-chip 
-					v-if="selectedLocation" 
-					color="secondary" 
-					@click="clearLocationFilter"
-					class="filter-chip"
-				>
-					{{ selectedLocation }}
-					<ion-icon :icon="closeOutline" slot="end"></ion-icon>
-				</ion-chip>
-				<ion-button 
-					v-if="activeFiltersCount > 1" 
-					fill="clear" 
-					size="small" 
-					@click="clearAllFilters"
-					class="clear-all-button"
-				>
-					Alle Filter entfernen
+			<!-- Search and Filter Section -->
+			<div class="search-and-filter">
+				<ion-searchbar
+					v-model="searchTerm"
+					placeholder="Suche nach Gegenständen..."
+					:debounce="300"
+					class="custom-searchbar"></ion-searchbar>
+
+				<ion-button
+					fill="outline"
+					class="filter-button"
+					@click="toggleFilterModal">
+					<ion-icon :icon="funnelOutline"></ion-icon>
+					<ion-badge
+						v-if="activeFiltersCount > 0"
+						color="primary"
+						class="filter-badge">
+						{{ activeFiltersCount }}
+					</ion-badge>
 				</ion-button>
 			</div>
 
+			<!-- Filter Chips -->
+			<div v-if="activeFiltersCount > 0" class="filter-chips">
+				<ion-chip
+					v-if="selectedStatus"
+					class="filter-chip"
+					@click="clearStatusFilter">
+					<ion-label>{{ getStatusText(selectedStatus) }}</ion-label>
+					<ion-icon :icon="closeOutline"></ion-icon>
+				</ion-chip>
 
+				<ion-chip
+					v-if="selectedLocation"
+					class="filter-chip"
+					@click="clearLocationFilter">
+					<ion-label>{{ selectedLocation }}</ion-label>
+					<ion-icon :icon="closeOutline"></ion-icon>
+				</ion-chip>
+
+				<ion-button
+					fill="clear"
+					size="small"
+					class="clear-all-button"
+					@click="clearAllFilters">
+					Alle Filter löschen
+				</ion-button>
+			</div>
+
+			<!-- Error State -->
+			<div v-if="error && !isLoading" class="empty-state">
+				<ion-icon :icon="alertCircleOutline" class="empty-icon"></ion-icon>
+				<h2>Fehler beim Laden</h2>
+				<p>{{ error }}</p>
+				<ion-button @click="itemStore.fetchItems()">
+					<ion-icon :icon="refreshOutline" slot="start"></ion-icon>
+					Erneut versuchen
+				</ion-button>
+			</div>
+
+			<!-- Loading State -->
+			<div v-else-if="isLoading" class="loading-container">
+				<ion-spinner name="crescent"></ion-spinner>
+				<p>Lade Gegenstände...</p>
+			</div>
 
 			<!-- Empty State -->
-			<div v-if="filteredItems.length === 0" class="empty-state">
-				<ion-icon :icon="bagOutline" class="empty-icon"></ion-icon>
+			<div
+				v-else-if="filteredItems.length === 0 && !isLoading"
+				class="empty-state">
+				<ion-icon :icon="searchOutline" class="empty-icon"></ion-icon>
 				<h2>Keine Gegenstände gefunden</h2>
-				<p v-if="searchTerm || activeFiltersCount > 0">
-					Versuche deine Suchkriterien zu ändern oder entferne Filter.
+				<p v-if="activeFiltersCount > 0">
+					Keine Gegenstände entsprechen den aktuellen Filterkriterien.
 				</p>
 				<p v-else>
-					Noch keine Gegenstände vorhanden. Melde den ersten Gegenstand!
+					Es wurden noch keine Gegenstände gemeldet. Sei der erste und melde
+					einen verlorenen oder gefundenen Gegenstand!
 				</p>
-				<ion-button 
-					v-if="!searchTerm && activeFiltersCount === 0" 
-					fill="solid" 
-					color="primary" 
-					@click="$router.push('/items/report')"
-					class="ion-margin-top"
-				>
+				<ion-button v-if="activeFiltersCount === 0" routerLink="/items/report">
 					<ion-icon :icon="addOutline" slot="start"></ion-icon>
 					Ersten Gegenstand melden
 				</ion-button>
@@ -94,103 +103,109 @@
 					:key="item.id"
 					class="item-card"
 					:style="{ '--animation-delay': `${index * 0.1}s` }"
-					@click="navigateToItem(item.id)"
-					button
-				>
+					@click="navigateToItem(item.id)">
 					<div class="card-header" :class="getStatusClass(item.status)">
-						<ion-card-header>
-							<div class="header-content">
-								<ion-card-title class="item-name">
-									{{ item.name }}
-								</ion-card-title>
-								<ion-chip 
-									:color="getStatusColor(item.status)" 
-									class="status-chip"
-								>
-									<ion-icon :icon="getStatusIcon(item.status)" class="chip-icon"></ion-icon>
-									{{ getStatusText(item.status) }}
-								</ion-chip>
+						<div class="header-content">
+							<h3 class="item-name">{{ item.name }}</h3>
+							<ion-chip class="status-chip">
+								<ion-icon
+									:icon="getStatusIcon(item.status)"
+									class="chip-icon"></ion-icon>
+								{{ getStatusText(item.status) }}
+							</ion-chip>
+						</div>
+
+						<div class="item-details">
+							<div class="detail-item">
+								<ion-icon
+									:icon="locationOutline"
+									class="detail-icon"></ion-icon>
+								<span>{{ item.location }}</span>
 							</div>
-							<ion-card-subtitle class="item-details">
-								<div class="detail-item">
-									<ion-icon :icon="locationOutline" class="detail-icon"></ion-icon>
-									<span>{{ item.location }}</span>
-								</div>
-							</ion-card-subtitle>
-						</ion-card-header>
+							<div class="detail-item">
+								<ion-icon :icon="timeOutline" class="detail-icon"></ion-icon>
+								<span>{{ getTimeAgo(item.createdAt) }}</span>
+							</div>
+						</div>
 					</div>
 
-					<ion-card-content class="card-content">
-						
+					<div class="card-content">
+						<!-- Image or placeholder -->
+						<div v-if="item.imageUrl" class="item-image-container">
+							<img :src="item.imageUrl" :alt="item.name" class="item-image" />
+						</div>
+						<div v-else class="no-image-placeholder">
+							<ion-icon :icon="imageOutline" class="no-image-icon"></ion-icon>
+							<span>Kein Bild verfügbar</span>
+						</div>
 
+						<!-- Description -->
 						<p class="description">{{ item.description }}</p>
-						
+
+						<!-- Metadata -->
 						<div class="metadata">
 							<div class="metadata-item">
 								<ion-icon :icon="timeOutline" class="metadata-icon"></ion-icon>
-								<span class="metadata-text">
-									{{ getTimeAgo(item.createdAt) }}
-								</span>
+								<span class="metadata-text"
+									>Erstellt: {{ getTimeAgo(item.createdAt) }}</span
+								>
 							</div>
-							<div class="metadata-item" v-if="item.updatedAt !== item.createdAt">
-								<ion-icon :icon="refreshOutline" class="metadata-icon"></ion-icon>
-								<span class="metadata-text">
-									Aktualisiert {{ getTimeAgo(item.updatedAt) }}
-								</span>
+							<div
+								v-if="item.updatedAt && item.updatedAt !== item.createdAt"
+								class="metadata-item">
+								<ion-icon
+									:icon="refreshOutline"
+									class="metadata-icon"></ion-icon>
+								<span class="metadata-text"
+									>Aktualisiert: {{ getTimeAgo(item.updatedAt) }}</span
+								>
 							</div>
 						</div>
-					</ion-card-content>
+					</div>
 
-					<!-- Action Buttons -->
-					<div class="card-actions">
-						<ion-button 
-							fill="clear" 
-							size="small" 
-							color="primary"
-							@click.stop="navigateToItem(item.id)"
-						>
+					<!-- Card Actions -->
+					<div class="card-actions" @click.stop>
+						<ion-button
+							fill="outline"
+							size="small"
+							@click="navigateToItem(item.id)">
 							<ion-icon :icon="eyeOutline" slot="start"></ion-icon>
 							Details
 						</ion-button>
-						<ion-button 
-							v-if="item.status === 'found'" 
-							fill="clear" 
-							size="small" 
-							color="success"
-							@click.stop="claimItem(item.id)"
-						>
+
+						<ion-button
+							v-if="item.status?.toLowerCase() === 'found'"
+							:color="getStatusColor(item.status)"
+							size="small"
+							@click="claimItem(item.id)">
 							<ion-icon :icon="handRightOutline" slot="start"></ion-icon>
 							Abholen
 						</ion-button>
-						<ion-button 
-							v-else
-							fill="clear" 
-							size="small" 
+
+						<ion-button
+							v-else-if="item.status?.toLowerCase() === 'lost'"
+							fill="outline"
 							color="medium"
-							@click.stop="editItem(item.id)"
-						>
+							size="small"
+							@click="editItem(item.id)">
 							<ion-icon :icon="createOutline" slot="start"></ion-icon>
 							Bearbeiten
 						</ion-button>
 					</div>
 				</ion-card>
 			</div>
-
-			<!-- Loading State -->
-			<div v-if="isLoading" class="loading-container">
-				<ion-spinner name="crescent" color="primary"></ion-spinner>
-				<p>Lade Gegenstände...</p>
-			</div>
 		</div>
 
 		<!-- Filter Modal -->
-		<ion-modal :is-open="showFilterModal" @will-dismiss="showFilterModal = false">
+		<ion-modal
+			:is-open="showFilterModal"
+			@will-dismiss="showFilterModal = false">
 			<ion-header>
 				<ion-toolbar>
 					<ion-title>Filter</ion-title>
 					<ion-buttons slot="end">
 						<ion-button @click="showFilterModal = false">
-							<ion-icon :icon="closeOutline" slot="icon-only"></ion-icon>
+							<ion-icon :icon="closeOutline"></ion-icon>
 						</ion-button>
 					</ion-buttons>
 				</ion-toolbar>
@@ -200,19 +215,19 @@
 					<h3>Status</h3>
 					<ion-radio-group v-model="selectedStatus">
 						<ion-item>
-							<ion-radio value="" slot="start"></ion-radio>
+							<ion-radio slot="start" value=""></ion-radio>
 							<ion-label>Alle Status</ion-label>
 						</ion-item>
 						<ion-item>
-							<ion-radio value="lost" slot="start"></ion-radio>
+							<ion-radio slot="start" value="lost"></ion-radio>
 							<ion-label>Verloren</ion-label>
 						</ion-item>
 						<ion-item>
-							<ion-radio value="found" slot="start"></ion-radio>
+							<ion-radio slot="start" value="found"></ion-radio>
 							<ion-label>Gefunden</ion-label>
 						</ion-item>
 						<ion-item>
-							<ion-radio value="claimed" slot="start"></ion-radio>
+							<ion-radio slot="start" value="claimed"></ion-radio>
 							<ion-label>Abgeholt</ion-label>
 						</ion-item>
 					</ion-radio-group>
@@ -222,31 +237,22 @@
 					<h3>Standort</h3>
 					<ion-radio-group v-model="selectedLocation">
 						<ion-item>
-							<ion-radio value="" slot="start"></ion-radio>
+							<ion-radio slot="start" value=""></ion-radio>
 							<ion-label>Alle Standorte</ion-label>
 						</ion-item>
 						<ion-item v-for="location in uniqueLocations" :key="location">
-							<ion-radio :value="location" slot="start"></ion-radio>
+							<ion-radio slot="start" :value="location"></ion-radio>
 							<ion-label>{{ location }}</ion-label>
 						</ion-item>
 					</ion-radio-group>
 				</div>
 
 				<div class="filter-actions">
-					<ion-button 
-						fill="outline" 
-						expand="block" 
-						@click="clearAllFilters"
-						class="ion-margin-bottom"
-					>
-						Alle Filter zurücksetzen
-					</ion-button>
-					<ion-button 
-						fill="solid" 
-						expand="block" 
-						@click="applyFilters"
-					>
+					<ion-button expand="block" @click="applyFilters">
 						Filter anwenden
+					</ion-button>
+					<ion-button expand="block" fill="outline" @click="clearAllFilters">
+						Alle Filter löschen
 					</ion-button>
 				</div>
 			</ion-content>
@@ -297,94 +303,85 @@ import {
 	shirtOutline,
 	imageOutline,
 } from 'ionicons/icons';
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue'; // Add onMounted
 import { useRouter } from 'vue-router';
+import { useItemStore } from '@/stores/itemStore'; // Add this import
 import type { Item } from '@/models/item';
 
 const router = useRouter();
+const itemStore = useItemStore();
 const activeTab = ref('items');
 const searchTerm = ref('');
-const isLoading = ref(false);
 const showFilterModal = ref(false);
 const selectedStatus = ref('');
 const selectedLocation = ref('');
 
-// Replace mock data with actual data later on
-const items = ref<Item[]>([
-	{
-		id: 1,
-		name: 'Schwarzer Rucksack',
-		description: 'Großer schwarzer Rucksack mit Laptop-Fach, Marke Eastpak',
-		location: 'Bibliothek',
-		status: 'lost',
-		createdAt: '2024-01-15T10:00:00Z',
-		updatedAt: '2024-01-15T10:00:00Z',
-		imageUrl: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjE4MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+CiAgPHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNiIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPlNjaHdhcnplciBSdWNrc2FjazwvdGV4dD4KPC9zdmc+',
-	},
-	{
-		id: 2,
-		name: 'Blaue Wasserflasche',
-		description: 'Blaue Metallflasche mit Universitäts-Logo, 500ml',
-		location: 'Cafeteria',
-		status: 'found',
-		createdAt: '2024-01-14T09:00:00Z',
-		updatedAt: '2024-01-14T15:30:00Z',
-		imageUrl: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjE4MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMDA3Y2ZmIi8+CiAgPHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNiIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPldhdGVyZmxhc2NoZTwvdGV4dD4KPC9zdmc+',
-	},
-	{
-		id: 3,
-		name: 'Rote Winterjacke',
-		description: 'Rote North Face Jacke, Größe M, mit Kapuze',
-		location: 'Sporthalle',
-		status: 'found',
-		createdAt: '2024-01-13T08:00:00Z',
-		updatedAt: '2024-01-13T08:00:00Z',
-		imageUrl: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjE4MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGMzNTQ1Ii8+CiAgPHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNiIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPlJvdGUgSmFja2U8L3RleHQ+Cjwvc3ZnPg==',
-	},
-	{
-		id: 4,
-		name: 'AirPods Pro',
-		description: 'Apple AirPods Pro in weißer Ladehülle',
-		location: 'Computerlabor',
-		status: 'claimed',
-		createdAt: '2024-01-12T14:00:00Z',
-		updatedAt: '2024-01-13T10:00:00Z',
-	},
-	{
-		id: 5,
-		name: 'Schwarze Brille',
-		description: 'Schwarze Brille mit rechteckigen Gläsern, Marke Ray-Ban',
-		location: 'Bibliothek',
-		status: 'lost',
-		createdAt: '2024-01-11T16:00:00Z',
-		updatedAt: '2024-01-11T16:00:00Z',
-	},
-]);
+// Replace the mock items with store data - with safety checks
+const items = computed(() => itemStore.getItems || []);
+const isLoading = computed(() => itemStore.isLoading);
+const error = computed(() => itemStore.getError);
 
+// Load items when component mounts with better error handling
+onMounted(async () => {
+	try {
+		await itemStore.fetchItems();
+	} catch (error) {
+		console.error('Error loading items:', error);
+	}
+});
+
+// Complete the filteredItems computed with safety checks
 const filteredItems = computed(() => {
-	return items.value.filter(item => {
-		const matchesSearch = !searchTerm.value || 
-			item.name.toLowerCase().includes(searchTerm.value.toLowerCase()) ||
-			item.description.toLowerCase().includes(searchTerm.value.toLowerCase()) ||
-			item.location.toLowerCase().includes(searchTerm.value.toLowerCase());
-		
-		const matchesStatus = !selectedStatus.value || item.status === selectedStatus.value;
-		const matchesLocation = !selectedLocation.value || item.location === selectedLocation.value;
-		
+	const itemsArray = items.value;
+	if (!Array.isArray(itemsArray)) {
+		return [];
+	}
+
+	return itemsArray.filter((item) => {
+		const matchesSearch =
+			!searchTerm.value ||
+			(item.name &&
+				item.name.toLowerCase().includes(searchTerm.value.toLowerCase())) ||
+			(item.description &&
+				item.description
+					.toLowerCase()
+					.includes(searchTerm.value.toLowerCase())) ||
+			(item.location &&
+				item.location.toLowerCase().includes(searchTerm.value.toLowerCase()));
+
+		const matchesStatus =
+			!selectedStatus.value ||
+			(item.status &&
+				item.status.toLowerCase() === selectedStatus.value.toLowerCase());
+
+		const matchesLocation =
+			!selectedLocation.value ||
+			(item.location && item.location === selectedLocation.value);
+
 		return matchesSearch && matchesStatus && matchesLocation;
 	});
 });
 
 const uniqueLocations = computed(() => {
-	return [...new Set(items.value.map(item => item.location))].sort();
+	const itemsArray = items.value;
+	if (!Array.isArray(itemsArray)) {
+		return [];
+	}
+	return [
+		...new Set(itemsArray.map((item) => item.location).filter(Boolean)),
+	].sort();
 });
 
 const foundItemsCount = computed(() => {
-	return filteredItems.value.filter(item => item.status === 'found').length;
+	return filteredItems.value.filter(
+		(item) => item.status && item.status.toLowerCase() === 'found'
+	).length;
 });
 
 const lostItemsCount = computed(() => {
-	return filteredItems.value.filter(item => item.status === 'lost').length;
+	return filteredItems.value.filter(
+		(item) => item.status && item.status.toLowerCase() === 'lost'
+	).length;
 });
 
 const activeFiltersCount = computed(() => {
@@ -394,48 +391,74 @@ const activeFiltersCount = computed(() => {
 	return count;
 });
 
-const getStatusColor = (status: string) => {
-	switch (status) {
-		case 'found': return 'success';
-		case 'lost': return 'warning';
-		case 'claimed': return 'medium';
-		default: return 'primary';
+const getStatusText = (status: string) => {
+	switch (status.toUpperCase()) {
+		case 'FOUND':
+			return 'Gefunden';
+		case 'LOST':
+			return 'Verloren';
+		case 'CLAIMED':
+			return 'Abgeholt';
+		default:
+			return 'Unbekannt';
 	}
 };
 
-const getStatusText = (status: string) => {
-	switch (status) {
-		case 'found': return 'Gefunden';
-		case 'lost': return 'Verloren';
-		case 'claimed': return 'Abgeholt';
-		default: return 'Unbekannt';
+const getStatusColor = (status: string) => {
+	switch (status.toUpperCase()) {
+		case 'FOUND':
+			return 'success';
+		case 'LOST':
+			return 'warning';
+		case 'CLAIMED':
+			return 'medium';
+		default:
+			return 'primary';
 	}
 };
 
 const getStatusIcon = (status: string) => {
-	switch (status) {
-		case 'found': return checkmarkCircleOutline;
-		case 'lost': return alertCircleOutline;
-		case 'claimed': return handRightOutline;
-		default: return bagOutline;
+	switch (status.toUpperCase()) {
+		case 'FOUND':
+			return checkmarkCircleOutline;
+		case 'LOST':
+			return alertCircleOutline;
+		case 'CLAIMED':
+			return handRightOutline;
+		default:
+			return bagOutline;
 	}
 };
 
 const getStatusClass = (status: string) => {
-	return `status-${status}`;
+	return `status-${status.toLowerCase()}`;
+};
+
+// Update filter handling to match backend expectations
+const applyFilters = () => {
+	const filters: any = {};
+	if (selectedStatus.value) filters.status = selectedStatus.value.toUpperCase();
+	if (selectedLocation.value) filters.location = selectedLocation.value;
+
+	itemStore.fetchItems(filters);
+	showFilterModal.value = false;
 };
 
 const getTimeAgo = (dateString: string) => {
 	const date = new Date(dateString);
 	const now = new Date();
-	const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
-	
+	const diffInHours = Math.floor(
+		(now.getTime() - date.getTime()) / (1000 * 60 * 60)
+	);
+
 	if (diffInHours < 1) return 'Vor wenigen Minuten';
-	if (diffInHours < 24) return `Vor ${diffInHours} Stunde${diffInHours > 1 ? 'n' : ''}`;
-	
+	if (diffInHours < 24)
+		return `Vor ${diffInHours} Stunde${diffInHours > 1 ? 'n' : ''}`;
+
 	const diffInDays = Math.floor(diffInHours / 24);
-	if (diffInDays < 7) return `Vor ${diffInDays} Tag${diffInDays > 1 ? 'en' : ''}`;
-	
+	if (diffInDays < 7)
+		return `Vor ${diffInDays} Tag${diffInDays > 1 ? 'en' : ''}`;
+
 	return date.toLocaleDateString('de-DE');
 };
 
@@ -457,17 +480,19 @@ const clearAllFilters = () => {
 	showFilterModal.value = false;
 };
 
-const applyFilters = () => {
-	showFilterModal.value = false;
-};
-
 const navigateToItem = (itemId: number) => {
 	router.push(`/items/${itemId}`);
 };
 
-const claimItem = (itemId: number) => {
-	// TODO: Implement claim functionality
-	console.log('Claiming item:', itemId);
+// Update the claim item function to use the store
+const claimItem = async (itemId: number) => {
+	try {
+		await itemStore.updateItem(itemId, { status: 'CLAIMED' });
+		// Show success message - you might want to add a toast notification here
+	} catch (error) {
+		console.error('Error claiming item:', error);
+		// Show error message
+	}
 };
 
 const editItem = (itemId: number) => {
@@ -534,8 +559,6 @@ watch(activeTab, (tab) => {
 	margin-left: 8px;
 }
 
-
-
 .empty-state {
 	display: flex;
 	flex-direction: column;
@@ -595,15 +618,27 @@ watch(activeTab, (tab) => {
 }
 
 .card-header.status-found {
-	background: linear-gradient(135deg, var(--ion-color-success-tint), var(--ion-color-success));
+	background: linear-gradient(
+		135deg,
+		var(--ion-color-success-tint),
+		var(--ion-color-success)
+	);
 }
 
 .card-header.status-lost {
-	background: linear-gradient(135deg, var(--ion-color-warning-tint), var(--ion-color-warning));
+	background: linear-gradient(
+		135deg,
+		var(--ion-color-warning-tint),
+		var(--ion-color-warning)
+	);
 }
 
 .card-header.status-claimed {
-	background: linear-gradient(135deg, var(--ion-color-medium-tint), var(--ion-color-medium));
+	background: linear-gradient(
+		135deg,
+		var(--ion-color-medium-tint),
+		var(--ion-color-medium)
+	);
 }
 
 .card-header::before {
@@ -613,7 +648,12 @@ watch(activeTab, (tab) => {
 	right: -50%;
 	width: 100%;
 	height: 200%;
-	background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+	background: linear-gradient(
+		45deg,
+		transparent,
+		rgba(255, 255, 255, 0.1),
+		transparent
+	);
 	transform: rotate(45deg);
 	transition: all 0.6s ease;
 }
@@ -817,27 +857,25 @@ watch(activeTab, (tab) => {
 		grid-template-columns: 1fr;
 		gap: 12px;
 	}
-	
+
 	.items-container {
 		padding: 12px;
 	}
-	
+
 	.header-content {
 		flex-direction: column;
 		align-items: flex-start;
 		gap: 8px;
 	}
-	
+
 	.status-chip {
 		margin-left: 0;
 	}
-	
+
 	.card-actions {
 		flex-direction: column;
 		gap: 8px;
 	}
-	
-
 }
 
 @media (min-width: 1200px) {

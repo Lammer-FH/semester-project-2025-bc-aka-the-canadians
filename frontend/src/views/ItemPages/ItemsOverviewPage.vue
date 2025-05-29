@@ -1,56 +1,52 @@
 <template>
 	<template-page
+		:headline="'Berichte durchsuchen'"
 		addButtonPath="/items/report"
-		addButtonText="Gegenstand melden">
+		addButtonText="Neuen Bericht erstellen">
 		<template #header>
-			<NavigationTabs
-				:modelValue="activeTab"
-				@update:modelValue="activeTab = $event"
-				:foundCount="foundItemsCount"
-				:lostCount="lostItemsCount" />
+			<NavigationTabs v-model="activeTab" />
 		</template>
 
-		<div v-if="activeTab === 'items'" class="items-container">
+		<div class="reports-container">
 			<!-- Search and Filter Section -->
 			<div class="search-and-filter">
 				<ion-searchbar
 					v-model="searchTerm"
-					placeholder="Suche nach Gegenständen..."
-					:debounce="300"
+					placeholder="Nach Berichten suchen..."
+					debounce="300"
 					class="custom-searchbar"></ion-searchbar>
 
 				<ion-button
 					fill="outline"
+					size="small"
 					class="filter-button"
 					@click="toggleFilterModal">
-					<ion-icon :icon="funnelOutline"></ion-icon>
-					<ion-badge
-						v-if="activeFiltersCount > 0"
-						color="primary"
-						class="filter-badge">
+					<ion-icon :icon="funnelOutline" slot="start"></ion-icon>
+					Filter
+					<ion-badge v-if="activeFiltersCount > 0" class="filter-badge">
 						{{ activeFiltersCount }}
 					</ion-badge>
 				</ion-button>
 			</div>
 
-			<!-- Filter Chips -->
+			<!-- Active Filter Chips -->
 			<div v-if="activeFiltersCount > 0" class="filter-chips">
 				<ion-chip
 					v-if="selectedStatus"
 					class="filter-chip"
 					@click="clearStatusFilter">
+					<ion-icon :icon="flagOutline"></ion-icon>
 					<ion-label>{{ getStatusText(selectedStatus) }}</ion-label>
 					<ion-icon :icon="closeOutline"></ion-icon>
 				</ion-chip>
-
 				<ion-chip
 					v-if="selectedLocation"
 					class="filter-chip"
 					@click="clearLocationFilter">
+					<ion-icon :icon="locationOutline"></ion-icon>
 					<ion-label>{{ selectedLocation }}</ion-label>
 					<ion-icon :icon="closeOutline"></ion-icon>
 				</ion-chip>
-
 				<ion-button
 					fill="clear"
 					size="small"
@@ -60,134 +56,167 @@
 				</ion-button>
 			</div>
 
+			<!-- Report Statistics -->
+			<div class="stats-summary">
+				<div class="stat-item">
+					<ion-icon :icon="eyeOutline" color="success"></ion-icon>
+					<span>{{ foundReportsCount }} Fundberichte</span>
+				</div>
+				<div class="stat-item">
+					<ion-icon :icon="searchOutline" color="warning"></ion-icon>
+					<span>{{ lostReportsCount }} Verlustberichte</span>
+				</div>
+				<div class="stat-item">
+					<ion-icon :icon="checkmarkCircleOutline" color="medium"></ion-icon>
+					<span>{{ claimedReportsCount }} Abgeschlossen</span>
+				</div>
+			</div>
+
+			<!-- Loading State -->
+			<div v-if="isLoading" class="loading-container">
+				<ion-spinner name="crescent" color="primary"></ion-spinner>
+				<p>Lade Berichte...</p>
+			</div>
+
 			<!-- Error State -->
-			<div v-if="error && !isLoading" class="empty-state">
+			<div v-else-if="error" class="empty-state">
 				<ion-icon :icon="alertCircleOutline" class="empty-icon"></ion-icon>
 				<h2>Fehler beim Laden</h2>
 				<p>{{ error }}</p>
-				<ion-button @click="itemStore.fetchItems()">
+				<ion-button @click="loadReports">
 					<ion-icon :icon="refreshOutline" slot="start"></ion-icon>
 					Erneut versuchen
 				</ion-button>
 			</div>
 
-			<!-- Loading State -->
-			<div v-else-if="isLoading" class="loading-container">
-				<ion-spinner name="crescent"></ion-spinner>
-				<p>Lade Gegenstände...</p>
-			</div>
-
 			<!-- Empty State -->
-			<div
-				v-else-if="filteredItems.length === 0 && !isLoading"
-				class="empty-state">
-				<ion-icon :icon="searchOutline" class="empty-icon"></ion-icon>
-				<h2>Keine Gegenstände gefunden</h2>
+			<div v-else-if="filteredReports.length === 0" class="empty-state">
+				<ion-icon :icon="bagOutline" class="empty-icon"></ion-icon>
+				<h2>Keine Berichte gefunden</h2>
 				<p v-if="activeFiltersCount > 0">
-					Keine Gegenstände entsprechen den aktuellen Filterkriterien.
+					Keine Berichte entsprechen den aktuellen Filterkriterien.
 				</p>
 				<p v-else>
-					Es wurden noch keine Gegenstände gemeldet. Sei der erste und melde
-					einen verlorenen oder gefundenen Gegenstand!
+					Noch keine Berichte erstellt. Sei der Erste und melde einen gefundenen
+					oder verlorenen Gegenstand!
 				</p>
-				<ion-button v-if="activeFiltersCount === 0" routerLink="/items/report">
+				<ion-button
+					v-if="activeFiltersCount === 0"
+					fill="outline"
+					@click="navigateToReport">
 					<ion-icon :icon="addOutline" slot="start"></ion-icon>
-					Ersten Gegenstand melden
+					Ersten Bericht erstellen
+				</ion-button>
+				<ion-button v-else fill="outline" @click="clearAllFilters">
+					Filter löschen
 				</ion-button>
 			</div>
 
-			<!-- Items Grid -->
-			<div v-else class="items-grid">
+			<!-- Reports Grid -->
+			<div v-else class="reports-grid">
 				<ion-card
-					v-for="(item, index) in filteredItems"
-					:key="item.id"
-					class="item-card"
+					v-for="(report, index) in filteredReports"
+					:key="report.id"
+					class="report-card"
+					:class="getStatusClass(report.status)"
 					:style="{ '--animation-delay': `${index * 0.1}s` }"
-					@click="navigateToItem(item.id)">
-					<div class="card-header" :class="getStatusClass(item.status)">
+					@click="navigateToReport(report.id)">
+					<ion-card-header class="card-header">
 						<div class="header-content">
-							<h3 class="item-name">{{ item.name }}</h3>
-							<ion-chip class="status-chip">
+							<ion-card-title class="report-title">{{
+								report.title
+							}}</ion-card-title>
+							<ion-chip
+								:color="getStatusColor(report.status)"
+								class="status-chip">
 								<ion-icon
-									:icon="getStatusIcon(item.status)"
+									:icon="getStatusIcon(report.status)"
 									class="chip-icon"></ion-icon>
-								{{ getStatusText(item.status) }}
+								{{ getStatusText(report.status) }}
 							</ion-chip>
 						</div>
-
-						<div class="item-details">
+						<div class="report-details">
 							<div class="detail-item">
 								<ion-icon
 									:icon="locationOutline"
 									class="detail-icon"></ion-icon>
-								<span>{{ item.location }}</span>
+								{{ report.location }}
 							</div>
 							<div class="detail-item">
 								<ion-icon :icon="timeOutline" class="detail-icon"></ion-icon>
-								<span>{{ getTimeAgo(item.createdAt) }}</span>
+								{{ getTimeAgo(report.dateCreated) }}
 							</div>
 						</div>
-					</div>
+					</ion-card-header>
 
-					<div class="card-content">
-						<!-- Image or placeholder -->
-						<div v-if="item.imageUrl" class="item-image-container">
-							<img :src="item.imageUrl" :alt="item.name" class="item-image" />
+					<ion-card-content class="card-content">
+						<!-- Report Image if available -->
+						<div v-if="report.imageUrl" class="report-image-container">
+							<img
+								:src="report.imageUrl"
+								:alt="report.title"
+								class="report-image"
+								@error="handleImageError" />
 						</div>
 						<div v-else class="no-image-placeholder">
 							<ion-icon :icon="imageOutline" class="no-image-icon"></ion-icon>
 							<span>Kein Bild verfügbar</span>
 						</div>
 
-						<!-- Description -->
-						<p class="description">{{ item.description }}</p>
+						<!-- Report Description -->
+						<p v-if="report.description" class="description">
+							{{ report.description }}
+						</p>
 
-						<!-- Metadata -->
+						<!-- Report Metadata -->
 						<div class="metadata">
 							<div class="metadata-item">
-								<ion-icon :icon="timeOutline" class="metadata-icon"></ion-icon>
-								<span class="metadata-text"
-									>Erstellt: {{ getTimeAgo(item.createdAt) }}</span
-								>
-							</div>
-							<div
-								v-if="item.updatedAt && item.updatedAt !== item.createdAt"
-								class="metadata-item">
 								<ion-icon
-									:icon="refreshOutline"
+									:icon="fingerPrintOutline"
+									class="metadata-icon"></ion-icon>
+								<span class="metadata-text">Bericht #{{ report.id }}</span>
+							</div>
+							<div class="metadata-item">
+								<ion-icon
+									:icon="calendarOutline"
+									class="metadata-icon"></ion-icon>
+								<span class="metadata-text">{{
+									formatDate(report.dateCreated)
+								}}</span>
+							</div>
+							<div v-if="report.reporterName" class="metadata-item">
+								<ion-icon
+									:icon="personOutline"
 									class="metadata-icon"></ion-icon>
 								<span class="metadata-text"
-									>Aktualisiert: {{ getTimeAgo(item.updatedAt) }}</span
+									>Gemeldet von {{ report.reporterName }}</span
 								>
 							</div>
 						</div>
-					</div>
+					</ion-card-content>
 
 					<!-- Card Actions -->
-					<div class="card-actions" @click.stop>
+					<div class="card-actions">
 						<ion-button
-							fill="outline"
+							fill="clear"
 							size="small"
-							@click="navigateToItem(item.id)">
+							@click.stop="navigateToReport(report.id)">
 							<ion-icon :icon="eyeOutline" slot="start"></ion-icon>
-							Details
+							Bericht ansehen
 						</ion-button>
-
 						<ion-button
-							v-if="item.status?.toLowerCase() === 'found'"
-							:color="getStatusColor(item.status)"
+							v-if="report.status.toUpperCase() === 'FOUND'"
+							fill="clear"
 							size="small"
-							@click="claimItem(item.id)">
+							color="success"
+							@click.stop="claimItem(report.id)">
 							<ion-icon :icon="handRightOutline" slot="start"></ion-icon>
 							Abholen
 						</ion-button>
-
 						<ion-button
-							v-else-if="item.status?.toLowerCase() === 'lost'"
-							fill="outline"
-							color="medium"
+							fill="clear"
 							size="small"
-							@click="editItem(item.id)">
+							@click.stop="editReport(report.id)">
 							<ion-icon :icon="createOutline" slot="start"></ion-icon>
 							Bearbeiten
 						</ion-button>
@@ -199,10 +228,10 @@
 		<!-- Filter Modal -->
 		<ion-modal
 			:is-open="showFilterModal"
-			@will-dismiss="showFilterModal = false">
+			@did-dismiss="showFilterModal = false">
 			<ion-header>
 				<ion-toolbar>
-					<ion-title>Filter</ion-title>
+					<ion-title>Berichte filtern</ion-title>
 					<ion-buttons slot="end">
 						<ion-button @click="showFilterModal = false">
 							<ion-icon :icon="closeOutline"></ion-icon>
@@ -211,6 +240,7 @@
 				</ion-toolbar>
 			</ion-header>
 			<ion-content class="filter-modal-content">
+				<!-- Status Filter -->
 				<div class="filter-section">
 					<h3>Status</h3>
 					<ion-radio-group v-model="selectedStatus">
@@ -219,20 +249,36 @@
 							<ion-label>Alle Status</ion-label>
 						</ion-item>
 						<ion-item>
-							<ion-radio slot="start" value="lost"></ion-radio>
-							<ion-label>Verloren</ion-label>
+							<ion-radio slot="start" value="FOUND"></ion-radio>
+							<ion-label>
+								<ion-icon
+									:icon="eyeOutline"
+									style="margin-right: 8px"></ion-icon>
+								Gefunden
+							</ion-label>
 						</ion-item>
 						<ion-item>
-							<ion-radio slot="start" value="found"></ion-radio>
-							<ion-label>Gefunden</ion-label>
+							<ion-radio slot="start" value="LOST"></ion-radio>
+							<ion-label>
+								<ion-icon
+									:icon="searchOutline"
+									style="margin-right: 8px"></ion-icon>
+								Verloren
+							</ion-label>
 						</ion-item>
 						<ion-item>
-							<ion-radio slot="start" value="claimed"></ion-radio>
-							<ion-label>Abgeholt</ion-label>
+							<ion-radio slot="start" value="CLAIMED"></ion-radio>
+							<ion-label>
+								<ion-icon
+									:icon="checkmarkOutline"
+									style="margin-right: 8px"></ion-icon>
+								Abgeholt
+							</ion-label>
 						</ion-item>
 					</ion-radio-group>
 				</div>
 
+				<!-- Location Filter -->
 				<div class="filter-section">
 					<h3>Standort</h3>
 					<ion-radio-group v-model="selectedLocation">
@@ -247,12 +293,13 @@
 					</ion-radio-group>
 				</div>
 
+				<!-- Filter Actions -->
 				<div class="filter-actions">
-					<ion-button expand="block" @click="applyFilters">
-						Filter anwenden
-					</ion-button>
 					<ion-button expand="block" fill="outline" @click="clearAllFilters">
 						Alle Filter löschen
+					</ion-button>
+					<ion-button expand="block" @click="applyFilters">
+						Filter anwenden
 					</ion-button>
 				</div>
 			</ion-content>
@@ -268,7 +315,6 @@ import {
 	IonCard,
 	IonCardHeader,
 	IonCardTitle,
-	IonCardSubtitle,
 	IonCardContent,
 	IonButton,
 	IonIcon,
@@ -300,13 +346,29 @@ import {
 	checkmarkCircleOutline,
 	alertCircleOutline,
 	searchOutline,
-	shirtOutline,
 	imageOutline,
+	fingerPrintOutline,
+	calendarOutline,
+	personOutline,
+	flagOutline,
+	checkmarkOutline,
 } from 'ionicons/icons';
-import { ref, computed, watch, onMounted } from 'vue'; // Add onMounted
+import { ref, computed, watch, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { useItemStore } from '@/stores/itemStore'; // Add this import
+import { useItemStore } from '@/stores/itemStore';
 import type { Item } from '@/models/item';
+
+// Virtual Report Interface
+interface VirtualReport {
+	id: number;
+	title: string;
+	description: string;
+	status: string;
+	location: string;
+	dateCreated: string;
+	imageUrl?: string;
+	reporterName?: string;
+}
 
 const router = useRouter();
 const itemStore = useItemStore();
@@ -316,71 +378,94 @@ const showFilterModal = ref(false);
 const selectedStatus = ref('');
 const selectedLocation = ref('');
 
-// Replace the mock items with store data - with safety checks
+// Get items from store and convert to virtual reports
 const items = computed(() => itemStore.getItems || []);
 const isLoading = computed(() => itemStore.isLoading);
 const error = computed(() => itemStore.getError);
 
-// Load items when component mounts with better error handling
+// Convert items to virtual reports
+const reports = computed((): VirtualReport[] => {
+	return items.value.map((item: Item) => ({
+		id: item.id,
+		title: item.name,
+		description: item.description,
+		status: item.status || 'UNKNOWN',
+		location: item.location,
+		dateCreated: item.createdAt,
+		imageUrl: item.imageUrl,
+		reporterName: 'Unbekannt', // Since we don't have user data
+	}));
+});
+
+// Load reports when component mounts
 onMounted(async () => {
+	await loadReports();
+});
+
+const loadReports = async () => {
 	try {
 		await itemStore.fetchItems();
 	} catch (error) {
-		console.error('Error loading items:', error);
+		console.error('Error loading reports:', error);
 	}
+};
+
+// Filter reports based on search and filters
+const filteredReports = computed(() => {
+	let filtered = reports.value;
+
+	// Search filter
+	if (searchTerm.value.trim()) {
+		const search = searchTerm.value.toLowerCase();
+		filtered = filtered.filter(
+			(report) =>
+				report.title.toLowerCase().includes(search) ||
+				report.description.toLowerCase().includes(search) ||
+				report.location.toLowerCase().includes(search)
+		);
+	}
+
+	// Status filter
+	if (selectedStatus.value) {
+		filtered = filtered.filter(
+			(report) =>
+				report.status.toUpperCase() === selectedStatus.value.toUpperCase()
+		);
+	}
+
+	// Location filter
+	if (selectedLocation.value) {
+		filtered = filtered.filter(
+			(report) => report.location === selectedLocation.value
+		);
+	}
+
+	return filtered;
 });
 
-// Complete the filteredItems computed with safety checks
-const filteredItems = computed(() => {
-	const itemsArray = items.value;
-	if (!Array.isArray(itemsArray)) {
-		return [];
-	}
-
-	return itemsArray.filter((item) => {
-		const matchesSearch =
-			!searchTerm.value ||
-			(item.name &&
-				item.name.toLowerCase().includes(searchTerm.value.toLowerCase())) ||
-			(item.description &&
-				item.description
-					.toLowerCase()
-					.includes(searchTerm.value.toLowerCase())) ||
-			(item.location &&
-				item.location.toLowerCase().includes(searchTerm.value.toLowerCase()));
-
-		const matchesStatus =
-			!selectedStatus.value ||
-			(item.status &&
-				item.status.toLowerCase() === selectedStatus.value.toLowerCase());
-
-		const matchesLocation =
-			!selectedLocation.value ||
-			(item.location && item.location === selectedLocation.value);
-
-		return matchesSearch && matchesStatus && matchesLocation;
-	});
-});
-
+// Get unique locations for filter
 const uniqueLocations = computed(() => {
-	const itemsArray = items.value;
-	if (!Array.isArray(itemsArray)) {
-		return [];
-	}
 	return [
-		...new Set(itemsArray.map((item) => item.location).filter(Boolean)),
+		...new Set(reports.value.map((report) => report.location).filter(Boolean)),
 	].sort();
 });
 
-const foundItemsCount = computed(() => {
-	return filteredItems.value.filter(
-		(item) => item.status && item.status.toLowerCase() === 'found'
+// Statistics
+const foundReportsCount = computed(() => {
+	return filteredReports.value.filter(
+		(report) => report.status.toUpperCase() === 'FOUND'
 	).length;
 });
 
-const lostItemsCount = computed(() => {
-	return filteredItems.value.filter(
-		(item) => item.status && item.status.toLowerCase() === 'lost'
+const lostReportsCount = computed(() => {
+	return filteredReports.value.filter(
+		(report) => report.status.toUpperCase() === 'LOST'
+	).length;
+});
+
+const claimedReportsCount = computed(() => {
+	return filteredReports.value.filter(
+		(report) => report.status.toUpperCase() === 'CLAIMED'
 	).length;
 });
 
@@ -391,6 +476,7 @@ const activeFiltersCount = computed(() => {
 	return count;
 });
 
+// Status helpers
 const getStatusText = (status: string) => {
 	switch (status.toUpperCase()) {
 		case 'FOUND':
@@ -399,8 +485,10 @@ const getStatusText = (status: string) => {
 			return 'Verloren';
 		case 'CLAIMED':
 			return 'Abgeholt';
+		case 'RETURNED':
+			return 'Zurückgegeben';
 		default:
-			return 'Unbekannt';
+			return status;
 	}
 };
 
@@ -412,6 +500,8 @@ const getStatusColor = (status: string) => {
 			return 'warning';
 		case 'CLAIMED':
 			return 'medium';
+		case 'RETURNED':
+			return 'success';
 		default:
 			return 'primary';
 	}
@@ -420,13 +510,15 @@ const getStatusColor = (status: string) => {
 const getStatusIcon = (status: string) => {
 	switch (status.toUpperCase()) {
 		case 'FOUND':
-			return checkmarkCircleOutline;
+			return eyeOutline;
 		case 'LOST':
-			return alertCircleOutline;
+			return searchOutline;
 		case 'CLAIMED':
-			return handRightOutline;
+			return checkmarkOutline;
+		case 'RETURNED':
+			return checkmarkCircleOutline;
 		default:
-			return bagOutline;
+			return flagOutline;
 	}
 };
 
@@ -434,16 +526,7 @@ const getStatusClass = (status: string) => {
 	return `status-${status.toLowerCase()}`;
 };
 
-// Update filter handling to match backend expectations
-const applyFilters = () => {
-	const filters: any = {};
-	if (selectedStatus.value) filters.status = selectedStatus.value.toUpperCase();
-	if (selectedLocation.value) filters.location = selectedLocation.value;
-
-	itemStore.fetchItems(filters);
-	showFilterModal.value = false;
-};
-
+// Time helpers
 const getTimeAgo = (dateString: string) => {
 	const date = new Date(dateString);
 	const now = new Date();
@@ -452,16 +535,25 @@ const getTimeAgo = (dateString: string) => {
 	);
 
 	if (diffInHours < 1) return 'Vor wenigen Minuten';
-	if (diffInHours < 24)
-		return `Vor ${diffInHours} Stunde${diffInHours > 1 ? 'n' : ''}`;
+	if (diffInHours < 24) return `Vor ${diffInHours} Stunden`;
 
 	const diffInDays = Math.floor(diffInHours / 24);
-	if (diffInDays < 7)
-		return `Vor ${diffInDays} Tag${diffInDays > 1 ? 'en' : ''}`;
+	if (diffInDays < 7) return `Vor ${diffInDays} Tagen`;
 
 	return date.toLocaleDateString('de-DE');
 };
 
+const formatDate = (dateString: string) => {
+	return new Date(dateString).toLocaleDateString('de-DE', {
+		day: '2-digit',
+		month: '2-digit',
+		year: 'numeric',
+		hour: '2-digit',
+		minute: '2-digit',
+	});
+};
+
+// Filter functions
 const toggleFilterModal = () => {
 	showFilterModal.value = !showFilterModal.value;
 };
@@ -480,25 +572,41 @@ const clearAllFilters = () => {
 	showFilterModal.value = false;
 };
 
-const navigateToItem = (itemId: number) => {
-	router.push(`/items/${itemId}`);
+const applyFilters = () => {
+	showFilterModal.value = false;
 };
 
-// Update the claim item function to use the store
-const claimItem = async (itemId: number) => {
+// Navigation functions
+const navigateToReport = (reportId: number) => {
+	router.push(`/items/${reportId}`);
+};
+
+const navigateToReportCreation = () => {
+	router.push('/items/report');
+};
+
+const editReport = (reportId: number) => {
+	router.push(`/items/${reportId}/edit`);
+};
+
+// Claim functionality
+const claimItem = async (reportId: number) => {
 	try {
-		await itemStore.updateItem(itemId, { status: 'CLAIMED' });
-		// Show success message - you might want to add a toast notification here
+		await itemStore.updateItem(reportId, { status: 'CLAIMED' });
+		// TODO: Show success toast
 	} catch (error) {
 		console.error('Error claiming item:', error);
-		// Show error message
+		// TODO: Show error toast
 	}
 };
 
-const editItem = (itemId: number) => {
-	router.push(`/items/${itemId}/edit`);
+// Error handling
+const handleImageError = (event: Event) => {
+	const img = event.target as HTMLImageElement;
+	img.style.display = 'none';
 };
 
+// Watch for tab changes
 watch(activeTab, (tab) => {
 	if (tab === 'locations') {
 		router.push('/locations/overview');
@@ -507,17 +615,16 @@ watch(activeTab, (tab) => {
 </script>
 
 <style scoped>
-.items-container {
+.reports-container {
 	padding: 16px;
 	min-height: 100vh;
-	background: var(--ion-color-light-tint);
 }
 
 .search-and-filter {
 	display: flex;
+	gap: 12px;
 	align-items: center;
-	gap: 8px;
-	padding: 8px 16px;
+	margin-bottom: 16px;
 }
 
 .custom-searchbar {
@@ -530,17 +637,18 @@ watch(activeTab, (tab) => {
 .filter-button {
 	position: relative;
 	--border-radius: 12px;
-	width: 44px;
-	height: 44px;
 }
 
 .filter-badge {
 	position: absolute;
-	top: 4px;
-	right: 4px;
-	font-size: 10px;
-	min-width: 16px;
-	height: 16px;
+	top: -8px;
+	right: -8px;
+	background: var(--ion-color-primary);
+	color: white;
+	border-radius: 50%;
+	min-width: 20px;
+	height: 20px;
+	font-size: 12px;
 }
 
 .filter-chips {
@@ -548,15 +656,48 @@ watch(activeTab, (tab) => {
 	flex-wrap: wrap;
 	gap: 8px;
 	margin-bottom: 16px;
-	align-items: center;
 }
 
 .filter-chip {
+	--background: var(--ion-color-primary-tint);
 	cursor: pointer;
 }
 
 .clear-all-button {
-	margin-left: 8px;
+	--color: var(--ion-color-medium);
+	font-size: 0.9em;
+}
+
+.stats-summary {
+	display: flex;
+	justify-content: space-around;
+	background: white;
+	border-radius: 12px;
+	padding: 16px;
+	margin-bottom: 20px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.stat-item {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	font-size: 0.9em;
+	font-weight: 500;
+}
+
+.loading-container {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	padding: 60px 20px;
+	text-align: center;
+}
+
+.loading-container p {
+	margin-top: 16px;
+	color: var(--ion-color-medium);
 }
 
 .empty-state {
@@ -566,7 +707,7 @@ watch(activeTab, (tab) => {
 	justify-content: center;
 	text-align: center;
 	padding: 60px 20px;
-	margin-top: 40px;
+	margin-top: 80px;
 }
 
 .empty-icon {
@@ -587,14 +728,14 @@ watch(activeTab, (tab) => {
 	line-height: 1.5;
 }
 
-.items-grid {
+.reports-grid {
 	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-	gap: 12px;
+	grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+	gap: 16px;
 	animation: fadeInUp 0.6s ease-out;
 }
 
-.item-card {
+.report-card {
 	border-radius: 12px;
 	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -606,12 +747,17 @@ watch(activeTab, (tab) => {
 	animation-fill-mode: backwards;
 }
 
-.item-card:hover {
+.report-card:hover {
 	transform: translateY(-2px);
 	box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
 }
 
 .card-header {
+	background: linear-gradient(
+		135deg,
+		var(--ion-color-primary),
+		var(--ion-color-primary-shade)
+	);
 	color: white;
 	position: relative;
 	overflow: hidden;
@@ -620,24 +766,24 @@ watch(activeTab, (tab) => {
 .card-header.status-found {
 	background: linear-gradient(
 		135deg,
-		var(--ion-color-success-tint),
-		var(--ion-color-success)
+		var(--ion-color-success),
+		var(--ion-color-success-shade)
 	);
 }
 
 .card-header.status-lost {
 	background: linear-gradient(
 		135deg,
-		var(--ion-color-warning-tint),
-		var(--ion-color-warning)
+		var(--ion-color-warning),
+		var(--ion-color-warning-shade)
 	);
 }
 
 .card-header.status-claimed {
 	background: linear-gradient(
 		135deg,
-		var(--ion-color-medium-tint),
-		var(--ion-color-medium)
+		var(--ion-color-medium),
+		var(--ion-color-medium-shade)
 	);
 }
 
@@ -658,7 +804,7 @@ watch(activeTab, (tab) => {
 	transition: all 0.6s ease;
 }
 
-.item-card:hover .card-header::before {
+.report-card:hover .card-header::before {
 	transform: rotate(45deg) translateX(100%);
 }
 
@@ -666,21 +812,22 @@ watch(activeTab, (tab) => {
 	display: flex;
 	justify-content: space-between;
 	align-items: flex-start;
-	margin-bottom: 8px;
+	margin-bottom: 12px;
 }
 
-.item-name {
+.report-title {
 	color: white;
 	font-size: 1.2em;
 	font-weight: 600;
 	margin: 0;
 	flex: 1;
+	margin-right: 12px;
 }
 
 .status-chip {
 	--background: rgba(255, 255, 255, 0.2);
 	--color: white;
-	margin-left: 12px;
+	margin: 0;
 }
 
 .chip-icon {
@@ -688,10 +835,10 @@ watch(activeTab, (tab) => {
 	margin-right: 4px;
 }
 
-.item-details {
+.report-details {
 	display: flex;
 	flex-direction: column;
-	gap: 4px;
+	gap: 6px;
 	color: rgba(255, 255, 255, 0.9);
 }
 
@@ -711,22 +858,22 @@ watch(activeTab, (tab) => {
 	padding: 16px;
 }
 
-.item-image-container {
+.report-image-container {
 	margin-bottom: 12px;
 	border-radius: 8px;
 	overflow: hidden;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-.item-image {
+.report-image {
 	width: 100%;
-	height: 120px;
+	height: 150px;
 	object-fit: cover;
-	border-radius: 8px;
 	transition: transform 0.3s ease;
 }
 
-.item-image:hover {
-	transform: scale(1.02);
+.report-image:hover {
+	transform: scale(1.05);
 }
 
 .no-image-placeholder {
@@ -734,8 +881,8 @@ watch(activeTab, (tab) => {
 	flex-direction: column;
 	align-items: center;
 	justify-content: center;
-	height: 120px;
-	background: var(--ion-color-light-shade);
+	height: 100px;
+	background: var(--ion-color-light-tint);
 	border-radius: 8px;
 	margin-bottom: 12px;
 	color: var(--ion-color-medium);
@@ -744,21 +891,20 @@ watch(activeTab, (tab) => {
 .no-image-icon {
 	font-size: 32px;
 	margin-bottom: 8px;
-	opacity: 0.6;
 }
 
 .no-image-placeholder span {
 	font-size: 0.8em;
-	font-weight: 500;
+	text-align: center;
 }
 
 .description {
 	color: var(--ion-color-dark);
 	line-height: 1.4;
-	margin-bottom: 12px;
+	margin-bottom: 16px;
 	font-size: 0.9em;
 	display: -webkit-box;
-	-webkit-line-clamp: 2;
+	-webkit-line-clamp: 3;
 	-webkit-box-orient: vertical;
 	overflow: hidden;
 }
@@ -766,9 +912,9 @@ watch(activeTab, (tab) => {
 .metadata {
 	display: flex;
 	flex-direction: column;
-	gap: 6px;
-	margin-top: 12px;
-	padding-top: 12px;
+	gap: 8px;
+	margin-top: 16px;
+	padding-top: 16px;
 	border-top: 1px solid var(--ion-color-light-shade);
 }
 
@@ -795,19 +941,7 @@ watch(activeTab, (tab) => {
 	padding: 8px 12px 12px;
 	border-top: 1px solid var(--ion-color-light-shade);
 	background: var(--ion-color-light-tint);
-}
-
-.loading-container {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	justify-content: center;
-	padding: 60px 20px;
-}
-
-.loading-container p {
-	margin-top: 16px;
-	color: var(--ion-color-medium);
+	gap: 8px;
 }
 
 .filter-modal-content {
@@ -821,12 +955,14 @@ watch(activeTab, (tab) => {
 .filter-section h3 {
 	color: var(--ion-color-dark);
 	margin-bottom: 16px;
-	font-size: 1.1em;
 	font-weight: 600;
 }
 
 .filter-actions {
 	margin-top: 40px;
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
 }
 
 @keyframes fadeInUp {
@@ -853,23 +989,26 @@ watch(activeTab, (tab) => {
 
 /* Responsive Design */
 @media (max-width: 768px) {
-	.items-grid {
+	.reports-grid {
 		grid-template-columns: 1fr;
-		gap: 12px;
 	}
 
-	.items-container {
+	.reports-container {
 		padding: 12px;
 	}
 
-	.header-content {
+	.search-and-filter {
 		flex-direction: column;
-		align-items: flex-start;
-		gap: 8px;
+		gap: 12px;
 	}
 
-	.status-chip {
-		margin-left: 0;
+	.filter-button {
+		align-self: stretch;
+	}
+
+	.stats-summary {
+		flex-direction: column;
+		gap: 12px;
 	}
 
 	.card-actions {
@@ -879,8 +1018,8 @@ watch(activeTab, (tab) => {
 }
 
 @media (min-width: 1200px) {
-	.items-grid {
-		grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+	.reports-grid {
+		grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
 	}
 }
 </style>

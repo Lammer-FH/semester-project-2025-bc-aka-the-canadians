@@ -218,7 +218,7 @@
 							<ion-icon
 								:icon="businessOutline"
 								class="location-icon"></ion-icon>
-							<span class="location-name">{{ item.location }}</span>
+							<span class="location-name">{{ item.location.name }}</span>
 						</div>
 						<ion-button fill="clear" size="small" @click="viewLocationReports">
 							<ion-icon :icon="flagOutline" slot="start"></ion-icon>

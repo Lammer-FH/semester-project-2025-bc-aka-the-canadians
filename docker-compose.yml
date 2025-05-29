@@ -1,17 +1,15 @@
-version: '3.8'
-
 services:
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    ports:
-      - "3000:80"
-    environment:
-      - VITE_API_URL=http://localhost:8080
-      - VITE_MINIO_URL=http://localhost:9000
-    depends_on:
-      - backend
+#  frontend:
+#    build:
+#      context: ./frontend
+#      dockerfile: Dockerfile
+#    ports:
+#      - "3000:80"
+#    environment:
+#      - VITE_API_URL=http://localhost:8080
+#      # - VITE_MINIO_URL=http://localhost:9000
+#    depends_on:
+#      - backend
 
   backend:
     build:
@@ -20,9 +18,18 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - DB_URL=jdbc:mysql://mysql:3306/campus_lost_found?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC
-      - DB_USERNAME=root
-      - DB_PASSWORD=root
+      - MYSQL_HOST=mysql
+      - MYSQL_PORT=3306
+      - MYSQL_DATABASE=campus_lost_found
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=root
+      - SERVER_PORT=8080
+      - HIBERNATE_DDL_AUTO=update
+      - SHOW_SQL=true
+      - FORMAT_SQL=true
+      - LOG_LEVEL=INFO
+      - SECURITY_LOG_LEVEL=INFO
+      - APP_LOG_LEVEL=INFO
       - MINIO_ENDPOINT=http://minio:9000
       - MINIO_ACCESS_KEY=minioadmin
       - MINIO_SECRET_KEY=minioadmin
@@ -55,4 +62,4 @@ services:
 
 volumes:
   mysql_data:
-  minio_data: 
+  minio_data:

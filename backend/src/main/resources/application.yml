@@ -18,7 +18,12 @@ server:
   servlet:
     context-path: /api
 
-# OpenAPI Konfiguration
+minio:
+  endpoint: ${MINIO_ENDPOINT:http://localhost:9000}
+  accessKey: ${MINIO_ACCESS_KEY:minioadmin}
+  secretKey: ${MINIO_SECRET_KEY:minioadmin}
+  bucketName: ${MINIO_BUCKET_NAME:campus-lost-found}
+
 springdoc:
   api-docs:
     path: /api-docs
@@ -33,4 +38,4 @@ logging:
   level:
     root: ${LOG_LEVEL:INFO}
     org.springframework.security: ${SECURITY_LOG_LEVEL:INFO}
-    com.campuslostfound: ${APP_LOG_LEVEL:INFO} 
+    com.campuslostfound: ${APP_LOG_LEVEL:INFO}

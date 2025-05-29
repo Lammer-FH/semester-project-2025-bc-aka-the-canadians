@@ -6,7 +6,7 @@
 		@leftFooterButtonClicked="handleCancel"
 		@rightFooterButtonClicked="handleSubmit">
 		<div class="form-container">
-			<!-- Progress Indicator -->
+			<!-- Progress Section -->
 			<div class="progress-section">
 				<div class="progress-bar">
 					<div
@@ -19,44 +19,92 @@
 			<!-- Form Header -->
 			<div class="form-header">
 				<ion-icon :icon="megaphoneOutline" class="header-icon"></ion-icon>
-				<h2>Gegenstand melden</h2>
+				<h2>Neuen Bericht erstellen</h2>
 				<p>
-					Hilf anderen dabei, ihre verlorenen Gegenstände wiederzufinden oder
-					melde einen Fund
+					Hilf anderen dabei, verlorene Gegenstände wiederzufinden oder melde
+					einen Fund
 				</p>
 			</div>
 
 			<!-- Form Content -->
 			<div class="form-content">
-				<!-- Name Field -->
+				<!-- Report Type Selection -->
 				<div class="input-group">
 					<ion-item
 						class="modern-item"
 						:class="{
-							'item-error': errors.name,
-							'item-filled': item.name,
+							'item-filled': reportData.type,
+							'item-error': errors.type,
+						}">
+						<ion-label position="stacked" class="custom-label">
+							<ion-icon :icon="flagOutline" class="label-icon"></ion-icon>
+							Art des Berichts *
+						</ion-label>
+						<ion-select
+							v-model="reportData.type"
+							placeholder="Wähle eine Option"
+							interface="popover"
+							class="custom-select"
+							@selectionChange="validateField('type')">
+							<ion-select-option value="LOST">
+								<div class="select-option">
+									<ion-icon
+										:icon="searchOutline"
+										class="option-icon"></ion-icon>
+									<div>
+										<strong>Verlustbericht</strong>
+										<p>Ich habe einen Gegenstand verloren</p>
+									</div>
+								</div>
+							</ion-select-option>
+							<ion-select-option value="FOUND">
+								<div class="select-option">
+									<ion-icon :icon="eyeOutline" class="option-icon"></ion-icon>
+									<div>
+										<strong>Fundbericht</strong>
+										<p>Ich habe einen Gegenstand gefunden</p>
+									</div>
+								</div>
+							</ion-select-option>
+						</ion-select>
+					</ion-item>
+					<div v-if="errors.type" class="error-message">
+						<ion-icon :icon="alertCircleOutline"></ion-icon>
+						{{ errors.type }}
+					</div>
+				</div>
+
+				<!-- Item Name -->
+				<div class="input-group">
+					<ion-item
+						class="modern-item"
+						:class="{
+							'item-filled': reportData.itemName,
+							'item-error': errors.itemName,
 						}">
 						<ion-label position="stacked" class="custom-label">
 							<ion-icon :icon="textOutline" class="label-icon"></ion-icon>
 							Name des Gegenstands *
 						</ion-label>
 						<ion-input
-							v-model="item.name"
-							placeholder="z.B. Schwarzer Rucksack, iPhone 13, Schlüsselbund"
-							@ionBlur="validateField('name')"
-							:class="{ 'input-error': errors.name }"></ion-input>
+							v-model="reportData.itemName"
+							placeholder="z.B. iPhone 14, Schlüsselbund, Rucksack..."
+							class="custom-input"
+							@ionBlur="validateField('itemName')"></ion-input>
 					</ion-item>
-					<div v-if="errors.name" class="error-message">
+					<div v-if="errors.itemName" class="error-message">
 						<ion-icon :icon="alertCircleOutline"></ion-icon>
-						{{ errors.name }}
+						{{ errors.itemName }}
 					</div>
 				</div>
 
-				<!-- Description Field -->
+				<!-- Description -->
 				<div class="input-group">
 					<ion-item
 						class="modern-item textarea-item"
-						:class="{ 'item-filled': item.description }">
+						:class="{
+							'item-filled': reportData.description,
+						}">
 						<ion-label position="stacked" class="custom-label">
 							<ion-icon
 								:icon="documentTextOutline"
@@ -64,30 +112,44 @@
 							Beschreibung
 						</ion-label>
 						<ion-textarea
-							v-model="item.description"
-							placeholder="Detaillierte Beschreibung: Farbe, Größe, Marke, besondere Merkmale..."
+							v-model="reportData.description"
+							placeholder="Beschreibe den Gegenstand detailliert: Farbe, Größe, besondere Merkmale, wo du ihn verloren/gefunden hast..."
 							class="custom-textarea"
-							:auto-grow="true"></ion-textarea>
+							rows="4"></ion-textarea>
 					</ion-item>
 				</div>
 
-				<!-- Location Field -->
+				<!-- Location -->
 				<div class="input-group">
 					<ion-item
 						class="modern-item"
 						:class="{
+							'item-filled': reportData.location,
 							'item-error': errors.location,
-							'item-filled': item.location,
 						}">
 						<ion-label position="stacked" class="custom-label">
 							<ion-icon :icon="locationOutline" class="label-icon"></ion-icon>
-							Fundort/Verlustort *
+							Standort *
 						</ion-label>
-						<ion-input
-							v-model="item.location"
-							placeholder="z.B. Bibliothek, Hörsaal A1, Mensa, Parkplatz"
-							@ionBlur="validateField('location')"
-							:class="{ 'input-error': errors.location }"></ion-input>
+						<ion-select
+							v-model="reportData.location"
+							placeholder="Wähle einen Standort"
+							interface="popover"
+							class="custom-select"
+							@selectionChange="validateField('location')">
+							<ion-select-option
+								v-for="location in availableLocations"
+								:key="location.id"
+								:value="location.name">
+								{{ location.name }} - {{ location.building }}, Etage
+								{{ location.floor }}
+							</ion-select-option>
+							<ion-select-option value="other">
+								<strong
+									>Anderer Standort (bitte in Beschreibung angeben)</strong
+								>
+							</ion-select-option>
+						</ion-select>
 					</ion-item>
 					<div v-if="errors.location" class="error-message">
 						<ion-icon :icon="alertCircleOutline"></ion-icon>
@@ -95,47 +157,67 @@
 					</div>
 				</div>
 
-				<!-- Status Field -->
+				<!-- Reporter Information -->
 				<div class="input-group">
+					<h3 class="section-title">
+						<ion-icon :icon="personOutline" class="section-icon"></ion-icon>
+						Deine Kontaktinformationen
+					</h3>
+					<p class="section-description">
+						Damit andere dich kontaktieren können, wenn sie deinen Gegenstand
+						gefunden haben.
+					</p>
+
 					<ion-item
 						class="modern-item"
 						:class="{
-							'item-error': errors.status,
-							'item-filled': item.status,
+							'item-filled': reportData.reporterName,
+							'item-error': errors.reporterName,
 						}">
 						<ion-label position="stacked" class="custom-label">
-							<ion-icon :icon="flagOutline" class="label-icon"></ion-icon>
-							Status *
+							<ion-icon :icon="personOutline" class="label-icon"></ion-icon>
+							Dein Name *
 						</ion-label>
-						<ion-select
-							v-model="item.status"
-							placeholder="Wähle den Status"
-							@ionChange="validateField('status')">
-							<ion-select-option value="LOST">Verloren</ion-select-option>
-							<ion-select-option value="FOUND">Gefunden</ion-select-option>
-						</ion-select>
+						<ion-input
+							v-model="reportData.reporterName"
+							placeholder="Vor- und Nachname"
+							class="custom-input"
+							@ionBlur="validateField('reporterName')"></ion-input>
 					</ion-item>
-					<div v-if="errors.status" class="error-message">
+					<div v-if="errors.reporterName" class="error-message">
 						<ion-icon :icon="alertCircleOutline"></ion-icon>
-						{{ errors.status }}
+						{{ errors.reporterName }}
 					</div>
+
+					<ion-item
+						class="modern-item"
+						:class="{
+							'item-filled': reportData.contactInfo,
+						}">
+						<ion-label position="stacked" class="custom-label">
+							<ion-icon :icon="mailOutline" class="label-icon"></ion-icon>
+							Kontakt (optional)
+						</ion-label>
+						<ion-input
+							v-model="reportData.contactInfo"
+							placeholder="E-Mail oder Telefon"
+							class="custom-input"></ion-input>
+					</ion-item>
 				</div>
 
 				<!-- Image Upload Section -->
 				<div class="input-group">
 					<div class="image-upload-section">
-						<h4 class="upload-title">
+						<h3 class="upload-title">
 							<ion-icon :icon="cameraOutline" class="title-icon"></ion-icon>
-							Bild hinzufügen (optional)
-						</h4>
+							Foto hinzufügen (optional)
+						</h3>
 						<p class="upload-description">
-							Ein Bild hilft anderen dabei, den Gegenstand besser zu
-							identifizieren.
+							Ein Foto hilft anderen, den Gegenstand zu identifizieren
 						</p>
 
-						<!-- Image Preview -->
 						<div v-if="imagePreview" class="image-preview-container">
-							<img :src="imagePreview" :alt="item.name" class="image-preview" />
+							<img :src="imagePreview" alt="Vorschau" class="image-preview" />
 							<ion-button
 								fill="clear"
 								color="danger"
@@ -145,68 +227,86 @@
 							</ion-button>
 						</div>
 
-						<!-- Upload Buttons -->
-						<div class="upload-buttons">
-							<ion-button fill="outline" class="upload-btn" @click="takePhoto">
+						<div v-else class="upload-buttons">
+							<ion-button
+								expand="block"
+								fill="outline"
+								class="upload-btn"
+								@click="takePhoto">
 								<ion-icon :icon="cameraOutline" slot="start"></ion-icon>
 								Foto aufnehmen
 							</ion-button>
 							<ion-button
+								expand="block"
 								fill="outline"
 								class="upload-btn"
 								@click="triggerFileInput">
 								<ion-icon :icon="cloudUploadOutline" slot="start"></ion-icon>
-								Datei hochladen
+								Foto hochladen
 							</ion-button>
 						</div>
 
-						<!-- Hidden file input -->
 						<input
 							ref="fileInput"
 							type="file"
 							accept="image/*"
 							style="display: none"
 							@change="handleFileSelect" />
-
-						<!-- Upload Tips -->
-						<div class="upload-tips">
-							<ion-item class="tip-item">
-								<ion-icon
-									:icon="bulbOutline"
-									slot="start"
-									color="warning"></ion-icon>
-								<div class="tip-text">
-									<p>
-										<strong>Tipp:</strong> Gute Bilder erhöhen die Chance, dass
-										dein Gegenstand gefunden wird!
-									</p>
-									<p>• Verwende gute Beleuchtung</p>
-									<p>• Zeige charakteristische Details</p>
-									<p>• Maximal 5MB Dateigröße</p>
-								</div>
-							</ion-item>
-						</div>
 					</div>
 				</div>
 
-				<!-- Form Footer Info -->
-				<div class="form-footer-info">
-					<ion-item class="info-item">
-						<ion-icon
-							:icon="informationCircleOutline"
-							slot="start"
-							color="primary"></ion-icon>
-						<div class="info-text">
-							<p>
-								Deine Meldung wird sofort veröffentlicht und ist für alle Nutzer
-								sichtbar.
-							</p>
-							<p>Du kannst sie jederzeit bearbeiten oder löschen.</p>
-							<p class="required-note">
-								* Pflichtfelder müssen ausgefüllt werden.
-							</p>
+				<!-- Tips Section -->
+				<div class="tips-section">
+					<h3 class="tips-title">
+						<ion-icon :icon="bulbOutline" class="title-icon"></ion-icon>
+						Tipps für einen guten Bericht
+					</h3>
+					<div class="tips-list">
+						<div class="tip-item">
+							<ion-icon
+								:icon="checkmarkCircleOutline"
+								color="success"></ion-icon>
+							<div class="tip-text">
+								<p>
+									<strong>Sei detailliert:</strong> Je mehr Details, desto
+									besser können andere helfen
+								</p>
+							</div>
 						</div>
-					</ion-item>
+						<div class="tip-item">
+							<ion-icon
+								:icon="checkmarkCircleOutline"
+								color="success"></ion-icon>
+							<div class="tip-text">
+								<p>
+									<strong>Füge ein Foto hinzu:</strong> Bilder helfen enorm bei
+									der Identifikation
+								</p>
+							</div>
+						</div>
+						<div class="tip-item">
+							<ion-icon
+								:icon="checkmarkCircleOutline"
+								color="success"></ion-icon>
+							<div class="tip-text">
+								<p>
+									<strong>Wähle den richtigen Standort:</strong> Wo hast du den
+									Gegenstand zuletzt gesehen?
+								</p>
+							</div>
+						</div>
+						<div class="tip-item">
+							<ion-icon
+								:icon="checkmarkCircleOutline"
+								color="success"></ion-icon>
+							<div class="tip-text">
+								<p>
+									<strong>Bleib erreichbar:</strong> Gib korrekte Kontaktdaten
+									an
+								</p>
+							</div>
+						</div>
+					</div>
 				</div>
 			</div>
 		</div>
@@ -224,6 +324,7 @@ import {
 	IonSelect,
 	IonSelectOption,
 	IonButton,
+	IonProgressBar,
 } from '@ionic/vue';
 import {
 	megaphoneOutline,
@@ -239,32 +340,43 @@ import {
 	cloudUploadOutline,
 	trashOutline,
 	bulbOutline,
+	personOutline,
+	mailOutline,
+	searchOutline,
+	eyeOutline,
 } from 'ionicons/icons';
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useItemStore } from '@/stores/itemStore';
+import { useLocationStore } from '@/stores/locationStore';
 import type { Item } from '@/models/item';
 
 const router = useRouter();
 const itemStore = useItemStore();
+const locationStore = useLocationStore();
 
-const item = ref({
-	name: '',
+// Report data structure
+const reportData = ref({
+	type: '', // 'LOST' or 'FOUND'
+	itemName: '',
 	description: '',
 	location: '',
-	status: '',
+	reporterName: '',
+	contactInfo: '',
 	imageData: '',
 });
 
 const errors = ref({
-	name: '',
+	type: '',
+	itemName: '',
 	location: '',
-	status: '',
+	reporterName: '',
 });
 
 const isSubmitting = computed(() => itemStore.isLoading);
 const imagePreview = ref('');
 const fileInput = ref<HTMLInputElement>();
+const availableLocations = computed(() => locationStore.getLocations || []);
 
 const leftFooterButton = computed(() => ({
 	name: 'Abbrechen',
@@ -274,9 +386,9 @@ const leftFooterButton = computed(() => ({
 
 const rightFooterButton = computed(() => ({
 	name: isSubmitting.value
-		? 'Wird gemeldet...'
+		? 'Bericht wird gesendet...'
 		: isValid.value
-		? 'Gegenstand melden'
+		? 'Bericht einreichen'
 		: 'Felder ausfüllen',
 	color: isValid.value ? 'primary' : 'medium',
 	icon: checkmarkCircleOutline,
@@ -285,57 +397,82 @@ const rightFooterButton = computed(() => ({
 
 const isValid = computed(() => {
 	return (
-		item.value.name.trim() !== '' &&
-		item.value.location.trim() !== '' &&
-		item.value.status.trim() !== '' &&
-		Object.values(errors.value).every((error) => error === '')
+		reportData.value.type.trim() !== '' &&
+		reportData.value.itemName.trim() !== '' &&
+		reportData.value.location.trim() !== '' &&
+		reportData.value.reporterName.trim() !== ''
 	);
 });
 
 const completionPercentage = computed(() => {
-	const fields = ['name', 'description', 'location', 'status'];
-	const filledFields = fields.filter(
-		(field) => item.value[field as keyof typeof item.value].trim() !== ''
+	const requiredFields = ['type', 'itemName', 'location', 'reporterName'];
+	const optionalFields = ['description', 'contactInfo'];
+
+	const requiredFilled = requiredFields.filter(
+		(field) =>
+			reportData.value[field as keyof typeof reportData.value].trim() !== ''
 	).length;
-	return Math.round((filledFields / fields.length) * 100);
+
+	const optionalFilled = optionalFields.filter(
+		(field) =>
+			reportData.value[field as keyof typeof reportData.value].trim() !== ''
+	).length;
+
+	// Required fields count as 80%, optional as 20%
+	const requiredWeight = 0.8;
+	const optionalWeight = 0.2;
+
+	const requiredScore =
+		(requiredFilled / requiredFields.length) * requiredWeight;
+	const optionalScore =
+		(optionalFilled / optionalFields.length) * optionalWeight;
+
+	return Math.round((requiredScore + optionalScore) * 100);
+});
+
+// Load locations when component mounts
+onMounted(async () => {
+	await locationStore.fetchLocations();
 });
 
 const validateField = (fieldName: keyof typeof errors.value) => {
 	const value = String(
-		item.value[fieldName as keyof typeof item.value] || ''
+		reportData.value[fieldName as keyof typeof reportData.value] || ''
 	).trim();
 
 	switch (fieldName) {
-		case 'name':
+		case 'type':
+			errors.value.type = !value ? 'Bitte wähle die Art des Berichts aus' : '';
+			break;
+		case 'itemName':
 			if (!value) {
-				errors.value.name = 'Name ist erforderlich';
+				errors.value.itemName = 'Name des Gegenstands ist erforderlich';
 			} else if (value.length < 2) {
-				errors.value.name = 'Name muss mindestens 2 Zeichen haben';
+				errors.value.itemName = 'Name muss mindestens 2 Zeichen lang sein';
 			} else {
-				errors.value.name = '';
+				errors.value.itemName = '';
 			}
 			break;
 		case 'location':
-			if (!value) {
-				errors.value.location = 'Standort ist erforderlich';
-			} else {
-				errors.value.location = '';
-			}
+			errors.value.location = !value ? 'Bitte wähle einen Standort aus' : '';
 			break;
-		case 'status':
+		case 'reporterName':
 			if (!value) {
-				errors.value.status = 'Status ist erforderlich';
+				errors.value.reporterName = 'Dein Name ist erforderlich';
+			} else if (value.length < 2) {
+				errors.value.reporterName = 'Name muss mindestens 2 Zeichen lang sein';
 			} else {
-				errors.value.status = '';
+				errors.value.reporterName = '';
 			}
 			break;
 	}
 };
 
 const validateAllFields = () => {
-	validateField('name');
+	validateField('type');
+	validateField('itemName');
 	validateField('location');
-	validateField('status');
+	validateField('reporterName');
 };
 
 const handleCancel = () => {
@@ -349,31 +486,45 @@ const handleSubmit = async () => {
 	}
 
 	try {
-		// Prepare the item data for creation
+		// Create enhanced description with reporter info
+		const enhancedDescription = [
+			reportData.value.description,
+			'',
+			`--- Berichtinformationen ---`,
+			`Berichtstyp: ${
+				reportData.value.type === 'LOST' ? 'Verlustbericht' : 'Fundbericht'
+			}`,
+			`Gemeldet von: ${reportData.value.reporterName}`,
+			reportData.value.contactInfo
+				? `Kontakt: ${reportData.value.contactInfo}`
+				: '',
+			`Berichtsdatum: ${new Date().toLocaleDateString('de-DE')}`,
+		]
+			.filter(Boolean)
+			.join('\n');
+
+		// Map report data to item structure for backend
 		const itemData: Omit<Item, 'id' | 'createdAt' | 'updatedAt'> = {
-			name: item.value.name.trim(),
-			description: item.value.description.trim(),
-			location: item.value.location.trim(),
-			status: item.value.status,
-			imageUrl: '', // Will be set by backend if image is uploaded
+			name: reportData.value.itemName,
+			description: enhancedDescription,
+			location: reportData.value.location,
+			status: reportData.value.type, // 'LOST' or 'FOUND'
+			imageData: imagePreview.value,
 		};
 
-		// Add image data if available
-		if (imagePreview.value) {
-			itemData.imageData = imagePreview.value;
-		}
-
-		// Create the item via the store
+		// Create the item (which represents our "report")
 		const newItem = await itemStore.createItem(itemData);
 
 		if (newItem) {
-			// Navigate to the newly created item's details page
+			// Show success and navigate
+			console.log('Report submitted successfully:', newItem);
+			// TODO: Show success toast: "Bericht erfolgreich eingereicht!"
+
+			// Navigate to the new "report" (item details)
 			router.push(`/items/${newItem.id}`);
-		} else {
-			throw new Error('Failed to create item');
 		}
 	} catch (error) {
-		console.error('Error creating item:', error);
+		console.error('Error submitting report:', error);
 		// TODO: Show error toast
 	}
 };
@@ -403,10 +554,12 @@ const handleFileSelect = (event: Event) => {
 			return;
 		}
 
+		// Convert to base64 for preview and storage
 		const reader = new FileReader();
 		reader.onload = (e) => {
-			imagePreview.value = e.target?.result as string;
-			item.value.imageData = imagePreview.value;
+			const result = e.target?.result as string;
+			imagePreview.value = result;
+			reportData.value.imageData = result;
 		};
 		reader.readAsDataURL(file);
 	}
@@ -414,8 +567,7 @@ const handleFileSelect = (event: Event) => {
 
 const takePhoto = async () => {
 	try {
-		// For now, just trigger file input
-		// In a real mobile app, you could use Capacitor Camera plugin
+		// For now, just trigger file input (in a real app, you'd use camera API)
 		triggerFileInput();
 	} catch (error) {
 		console.error('Error taking photo:', error);
@@ -425,7 +577,7 @@ const takePhoto = async () => {
 
 const removeImage = () => {
 	imagePreview.value = '';
-	item.value.imageData = '';
+	reportData.value.imageData = '';
 	if (fileInput.value) {
 		fileInput.value.value = '';
 	}
@@ -433,23 +585,30 @@ const removeImage = () => {
 
 // Watch for changes and clear errors
 watch(
-	() => item.value.name,
+	() => reportData.value.type,
 	() => {
-		if (errors.value.name) errors.value.name = '';
+		if (errors.value.type) validateField('type');
 	}
 );
 
 watch(
-	() => item.value.location,
+	() => reportData.value.itemName,
 	() => {
-		if (errors.value.location) errors.value.location = '';
+		if (errors.value.itemName) validateField('itemName');
 	}
 );
 
 watch(
-	() => item.value.status,
+	() => reportData.value.location,
 	() => {
-		if (errors.value.status) errors.value.status = '';
+		if (errors.value.location) validateField('location');
+	}
+);
+
+watch(
+	() => reportData.value.reporterName,
+	() => {
+		if (errors.value.reporterName) validateField('reporterName');
 	}
 );
 </script>
@@ -480,7 +639,7 @@ watch(
 	background: linear-gradient(
 		90deg,
 		var(--ion-color-primary),
-		var(--ion-color-primary-tint)
+		var(--ion-color-primary-shade)
 	);
 	border-radius: 4px;
 	transition: width 0.3s ease;
@@ -490,6 +649,7 @@ watch(
 	font-size: 0.85em;
 	color: var(--ion-color-medium);
 	font-weight: 600;
+	margin: 0;
 }
 
 .form-header {
@@ -523,6 +683,28 @@ watch(
 
 .input-group {
 	margin-bottom: 24px;
+}
+
+.section-title {
+	color: var(--ion-color-dark);
+	margin: 0 0 8px 0;
+	font-size: 1.1em;
+	font-weight: 600;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.section-icon {
+	font-size: 18px;
+	color: var(--ion-color-primary);
+}
+
+.section-description {
+	color: var(--ion-color-medium);
+	margin: 0 0 16px 0;
+	font-size: 0.9em;
+	line-height: 1.4;
 }
 
 .modern-item {
@@ -577,8 +759,26 @@ watch(
 	--padding-bottom: 16px;
 }
 
-.input-error {
-	color: var(--ion-color-danger);
+.select-option {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 8px 0;
+}
+
+.option-icon {
+	font-size: 20px;
+	color: var(--ion-color-primary);
+}
+
+.select-option div {
+	flex: 1;
+}
+
+.select-option p {
+	margin: 2px 0 0 0;
+	font-size: 0.85em;
+	color: var(--ion-color-medium);
 }
 
 .error-message {
@@ -592,48 +792,13 @@ watch(
 	animation: shake 0.3s ease-in-out;
 }
 
-.form-footer-info {
-	margin-top: 20px;
-	padding: 20px;
-	background: linear-gradient(
-		135deg,
-		var(--ion-color-light-tint),
-		var(--ion-color-light)
-	);
-	border-radius: 12px;
-	border-left: 4px solid var(--ion-color-primary);
-	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-}
-
-.info-item {
-	--background: transparent;
-	--padding-start: 0;
-	--padding-end: 0;
-}
-
-.info-text p {
-	margin: 0 0 8px 0;
-	color: var(--ion-color-medium-shade);
-	font-size: 0.9em;
-	line-height: 1.4;
-}
-
-.info-text p:last-child {
-	margin-bottom: 0;
-}
-
-.required-note {
-	font-size: 0.8em !important;
-	color: var(--ion-color-medium) !important;
-	font-style: italic;
-}
-
 /* Image Upload Styles */
 .image-upload-section {
 	background: var(--ion-color-light-tint);
-	border-radius: 16px;
-	padding: 20px;
 	border: 2px dashed var(--ion-color-light-shade);
+	border-radius: 12px;
+	padding: 20px;
+	text-align: center;
 	transition: all 0.3s ease;
 }
 
@@ -643,13 +808,14 @@ watch(
 }
 
 .upload-title {
-	display: flex;
-	align-items: center;
-	gap: 8px;
 	color: var(--ion-color-dark);
 	margin: 0 0 8px 0;
 	font-size: 1.1em;
 	font-weight: 600;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
 }
 
 .title-icon {
@@ -661,76 +827,86 @@ watch(
 	color: var(--ion-color-medium);
 	margin: 0 0 20px 0;
 	font-size: 0.9em;
-	line-height: 1.4;
 }
 
 .image-preview-container {
 	position: relative;
+	display: inline-block;
 	margin-bottom: 16px;
 }
 
 .image-preview {
-	width: 100%;
-	max-width: 300px;
-	height: 200px;
-	object-fit: cover;
-	border-radius: 12px;
-	border: 2px solid var(--ion-color-light-shade);
-	display: block;
-	margin: 0 auto;
-	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+	max-width: 200px;
+	max-height: 200px;
+	border-radius: 8px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .remove-image-btn {
 	position: absolute;
-	top: 8px;
-	right: 50%;
-	transform: translateX(calc(50% - 150px));
-	background: rgba(255, 255, 255, 0.9);
-	border-radius: 50%;
-	--padding-start: 8px;
-	--padding-end: 8px;
-	--padding-top: 8px;
-	--padding-bottom: 8px;
-	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+	top: -8px;
+	right: -8px;
+	--background: var(--ion-color-danger);
+	--color: white;
+	--border-radius: 50%;
+	width: 32px;
+	height: 32px;
 }
 
 .upload-buttons {
 	display: flex;
+	flex-direction: column;
 	gap: 12px;
-	margin-bottom: 16px;
-	justify-content: center;
+	max-width: 300px;
+	margin: 0 auto;
 }
 
 .upload-btn {
-	--border-radius: 12px;
-	font-weight: 600;
-	flex: 1;
-	max-width: 200px;
+	--border-width: 2px;
+	--border-style: solid;
+	font-weight: 500;
 }
 
-.upload-tips {
-	background: rgba(var(--ion-color-warning-rgb), 0.1);
+/* Tips Section */
+.tips-section {
+	background: linear-gradient(
+		135deg,
+		var(--ion-color-primary-tint),
+		rgba(var(--ion-color-primary-rgb), 0.1)
+	);
 	border-radius: 12px;
-	padding: 16px;
-	border-left: 4px solid var(--ion-color-warning);
+	padding: 20px;
+	margin-top: 32px;
+	border-left: 4px solid var(--ion-color-primary);
+}
+
+.tips-title {
+	color: var(--ion-color-dark);
+	margin: 0 0 16px 0;
+	font-size: 1.1em;
+	font-weight: 600;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.tips-list {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
 }
 
 .tip-item {
-	--background: transparent;
-	--padding-start: 0;
-	--padding-end: 0;
+	display: flex;
+	align-items: flex-start;
+	gap: 12px;
 }
 
 .tip-text p {
-	margin: 0 0 4px 0;
+	margin: 0;
 	color: var(--ion-color-medium-shade);
-	font-size: 0.85em;
+	font-size: 0.9em;
 	line-height: 1.4;
-}
-
-.tip-text p:last-child {
-	margin-bottom: 0;
 }
 
 @keyframes slideInUp {
@@ -764,7 +940,7 @@ watch(
 	}
 
 	.form-header {
-		margin-bottom: 30px;
+		margin-bottom: 32px;
 	}
 
 	.header-icon {
@@ -772,25 +948,29 @@ watch(
 	}
 
 	.form-header h2 {
-		font-size: 1.5em;
+		font-size: 1.6em;
 	}
 
-	.progress-section {
-		margin-bottom: 20px;
+	.upload-buttons {
+		max-width: 100%;
 	}
 }
 
 @media (max-width: 480px) {
+	.progress-section {
+		margin-bottom: 24px;
+	}
+
 	.form-header {
-		margin-bottom: 20px;
+		margin-bottom: 24px;
 	}
 
 	.input-group {
 		margin-bottom: 20px;
 	}
 
-	.form-footer-info {
-		margin-top: 16px;
+	.tips-section {
+		margin-top: 24px;
 		padding: 16px;
 	}
 }

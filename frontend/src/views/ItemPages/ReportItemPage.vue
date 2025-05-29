@@ -314,7 +314,6 @@ import {
 	IonSelect,
 	IonSelectOption,
 	IonButton,
-	IonProgressBar,
 } from '@ionic/vue';
 import {
 	megaphoneOutline,
@@ -323,7 +322,6 @@ import {
 	locationOutline,
 	flagOutline,
 	alertCircleOutline,
-	informationCircleOutline,
 	checkmarkCircleOutline,
 	closeCircleOutline,
 	cameraOutline,

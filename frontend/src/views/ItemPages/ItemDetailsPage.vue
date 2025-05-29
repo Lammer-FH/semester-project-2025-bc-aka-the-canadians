@@ -434,7 +434,6 @@ import {
 	documentTextOutline,
 	locationOutline,
 	businessOutline,
-	calendarOutline,
 	timeOutline,
 	shareOutline,
 	trashOutline,

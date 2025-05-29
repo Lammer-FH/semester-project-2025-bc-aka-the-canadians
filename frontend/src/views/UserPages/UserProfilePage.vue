@@ -315,7 +315,6 @@ import {
 	createOutline,
 	checkmarkOutline,
 	mailOutline,
-	callOutline,
 	alertCircleOutline,
 	lockClosedOutline,
 	notificationsOutline,

@@ -16,6 +16,4 @@ public class LocationDTO {
     private String building;
     private String floor;
     private String roomNumber;
-    private Double latitude;
-    private Double longitude;
 } 

@@ -23,18 +23,24 @@ public class ItemController {
     private final ItemMapper itemMapper;
 
 
-
     /**
-     * Gibt alle Items zurück, optional gefiltert nach Status oder Kategorie.
+     * Gibt alle Items zurück, optional gefiltert nach Status und/oder Kategorie.
      */
     @GetMapping
     public ResponseEntity<List<ItemDTO>> getAllItems(
             @RequestParam(required = false) String status,
             @RequestParam(required = false) String category) {
-        
+
         List<Item> items;
-        
-        if (status != null) {
+
+        if (status != null && category != null) {
+            try {
+                ItemStatus itemStatus = ItemStatus.valueOf(status);
+                items = itemService.getItemsByStatusAndCategory(itemStatus, category);
+            } catch (IllegalArgumentException e) {
+                return ResponseEntity.badRequest().build();
+            }
+        } else if (status != null) {
             try {
                 ItemStatus itemStatus = ItemStatus.valueOf(status);
                 items = itemService.getItemsByStatus(itemStatus);
@@ -46,7 +52,7 @@ public class ItemController {
         } else {
             items = itemService.getAllItems();
         }
-        
+
         return ResponseEntity.ok(itemMapper.toDTOList(items));
     }
 
@@ -67,10 +73,10 @@ public class ItemController {
     public ResponseEntity<ItemDTO> createItem(@RequestBody ItemDTO itemDTO) {
         // Konvertierung von DTO zu Entity
         Item item = itemMapper.toEntity(itemDTO);
-        
+
         // Speichern der Entity
         Item savedItem = itemService.saveItem(item);
-        
+
         // Konvertierung zurück zu DTO für die Antwort
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(itemMapper.toDTO(savedItem));
@@ -85,13 +91,13 @@ public class ItemController {
         if (!itemService.getItemById(id).isPresent()) {
             return ResponseEntity.notFound().build();
         }
-        
+
         // Setzen der ID, um sicherzustellen, dass das richtige Item aktualisiert wird
         itemDTO.setId(id);
-        
+
         // Konvertierung und Speichern
         Item updatedItem = itemService.saveItem(itemMapper.toEntity(itemDTO));
-        
+
         // Konvertierung zurück zu DTO
         return ResponseEntity.ok(itemMapper.toDTO(updatedItem));
     }
@@ -105,10 +111,10 @@ public class ItemController {
         if (!itemService.getItemById(id).isPresent()) {
             return ResponseEntity.notFound().build();
         }
-        
+
         // Löschen des Items
         itemService.deleteItem(id);
-        
+
         return ResponseEntity.noContent().build();
     }
 } 

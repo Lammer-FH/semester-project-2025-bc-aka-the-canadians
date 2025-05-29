@@ -1,6 +1,7 @@
 import { createRouter, createWebHashHistory, RouteRecordRaw } from 'vue-router';
-import ItemsHomePage from '@/views/ItemPages/ItemsHomePage.vue';
-import LocationsHomePage from '@/views/LocationsPages/LocationsHomePage.vue';
+import HomePage from '@/views/HomePage/HomePage.vue';
+import ItemsOverviewPage from '@/views/ItemPages/ItemsOverviewPage.vue';
+import LocationsOverviewPage from '@/views/LocationsPages/LocationsOverviewPage.vue';
 import ReportItemPage from '@/views/ItemPages/ReportItemPage.vue';
 import ItemDetailsPage from '@/views/ItemPages/ItemDetailsPage.vue';
 import EditItemPage from '@/views/ItemPages/EditItemPage.vue';
@@ -12,16 +13,17 @@ import UserProfilePage from '@/views/UserPages/UserProfilePage.vue';
 const routes: Array<RouteRecordRaw> = [
 	{
 		path: '/',
-		redirect: '/items/home',
+		name: 'home',
+		component: HomePage,
 	},
 	{
 		path: '/items',
-		redirect: '/items/home',
+		redirect: '/items/overview',
 	},
 	{
-		path: '/items/home',
-		name: 'items-home',
-		component: ItemsHomePage,
+		path: '/items/overview',
+		name: 'items-overview',
+		component: ItemsOverviewPage,
 	},
 	{
 		path: '/items/report',
@@ -40,12 +42,12 @@ const routes: Array<RouteRecordRaw> = [
 	},
 	{
 		path: '/locations',
-		redirect: '/locations/home',
+		redirect: '/locations/overview',
 	},
 	{
-		path: '/locations/home',
-		name: 'locations-home',
-		component: LocationsHomePage,
+		path: '/locations/overview',
+		name: 'locations-overview',
+		component: LocationsOverviewPage,
 	},
 	{
 		path: '/locations/add',

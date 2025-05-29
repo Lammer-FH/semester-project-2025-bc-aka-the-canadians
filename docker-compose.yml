@@ -3,10 +3,12 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        VITE_API_URL: /api
+        BASE_URL: /api
+    container_name: frontend
     ports:
       - "3000:80"
-    environment:
-      - VITE_API_URL=http://localhost:8080
     depends_on:
       - backend
     networks:
@@ -16,6 +18,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+    container_name: backend
     ports:
       - "8080:8080"
     environment:
@@ -43,6 +46,7 @@ services:
 
   minio:
     image: minio/minio
+    container_name: minio
     ports:
       - "9000:9000"
       - "9001:9001"
@@ -57,6 +61,7 @@ services:
 
   mysql:
     image: mysql:8.0
+    container_name: mysql
     ports:
       - "3306:3306"
     environment:
@@ -71,6 +76,7 @@ services:
   # connect with credentials set in the mysql service
   mysql-dashboard:
     image: adminer
+    container_name: mysql-dashboard
     restart: always
     ports:
       - "8082:8080"

@@ -6,13 +6,11 @@
 		@leftFooterButtonClicked="handleCancel"
 		@rightFooterButtonClicked="handleSave">
 		<div class="form-container">
-			<!-- Loading State -->
 			<div v-if="isLoading" class="loading-container">
 				<ion-spinner name="crescent" color="primary"></ion-spinner>
 				<p>Lade Gegenstand...</p>
 			</div>
 
-			<!-- Error State -->
 			<div v-else-if="error && !item.name" class="empty-state">
 				<ion-icon :icon="alertCircleOutline" class="empty-icon"></ion-icon>
 				<h2>Fehler beim Laden</h2>
@@ -24,7 +22,6 @@
 			</div>
 
 			<div v-else class="form-content">
-				<!-- Form Header -->
 				<div class="form-header">
 					<ion-icon :icon="createOutline" class="header-icon"></ion-icon>
 					<h2>Gegenstand bearbeiten</h2>
@@ -35,7 +32,6 @@
 					</div>
 				</div>
 
-				<!-- Name Field -->
 				<div class="input-group">
 					<ion-item
 						class="modern-item"
@@ -59,7 +55,6 @@
 					</div>
 				</div>
 
-				<!-- Description Field -->
 				<div class="input-group">
 					<ion-item
 						class="modern-item textarea-item"
@@ -80,7 +75,6 @@
 					</ion-item>
 				</div>
 
-				<!-- Location Field -->
 				<div class="input-group">
 					<ion-item
 						class="modern-item"
@@ -104,7 +98,6 @@
 					</div>
 				</div>
 
-				<!-- Status Field -->
 				<div class="input-group">
 					<ion-item
 						class="modern-item"
@@ -131,7 +124,6 @@
 					</div>
 				</div>
 
-				<!-- Image Upload Section -->
 				<div class="input-group">
 					<div class="image-upload-section">
 						<h4 class="upload-title">
@@ -143,7 +135,6 @@
 							können.
 						</p>
 
-						<!-- Image Preview -->
 						<div
 							v-if="imagePreview || item.imageUrl"
 							class="image-preview-container">
@@ -160,7 +151,6 @@
 							</ion-button>
 						</div>
 
-						<!-- Upload Buttons -->
 						<div class="upload-buttons">
 							<ion-button fill="outline" class="upload-btn" @click="takePhoto">
 								<ion-icon :icon="cameraOutline" slot="start"></ion-icon>
@@ -175,7 +165,6 @@
 							</ion-button>
 						</div>
 
-						<!-- Hidden file input -->
 						<input
 							ref="fileInput"
 							type="file"
@@ -185,7 +174,6 @@
 					</div>
 				</div>
 
-				<!-- Action Buttons -->
 				<div class="action-buttons">
 					<ion-button
 						fill="outline"
@@ -198,7 +186,6 @@
 					</ion-button>
 				</div>
 
-				<!-- Form Footer Info -->
 				<div class="form-footer-info">
 					<ion-item class="info-item">
 						<ion-icon
@@ -217,7 +204,6 @@
 			</div>
 		</div>
 
-		<!-- Delete Confirmation Modal -->
 		<ion-alert
 			:is-open="showDeleteAlert"
 			header="Gegenstand löschen"
@@ -389,14 +375,12 @@ const loadItem = async () => {
 		const loadedItem = itemStore.getCurrentItem;
 
 		if (loadedItem) {
-			// Create a copy to avoid direct mutation of store data
 			item.value = { ...loadedItem };
 		} else {
 			throw new Error('Item not found');
 		}
 	} catch (error) {
 		console.error('Error loading item:', error);
-		// Navigate back if item cannot be loaded
 		router.back();
 	}
 };
@@ -414,7 +398,6 @@ const handleSave = async () => {
 	isSaving.value = true;
 
 	try {
-		// Prepare update data - only send changed fields
 		const updateData: Partial<Item> = {
 			name: item.value.name.trim(),
 			description: item.value.description?.trim() || '',
@@ -422,18 +405,15 @@ const handleSave = async () => {
 			status: item.value.status,
 		};
 
-		// Include image data if there's a new image
 		if (imagePreview.value) {
 			updateData.imageData = imagePreview.value;
 		}
 
 		await itemStore.updateItem(item.value.id, updateData);
 
-		// Navigate to item details page
 		router.push(`/items/${item.value.id}`);
 	} catch (error) {
 		console.error('Error saving item:', error);
-		// TODO: Show error toast
 	} finally {
 		isSaving.value = false;
 	}
@@ -446,15 +426,12 @@ const handleDelete = () => {
 const confirmDelete = async () => {
 	try {
 		await itemStore.deleteItem(item.value.id);
-		// Navigate back to items list
 		router.push('/items/overview');
 	} catch (error) {
 		console.error('Error deleting item:', error);
-		// TODO: Show error toast
 	}
 };
 
-// Image handling functions
 const triggerFileInput = () => {
 	fileInput.value?.click();
 };
@@ -464,17 +441,13 @@ const handleFileSelect = (event: Event) => {
 	const file = target.files?.[0];
 
 	if (file) {
-		// Validate file type
 		if (!file.type.startsWith('image/')) {
-			// TODO: Show error toast
 			console.error('Please select an image file');
 			return;
 		}
 
-		// Validate file size (max 5MB)
 		const maxSize = 5 * 1024 * 1024; // 5MB
 		if (file.size > maxSize) {
-			// TODO: Show error toast
 			console.error('File size must be less than 5MB');
 			return;
 		}
@@ -489,12 +462,9 @@ const handleFileSelect = (event: Event) => {
 
 const takePhoto = async () => {
 	try {
-		// For now, just trigger file input
-		// In a real mobile app, you could use Capacitor Camera plugin
 		triggerFileInput();
 	} catch (error) {
 		console.error('Error taking photo:', error);
-		// TODO: Show error toast
 	}
 };
 
@@ -506,7 +476,6 @@ const removeImage = () => {
 	}
 };
 
-// Watch for changes and clear errors
 watch(
 	() => item.value.name,
 	() => {
@@ -716,7 +685,6 @@ onMounted(() => {
 	font-size: 0.9em;
 }
 
-/* Image Upload Styles */
 .image-upload-section {
 	background: var(--ion-color-light-tint);
 	border-radius: 16px;
@@ -821,7 +789,6 @@ onMounted(() => {
 	}
 }
 
-/* Responsive Design */
 @media (max-width: 768px) {
 	.form-container {
 		padding: 16px;

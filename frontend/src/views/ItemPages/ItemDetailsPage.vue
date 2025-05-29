@@ -5,13 +5,11 @@
 		@leftFooterButtonClicked="handleBack"
 		@rightFooterButtonClicked="handleEdit">
 		<div class="details-container">
-			<!-- Loading State -->
 			<div v-if="isLoading" class="loading-container">
 				<ion-spinner name="crescent" color="primary"></ion-spinner>
 				<p>Lade Bericht...</p>
 			</div>
 
-			<!-- Error State -->
 			<div v-else-if="error && !item" class="empty-state">
 				<ion-icon :icon="alertCircleOutline" class="empty-icon"></ion-icon>
 				<h2>Fehler beim Laden</h2>
@@ -22,9 +20,7 @@
 				</ion-button>
 			</div>
 
-			<!-- Item Details -->
 			<div v-else-if="item" class="item-details">
-				<!-- Report Header -->
 				<div class="report-header">
 					<div class="header-content">
 						<div class="header-left">
@@ -56,7 +52,6 @@
 					</div>
 				</div>
 
-				<!-- Image Section -->
 				<div v-if="item.imageUrl" class="image-section">
 					<div class="image-container">
 						<img
@@ -79,7 +74,6 @@
 					</div>
 				</div>
 
-				<!-- Main Info Card -->
 				<div class="info-card main-info">
 					<div class="card-header">
 						<h1 class="item-title">{{ item.name }}</h1>
@@ -90,9 +84,7 @@
 						</div>
 					</div>
 
-					<!-- Enhanced Status Section based on item status -->
 					<div class="status-section">
-						<!-- Found Item Actions -->
 						<div
 							v-if="item.status.toUpperCase() === 'FOUND'"
 							class="found-item-section">
@@ -119,7 +111,6 @@
 							</div>
 						</div>
 
-						<!-- Lost Item Actions -->
 						<div
 							v-else-if="item.status.toUpperCase() === 'LOST'"
 							class="lost-item-section">
@@ -146,7 +137,6 @@
 							</div>
 						</div>
 
-						<!-- Claimed Item Status -->
 						<div
 							v-else-if="item.status.toUpperCase() === 'CLAIMED'"
 							class="claimed-item-section">
@@ -165,7 +155,6 @@
 							</div>
 						</div>
 
-						<!-- Returned Item Status -->
 						<div
 							v-else-if="item.status.toUpperCase() === 'RETURNED'"
 							class="returned-item-section">
@@ -186,7 +175,6 @@
 						</div>
 					</div>
 
-					<!-- Description Section -->
 					<div v-if="item.description" class="description-section">
 						<h3>
 							<ion-icon
@@ -199,7 +187,6 @@
 								{{ getCleanDescription(item.description) }}
 							</p>
 
-							<!-- Reporter Information if available -->
 							<div
 								v-if="getReporterInfo(item.description)"
 								class="reporter-info">
@@ -221,7 +208,6 @@
 					</div>
 				</div>
 
-				<!-- Location Info Card -->
 				<div class="info-card location-info">
 					<h3>
 						<ion-icon :icon="locationOutline" class="section-icon"></ion-icon>
@@ -241,7 +227,6 @@
 					</div>
 				</div>
 
-				<!-- Report Timeline Card -->
 				<div class="info-card timeline-info">
 					<h3>
 						<ion-icon :icon="timeOutline" class="section-icon"></ion-icon>
@@ -280,7 +265,6 @@
 					</div>
 				</div>
 
-				<!-- Statistics Card -->
 				<div v-if="showStatistics" class="info-card stats-info">
 					<h3>
 						<ion-icon :icon="statsChartOutline" class="section-icon"></ion-icon>
@@ -302,7 +286,6 @@
 					</div>
 				</div>
 
-				<!-- Related Reports Card -->
 				<div v-if="relatedReports.length > 0" class="info-card related-reports">
 					<h3>
 						<ion-icon :icon="layersOutline" class="section-icon"></ion-icon>
@@ -335,7 +318,6 @@
 					</div>
 				</div>
 
-				<!-- Action Buttons -->
 				<div class="action-buttons">
 					<ion-button
 						v-if="item.status.toUpperCase() === 'FOUND'"
@@ -390,7 +372,6 @@
 			</div>
 		</div>
 
-		<!-- Enhanced Image Modal -->
 		<ion-modal :is-open="showImageModal" @did-dismiss="closeImageModal">
 			<ion-header>
 				<ion-toolbar>
@@ -413,7 +394,6 @@
 			</ion-content>
 		</ion-modal>
 
-		<!-- Enhanced Claim Alert -->
 		<ion-alert
 			:is-open="showClaimAlert"
 			header="Gegenstand abholen"
@@ -421,7 +401,6 @@
 			:buttons="claimAlertButtons"
 			@didDismiss="showClaimAlert = false"></ion-alert>
 
-		<!-- Delete Confirmation Alert -->
 		<ion-alert
 			:is-open="showDeleteAlert"
 			header="Bericht löschen"
@@ -482,7 +461,6 @@ const router = useRouter();
 const route = useRoute();
 const itemStore = useItemStore();
 
-// State
 const item = ref<Item | null>(null);
 const relatedReports = ref<Item[]>([]);
 const showImageModal = ref(false);
@@ -491,7 +469,6 @@ const showClaimAlert = ref(false);
 const showStatistics = ref(false);
 const viewCount = ref(0);
 
-// Computed
 const isLoading = computed(() => itemStore.isLoading);
 const error = computed(() => itemStore.getError);
 
@@ -558,7 +535,6 @@ const claimAlertButtons = [
 	},
 ];
 
-// Methods
 const loadItem = async () => {
 	try {
 		const itemId = parseInt(route.params.id as string);
@@ -581,11 +557,9 @@ const loadRelatedReports = async () => {
 	if (!item.value) return;
 
 	try {
-		// Fetch all items and filter for related ones
 		await itemStore.fetchItems();
 		const allItems = itemStore.getItems;
 
-		// Find related items (same location, different ID, not claimed)
 		relatedReports.value = allItems
 			.filter(
 				(i) =>
@@ -593,7 +567,7 @@ const loadRelatedReports = async () => {
 					i.location === item.value!.location &&
 					i.status.toUpperCase() !== 'CLAIMED'
 			)
-			.slice(0, 3); // Limit to 3 related reports
+			.slice(0, 3);
 	} catch (error) {
 		console.error('Error loading related reports:', error);
 		relatedReports.value = [];
@@ -602,7 +576,6 @@ const loadRelatedReports = async () => {
 
 const loadItemStatistics = async (itemId: number) => {
 	try {
-		// Mock view count - in a real app, this would come from backend
 		viewCount.value = Math.floor(Math.random() * 50) + 5;
 	} catch (error) {
 		console.error('Error loading statistics:', error);
@@ -695,9 +668,7 @@ const getTimeAgo = (dateString: string) => {
 	return date.toLocaleDateString('de-DE');
 };
 
-// Description parsing functions
 const getCleanDescription = (description: string): string => {
-	// Remove the report metadata section
 	const parts = description.split('--- Berichtinformationen ---');
 	return parts[0].trim() || 'Keine Beschreibung verfügbar.';
 };
@@ -775,7 +746,6 @@ const processClaim = async () => {
 	if (!item.value) return;
 
 	try {
-		// Create enhanced description with claim information
 		const currentDate = new Date().toLocaleDateString('de-DE');
 		const claimDescription = [
 			'--- ABHOLUNG ANGEFORDERT ---',
@@ -786,7 +756,6 @@ const processClaim = async () => {
 			item.value.description,
 		].join('\n');
 
-		// Update item status
 		const updatedItem = await itemStore.updateItem(item.value.id, {
 			status: 'CLAIMED',
 			description: claimDescription,
@@ -797,16 +766,12 @@ const processClaim = async () => {
 		}
 
 		console.log('Item claimed successfully');
-
-		// TODO: Send notification to finder
-		// await notificationService.notifyItemClaimed(item.value.id);
 	} catch (error) {
 		console.error('Error claiming item:', error);
 	}
 };
 
 const reportFound = () => {
-	// Navigate to report creation with pre-filled data
 	router.push({
 		path: '/items/report',
 		query: {
@@ -832,7 +797,6 @@ const shareItem = async () => {
 		if (navigator.share) {
 			await navigator.share(shareData);
 		} else {
-			// Fallback: copy to clipboard
 			await navigator.clipboard.writeText(window.location.href);
 			console.log('Link copied to clipboard');
 		}
@@ -899,7 +863,6 @@ onMounted(() => {
 	animation: slideInUp 0.6s ease-out;
 }
 
-/* Report Header */
 .report-header {
 	background: linear-gradient(
 		135deg,
@@ -973,7 +936,6 @@ onMounted(() => {
 	font-size: 14px;
 }
 
-/* Image Section */
 .image-section {
 	margin-bottom: 16px;
 }
@@ -1019,7 +981,6 @@ onMounted(() => {
 	backdrop-filter: blur(10px);
 }
 
-/* Info Cards */
 .info-card {
 	background: white;
 	border-radius: 12px;
@@ -1049,7 +1010,6 @@ onMounted(() => {
 	gap: 8px;
 }
 
-/* Status Sections */
 .status-section {
 	margin-bottom: 20px;
 }
@@ -1133,7 +1093,6 @@ onMounted(() => {
 	}
 }
 
-/* Description Section */
 .description-section h3 {
 	color: var(--ion-color-dark);
 	margin: 0 0 16px 0;
@@ -1207,7 +1166,6 @@ onMounted(() => {
 	text-align: right;
 }
 
-/* Location Details */
 .location-details {
 	display: flex;
 	flex-direction: column;
@@ -1231,7 +1189,6 @@ onMounted(() => {
 	font-weight: 500;
 }
 
-/* Timeline */
 .timeline {
 	display: flex;
 	flex-direction: column;
@@ -1301,7 +1258,6 @@ onMounted(() => {
 	color: var(--ion-color-medium-shade);
 }
 
-/* Statistics */
 .stats-grid {
 	display: grid;
 	grid-template-columns: repeat(3, 1fr);
@@ -1328,7 +1284,6 @@ onMounted(() => {
 	font-weight: 500;
 }
 
-/* Related Reports */
 .related-list {
 	display: flex;
 	flex-direction: column;
@@ -1378,7 +1333,6 @@ onMounted(() => {
 	font-size: 16px;
 }
 
-/* Action Buttons */
 .action-buttons {
 	display: flex;
 	flex-direction: column;
@@ -1393,7 +1347,6 @@ onMounted(() => {
 	margin-top: 8px;
 }
 
-/* Modal Styles */
 .modal-content {
 	background: black;
 }
@@ -1412,7 +1365,6 @@ onMounted(() => {
 	object-fit: contain;
 }
 
-/* Alert Styles */
 :global(.alert-button-confirm) {
 	color: var(--ion-color-success) !important;
 	font-weight: 600 !important;
@@ -1433,7 +1385,6 @@ onMounted(() => {
 	}
 }
 
-/* Responsive Design */
 @media (max-width: 768px) {
 	.details-container {
 		padding: 12px;

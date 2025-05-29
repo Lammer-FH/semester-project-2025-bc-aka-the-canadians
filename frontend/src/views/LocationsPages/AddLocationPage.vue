@@ -6,7 +6,6 @@
 		@leftFooterButtonClicked="handleCancel"
 		@rightFooterButtonClicked="handleSave">
 		<div class="form-container">
-			<!-- Progress Indicator -->
 			<div class="progress-section">
 				<ion-progress-bar
 					:value="completionProgress"
@@ -17,16 +16,13 @@
 				</p>
 			</div>
 
-			<!-- Form Header -->
 			<div class="form-header">
 				<ion-icon :icon="locationOutline" class="header-icon"></ion-icon>
 				<h2>Neuen Standort hinzufügen</h2>
 				<p>Erstelle einen neuen Standort für das Campus Lost & Found System</p>
 			</div>
 
-			<!-- Form Content -->
 			<div class="form-content">
-				<!-- Name Field -->
 				<div class="input-group">
 					<ion-item
 						class="modern-item"
@@ -50,7 +46,6 @@
 					</div>
 				</div>
 
-				<!-- Description Field -->
 				<div class="input-group">
 					<ion-item
 						class="modern-item textarea-item"
@@ -69,7 +64,6 @@
 					</ion-item>
 				</div>
 
-				<!-- Building Field -->
 				<div class="input-group">
 					<ion-item
 						class="modern-item"
@@ -93,7 +87,6 @@
 					</div>
 				</div>
 
-				<!-- Floor & Room Row -->
 				<div class="input-row">
 					<div class="input-group half-width">
 						<ion-item
@@ -142,7 +135,6 @@
 					</div>
 				</div>
 
-				<!-- Form Footer Info -->
 				<div class="form-footer-info">
 					<ion-item class="info-item">
 						<ion-icon
@@ -300,7 +292,6 @@ const handleSave = async () => {
 	}
 
 	try {
-		// Create the location using the store
 		const newLocation = await locationStore.createLocation({
 			name: location.value.name.trim(),
 			description: location.value.description.trim(),
@@ -310,18 +301,15 @@ const handleSave = async () => {
 		});
 
 		if (newLocation) {
-			// Navigate to the newly created location's details page
 			router.push(`/locations/${newLocation.id}`);
 		} else {
 			throw new Error('Failed to create location');
 		}
 	} catch (error) {
 		console.error('Error creating location:', error);
-		// TODO: Show error toast/notification
 	}
 };
 
-// Watch for changes and clear errors
 watch(
 	() => location.value.name,
 	() => {
@@ -546,7 +534,6 @@ watch(
 	}
 }
 
-/* Responsive Design */
 @media (max-width: 768px) {
 	.form-container {
 		padding: 16px;

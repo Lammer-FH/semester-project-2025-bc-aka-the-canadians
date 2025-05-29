@@ -6,13 +6,11 @@
 		@leftFooterButtonClicked="handleDelete"
 		@rightFooterButtonClicked="handleEdit">
 		<div class="details-container">
-			<!-- Loading State -->
 			<div v-if="isLoading" class="loading-container">
 				<ion-spinner name="crescent" color="primary"></ion-spinner>
 				<p>Lade Standort...</p>
 			</div>
 
-			<!-- Error State -->
 			<div v-else-if="error && !location" class="empty-state">
 				<ion-icon :icon="alertCircleOutline" class="empty-icon"></ion-icon>
 				<h2>Fehler beim Laden</h2>
@@ -23,9 +21,7 @@
 				</ion-button>
 			</div>
 
-			<!-- Location Details -->
 			<div v-else-if="location" class="content-wrapper">
-				<!-- Location Header -->
 				<div class="location-header">
 					<div class="header-content">
 						<ion-icon :icon="locationOutline" class="location-icon"></ion-icon>
@@ -58,13 +54,11 @@
 					</div>
 				</div>
 
-				<!-- Description Section -->
 				<div v-if="location.description" class="description-section">
 					<h3>Beschreibung</h3>
 					<p>{{ location.description }}</p>
 				</div>
 
-				<!-- Metadata Section -->
 				<div class="metadata-section">
 					<h3>Standort-Details</h3>
 					<div class="metadata-grid">
@@ -105,7 +99,6 @@
 					</div>
 				</div>
 
-				<!-- Items Section -->
 				<div class="items-section">
 					<div class="section-header">
 						<h3>Gegenstände an diesem Standort</h3>
@@ -115,13 +108,11 @@
 						</ion-chip>
 					</div>
 
-					<!-- Items Loading State -->
 					<div v-if="itemsLoading" class="loading-container">
 						<ion-spinner name="crescent" color="primary"></ion-spinner>
 						<p>Lade Gegenstände...</p>
 					</div>
 
-					<!-- No Items State -->
 					<div v-else-if="itemsAtLocation.length === 0" class="empty-state">
 						<ion-icon :icon="bagOutline" class="empty-icon"></ion-icon>
 						<h4>Keine Gegenstände gefunden</h4>
@@ -132,7 +123,6 @@
 						</ion-button>
 					</div>
 
-					<!-- Items Grid -->
 					<div v-else class="items-grid">
 						<ion-card
 							v-for="(item, index) in itemsAtLocation"
@@ -183,7 +173,6 @@
 			</div>
 		</div>
 
-		<!-- Delete Confirmation Modal -->
 		<ion-alert
 			:is-open="showDeleteAlert"
 			header="Standort löschen"
@@ -235,13 +224,11 @@ const router = useRouter();
 const route = useRoute();
 const locationStore = useLocationStore();
 
-// State
 const location = ref<Location | null>(null);
 const itemsAtLocation = ref<Item[]>([]);
 const showDeleteAlert = ref(false);
 const itemsLoading = ref(false);
 
-// Computed
 const isLoading = computed(() => locationStore.isLoading && !location.value);
 const error = computed(() => locationStore.getError);
 
@@ -271,7 +258,6 @@ const alertButtons = [
 	},
 ];
 
-// Methods
 const formatDate = (dateString: string) => {
 	return new Date(dateString).toLocaleDateString('de-DE', {
 		day: '2-digit',
@@ -337,7 +323,6 @@ const loadLocation = async () => {
 		}
 	} catch (error) {
 		console.error('Error loading location:', error);
-		// Navigate back if location cannot be loaded
 		router.back();
 	}
 };
@@ -373,7 +358,6 @@ const confirmDelete = async () => {
 		router.push('/locations/overview');
 	} catch (error) {
 		console.error('Error deleting location:', error);
-		// TODO: Show error toast
 	}
 };
 
@@ -695,7 +679,6 @@ onMounted(() => {
 	}
 }
 
-/* Responsive Design */
 @media (max-width: 768px) {
 	.content-wrapper {
 		padding: 16px;

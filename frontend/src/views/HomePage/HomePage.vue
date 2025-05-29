@@ -1,7 +1,6 @@
 <template>
 	<template-page :show-profile-button="false">
 		<div class="home-container">
-			<!-- Hero Section -->
 			<div class="hero-section">
 				<div class="hero-content">
 					<ion-icon :icon="searchOutline" class="hero-icon"></ion-icon>
@@ -32,7 +31,6 @@
 				</div>
 			</div>
 
-			<!-- Features Section -->
 			<div class="features-section">
 				<h2>Wie funktioniert es?</h2>
 				<div class="features-grid">
@@ -72,7 +70,6 @@
 				</div>
 			</div>
 
-			<!-- Statistics Section -->
 			<div class="stats-section">
 				<h2>Erfolgsgeschichten</h2>
 				<div class="stats-grid">
@@ -95,7 +92,6 @@
 				</div>
 			</div>
 
-			<!-- How It Works Section -->
 			<div class="how-it-works-section">
 				<h2>So einfach geht's</h2>
 				<div class="steps-container">
@@ -142,7 +138,6 @@
 				</div>
 			</div>
 
-			<!-- Benefits Section -->
 			<div class="benefits-section">
 				<h2>Warum Campus Lost & Found nutzen?</h2>
 				<div class="benefits-grid">
@@ -181,7 +176,6 @@
 				</div>
 			</div>
 
-			<!-- Call to Action -->
 			<div class="cta-section">
 				<h2>Bereit loszulegen?</h2>
 				<p>
@@ -231,7 +225,6 @@ const router = useRouter();
 const itemStore = useItemStore();
 const locationStore = useLocationStore();
 
-// Statistics - load from real data
 const stats = ref({
 	totalReports: 0,
 	itemsReturned: 0,
@@ -240,11 +233,9 @@ const stats = ref({
 });
 
 onMounted(async () => {
-	// Load real statistics from your stores
 	try {
 		await Promise.all([itemStore.fetchItems(), locationStore.fetchLocations()]);
 
-		// Calculate real statistics from loaded data
 		const items = itemStore.getItems;
 		const locations = locationStore.getLocations;
 
@@ -255,12 +246,11 @@ onMounted(async () => {
 					item.status?.toUpperCase() === 'CLAIMED' ||
 					item.status?.toUpperCase() === 'RETURNED'
 			).length,
-			activeUsers: Math.max(1, Math.floor(items.length * 0.7)), // Estimate based on items
+			activeUsers: Math.max(1, Math.floor(items.length * 0.7)),
 			locations: locations.length,
 		};
 	} catch (error) {
 		console.error('Error loading statistics:', error);
-		// Fallback to mock data if API fails
 		stats.value = {
 			totalReports: 156,
 			itemsReturned: 89,
@@ -569,7 +559,6 @@ const navigateToReport = () => {
 	}
 }
 
-/* Responsive Design */
 @media (max-width: 768px) {
 	.hero-section {
 		padding: 40px 20px;

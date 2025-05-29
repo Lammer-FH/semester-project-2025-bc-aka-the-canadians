@@ -6,13 +6,11 @@
 		@leftFooterButtonClicked="handleCancel"
 		@rightFooterButtonClicked="handleSave">
 		<div class="form-container">
-			<!-- Loading State -->
 			<div v-if="isLoading" class="loading-container">
 				<ion-spinner name="crescent" color="primary"></ion-spinner>
 				<p>Lade Standort...</p>
 			</div>
 
-			<!-- Error State -->
 			<div v-else-if="error && !location.name" class="empty-state">
 				<ion-icon :icon="alertCircleOutline" class="empty-icon"></ion-icon>
 				<h2>Fehler beim Laden</h2>
@@ -24,7 +22,6 @@
 			</div>
 
 			<div v-else class="form-content">
-				<!-- Form Header -->
 				<div class="form-header">
 					<ion-icon :icon="createOutline" class="header-icon"></ion-icon>
 					<h2>Standort bearbeiten</h2>
@@ -35,7 +32,6 @@
 					</div>
 				</div>
 
-				<!-- Name Field -->
 				<div class="input-group">
 					<ion-item
 						class="modern-item"
@@ -59,7 +55,6 @@
 					</div>
 				</div>
 
-				<!-- Description Field -->
 				<div class="input-group">
 					<ion-item
 						class="modern-item textarea-item"
@@ -78,7 +73,6 @@
 					</ion-item>
 				</div>
 
-				<!-- Building Field -->
 				<div class="input-group">
 					<ion-item
 						class="modern-item"
@@ -102,7 +96,6 @@
 					</div>
 				</div>
 
-				<!-- Floor & Room Row -->
 				<div class="input-row">
 					<div class="input-group half-width">
 						<ion-item
@@ -150,8 +143,6 @@
 						</div>
 					</div>
 				</div>
-
-				<!-- Action Buttons -->
 				<div class="action-buttons">
 					<ion-button
 						fill="outline"
@@ -164,7 +155,6 @@
 					</ion-button>
 				</div>
 
-				<!-- Form Footer Info -->
 				<div class="form-footer-info">
 					<ion-item class="info-item">
 						<ion-icon
@@ -183,7 +173,6 @@
 			</div>
 		</div>
 
-		<!-- Delete Confirmation Alert -->
 		<ion-alert
 			:is-open="showDeleteAlert"
 			header="Standort löschen"
@@ -357,14 +346,12 @@ const loadLocation = async () => {
 
 		const loadedLocation = await locationStore.fetchLocationById(locationId);
 		if (loadedLocation) {
-			// Create a copy to avoid direct mutation of store data
 			location.value = { ...loadedLocation };
 		} else {
 			throw new Error('Location not found');
 		}
 	} catch (error) {
 		console.error('Error loading location:', error);
-		// Navigate back if location cannot be loaded
 		router.back();
 	}
 };
@@ -382,7 +369,6 @@ const handleSave = async () => {
 	isSaving.value = true;
 
 	try {
-		// Prepare update data - only send changed fields
 		const updateData = {
 			name: location.value.name.trim(),
 			description: location.value.description.trim(),
@@ -393,11 +379,9 @@ const handleSave = async () => {
 
 		await locationStore.updateLocation(location.value.id, updateData);
 
-		// Navigate to location details page
 		router.push(`/locations/${location.value.id}`);
 	} catch (error) {
 		console.error('Error saving location:', error);
-		// TODO: Show error toast
 	} finally {
 		isSaving.value = false;
 	}
@@ -410,15 +394,12 @@ const handleDelete = () => {
 const confirmDelete = async () => {
 	try {
 		await locationStore.deleteLocation(location.value.id);
-		// Navigate back to locations list
 		router.push('/locations/overview');
 	} catch (error) {
 		console.error('Error deleting location:', error);
-		// TODO: Show error toast
 	}
 };
 
-// Watch for changes and clear errors
 watch(
 	() => location.value.name,
 	() => {

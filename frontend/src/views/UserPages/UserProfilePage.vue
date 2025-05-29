@@ -7,13 +7,11 @@
 		@leftFooterButtonClicked="handleCancel"
 		@rightFooterButtonClicked="handleSave">
 		<div class="profile-container">
-			<!-- Loading State -->
 			<div v-if="isLoading" class="loading-container">
 				<ion-spinner name="crescent" color="primary"></ion-spinner>
 				<p>Lade Profil...</p>
 			</div>
 
-			<!-- Error State -->
 			<div v-else-if="error && !user" class="empty-state">
 				<ion-icon :icon="alertCircleOutline" class="empty-icon"></ion-icon>
 				<h2>Fehler beim Laden</h2>
@@ -25,7 +23,6 @@
 			</div>
 
 			<div v-else-if="user" class="content-wrapper">
-				<!-- Profile Header -->
 				<div class="profile-header">
 					<div class="avatar-section">
 						<div class="avatar-container">
@@ -56,11 +53,9 @@
 					</div>
 				</div>
 
-				<!-- Profile Form -->
 				<div class="profile-form">
 					<h3>Persönliche Informationen</h3>
 
-					<!-- First Name Field -->
 					<div class="form-group">
 						<ion-item
 							class="modern-item"
@@ -102,7 +97,6 @@
 						</div>
 					</div>
 
-					<!-- Last Name Field -->
 					<div class="form-group">
 						<ion-item
 							class="modern-item"
@@ -144,7 +138,6 @@
 						</div>
 					</div>
 
-					<!-- Email Field -->
 					<div class="form-group">
 						<ion-item
 							class="modern-item"
@@ -185,7 +178,6 @@
 						</div>
 					</div>
 
-					<!-- Username Field (Read-only) -->
 					<div class="form-group">
 						<ion-item class="modern-item item-filled">
 							<ion-label position="stacked" class="custom-label">
@@ -198,7 +190,6 @@
 					</div>
 				</div>
 
-				<!-- Account Actions -->
 				<div class="account-actions">
 					<h3>Konto-Einstellungen</h3>
 
@@ -250,7 +241,6 @@
 					</ion-list>
 				</div>
 
-				<!-- Statistics Section -->
 				<div class="statistics-section">
 					<h3>Deine Aktivität</h3>
 					<div class="stats-grid">
@@ -280,7 +270,6 @@
 					</div>
 				</div>
 
-				<!-- Danger Zone -->
 				<div class="danger-zone">
 					<h3>Gefährlicher Bereich</h3>
 					<ion-button
@@ -296,7 +285,6 @@
 			</div>
 		</div>
 
-		<!-- Delete Account Confirmation -->
 		<ion-alert
 			:is-open="showDeleteAlert"
 			header="Konto löschen"
@@ -349,7 +337,6 @@ import type { User, UserUpdateData } from '@/models/user';
 const router = useRouter();
 const userStore = useUserStore();
 
-// Get user data from store
 const user = computed(() => userStore.getCurrentUser);
 const isLoading = computed(() => userStore.isLoading);
 const error = computed(() => userStore.getError);
@@ -406,7 +393,6 @@ const deleteAlertButtons = [
 	},
 ];
 
-// Load user profile when component mounts
 onMounted(async () => {
 	await loadUserProfile();
 });
@@ -414,8 +400,6 @@ onMounted(async () => {
 const loadUserProfile = async () => {
 	try {
 		await userStore.fetchUserById(CURRENT_USER_ID);
-		// TODO: Load user statistics from backend
-		// This would be a separate API call to get user stats
 		loadUserStats();
 	} catch (error) {
 		console.error('Error loading user profile:', error);
@@ -423,8 +407,6 @@ const loadUserProfile = async () => {
 };
 
 const loadUserStats = async () => {
-	// TODO: Implement API call to get user statistics
-	// For now, using mock data
 	userStats.value = {
 		itemsReported: 12,
 		itemsClaimed: 8,
@@ -480,18 +462,15 @@ const validateField = (fieldName: keyof typeof errors.value) => {
 
 const toggleEdit = async (fieldName: string) => {
 	if (editingField.value === fieldName) {
-		// Validate and save the field
 		validateField(fieldName as keyof typeof errors.value);
 
 		if (!errors.value[fieldName as keyof typeof errors.value] && user.value) {
-			// Update the user data
 			user.value[fieldName as keyof User] =
 				editData[fieldName as keyof typeof editData];
 			editingField.value = null;
 			hasChanges.value = true;
 		}
 	} else {
-		// Start editing
 		if (user.value) {
 			editData[fieldName as keyof typeof editData] = user.value[
 				fieldName as keyof User
@@ -503,7 +482,6 @@ const toggleEdit = async (fieldName: string) => {
 
 const handleCancel = () => {
 	if (hasChanges.value) {
-		// TODO: Show confirmation dialog for unsaved changes
 		hasChanges.value = false;
 		editingField.value = null;
 	}
@@ -524,31 +502,25 @@ const handleSave = async () => {
 		hasChanges.value = false;
 		editingField.value = null;
 
-		// TODO: Show success toast
 		console.log('Profile updated successfully');
 	} catch (error) {
 		console.error('Error updating profile:', error);
-		// TODO: Show error toast
 	}
 };
 
 const handleAvatarEdit = () => {
-	// TODO: Implement avatar upload functionality
 	console.log('Avatar edit clicked');
 };
 
 const changePassword = () => {
-	// TODO: Navigate to change password page or show modal
 	console.log('Change password clicked');
 };
 
 const notificationSettings = () => {
-	// TODO: Navigate to notification settings
 	console.log('Notification settings clicked');
 };
 
 const privacySettings = () => {
-	// TODO: Navigate to privacy settings
 	console.log('Privacy settings clicked');
 };
 
@@ -558,7 +530,6 @@ const deleteAccount = () => {
 
 const confirmDeleteAccount = async () => {
 	try {
-		// TODO: Implement delete account functionality
 		console.log('Delete account confirmed');
 		router.push('/');
 	} catch (error) {
@@ -566,7 +537,6 @@ const confirmDeleteAccount = async () => {
 	}
 };
 
-// Watch for changes to update hasChanges
 watch(
 	[() => editData.firstName, () => editData.lastName, () => editData.email],
 	() => {
@@ -583,7 +553,6 @@ watch(
 );
 </script>
 
-<!-- Keep your existing styles -->
 <style scoped>
 .profile-container {
 	min-height: 100vh;
@@ -882,7 +851,6 @@ watch(
 	}
 }
 
-/* Responsive Design */
 @media (max-width: 768px) {
 	.content-wrapper {
 		padding: 12px;

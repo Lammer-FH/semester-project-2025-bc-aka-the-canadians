@@ -6,7 +6,6 @@
 		@leftFooterButtonClicked="handleCancel"
 		@rightFooterButtonClicked="handleSubmit">
 		<div class="form-container">
-			<!-- Progress Section -->
 			<div class="progress-section">
 				<div class="progress-bar">
 					<div
@@ -16,7 +15,6 @@
 				<p class="progress-text">{{ completionPercentage }}% ausgefüllt</p>
 			</div>
 
-			<!-- Form Header -->
 			<div class="form-header">
 				<ion-icon :icon="megaphoneOutline" class="header-icon"></ion-icon>
 				<h2>Neuen Bericht erstellen</h2>
@@ -26,9 +24,7 @@
 				</p>
 			</div>
 
-			<!-- Form Content -->
 			<div class="form-content">
-				<!-- Report Type Selection -->
 				<div class="input-group">
 					<ion-item
 						class="modern-item"
@@ -74,7 +70,6 @@
 					</div>
 				</div>
 
-				<!-- Item Name -->
 				<div class="input-group">
 					<ion-item
 						class="modern-item"
@@ -98,7 +93,6 @@
 					</div>
 				</div>
 
-				<!-- Description -->
 				<div class="input-group">
 					<ion-item
 						class="modern-item textarea-item"
@@ -119,7 +113,6 @@
 					</ion-item>
 				</div>
 
-				<!-- Location -->
 				<div class="input-group">
 					<ion-item
 						class="modern-item"
@@ -157,7 +150,6 @@
 					</div>
 				</div>
 
-				<!-- Reporter Information -->
 				<div class="input-group">
 					<h3 class="section-title">
 						<ion-icon :icon="personOutline" class="section-icon"></ion-icon>
@@ -205,7 +197,6 @@
 					</ion-item>
 				</div>
 
-				<!-- Image Upload Section -->
 				<div class="input-group">
 					<div class="image-upload-section">
 						<h3 class="upload-title">
@@ -255,7 +246,6 @@
 					</div>
 				</div>
 
-				<!-- Tips Section -->
 				<div class="tips-section">
 					<h3 class="tips-title">
 						<ion-icon :icon="bulbOutline" class="title-icon"></ion-icon>
@@ -355,9 +345,8 @@ const router = useRouter();
 const itemStore = useItemStore();
 const locationStore = useLocationStore();
 
-// Report data structure
 const reportData = ref({
-	type: '', // 'LOST' or 'FOUND'
+	type: '',
 	itemName: '',
 	description: '',
 	location: '',
@@ -418,7 +407,6 @@ const completionPercentage = computed(() => {
 			reportData.value[field as keyof typeof reportData.value].trim() !== ''
 	).length;
 
-	// Required fields count as 80%, optional as 20%
 	const requiredWeight = 0.8;
 	const optionalWeight = 0.2;
 
@@ -430,7 +418,6 @@ const completionPercentage = computed(() => {
 	return Math.round((requiredScore + optionalScore) * 100);
 });
 
-// Load locations when component mounts
 onMounted(async () => {
 	await locationStore.fetchLocations();
 });
@@ -486,7 +473,6 @@ const handleSubmit = async () => {
 	}
 
 	try {
-		// Create enhanced description with reporter info
 		const enhancedDescription = [
 			reportData.value.description,
 			'',
@@ -503,33 +489,26 @@ const handleSubmit = async () => {
 			.filter(Boolean)
 			.join('\n');
 
-		// Map report data to item structure for backend
 		const itemData: Omit<Item, 'id' | 'createdAt' | 'updatedAt'> = {
 			name: reportData.value.itemName,
 			description: enhancedDescription,
 			location: reportData.value.location,
-			status: reportData.value.type, // 'LOST' or 'FOUND'
+			status: reportData.value.type,
 			imageData: imagePreview.value,
 		};
 
-		// Create the item (which represents our "report")
 		const newItem = await itemStore.createItem(itemData);
 
 		if (newItem) {
-			// Show success and navigate
 			console.log('Report submitted successfully:', newItem);
-			// TODO: Show success toast: "Bericht erfolgreich eingereicht!"
 
-			// Navigate to the new "report" (item details)
 			router.push(`/items/${newItem.id}`);
 		}
 	} catch (error) {
 		console.error('Error submitting report:', error);
-		// TODO: Show error toast
 	}
 };
 
-// Image handling functions
 const triggerFileInput = () => {
 	fileInput.value?.click();
 };
@@ -539,22 +518,17 @@ const handleFileSelect = (event: Event) => {
 	const file = target.files?.[0];
 
 	if (file) {
-		// Validate file type
 		if (!file.type.startsWith('image/')) {
-			// TODO: Show error toast
 			console.error('Please select an image file');
 			return;
 		}
 
-		// Validate file size (max 5MB)
 		const maxSize = 5 * 1024 * 1024; // 5MB
 		if (file.size > maxSize) {
-			// TODO: Show error toast
 			console.error('File size must be less than 5MB');
 			return;
 		}
 
-		// Convert to base64 for preview and storage
 		const reader = new FileReader();
 		reader.onload = (e) => {
 			const result = e.target?.result as string;
@@ -567,11 +541,9 @@ const handleFileSelect = (event: Event) => {
 
 const takePhoto = async () => {
 	try {
-		// For now, just trigger file input (in a real app, you'd use camera API)
 		triggerFileInput();
 	} catch (error) {
 		console.error('Error taking photo:', error);
-		// TODO: Show error toast
 	}
 };
 
@@ -583,7 +555,6 @@ const removeImage = () => {
 	}
 };
 
-// Watch for changes and clear errors
 watch(
 	() => reportData.value.type,
 	() => {
@@ -792,7 +763,6 @@ watch(
 	animation: shake 0.3s ease-in-out;
 }
 
-/* Image Upload Styles */
 .image-upload-section {
 	background: var(--ion-color-light-tint);
 	border: 2px dashed var(--ion-color-light-shade);
@@ -867,7 +837,6 @@ watch(
 	font-weight: 500;
 }
 
-/* Tips Section */
 .tips-section {
 	background: linear-gradient(
 		135deg,
@@ -933,7 +902,6 @@ watch(
 	}
 }
 
-/* Responsive Design */
 @media (max-width: 768px) {
 	.form-container {
 		padding: 16px;

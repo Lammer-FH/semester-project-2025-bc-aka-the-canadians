@@ -8,7 +8,6 @@
 		</template>
 
 		<div class="reports-container">
-			<!-- Search and Filter Section -->
 			<div class="search-and-filter">
 				<ion-searchbar
 					v-model="searchTerm"
@@ -29,7 +28,6 @@
 				</ion-button>
 			</div>
 
-			<!-- Active Filter Chips -->
 			<div v-if="activeFiltersCount > 0" class="filter-chips">
 				<ion-chip
 					v-if="selectedStatus"
@@ -56,7 +54,6 @@
 				</ion-button>
 			</div>
 
-			<!-- Report Statistics -->
 			<div class="stats-summary">
 				<div class="stat-item">
 					<ion-icon :icon="eyeOutline" color="success"></ion-icon>
@@ -72,13 +69,11 @@
 				</div>
 			</div>
 
-			<!-- Loading State -->
 			<div v-if="isLoading" class="loading-container">
 				<ion-spinner name="crescent" color="primary"></ion-spinner>
 				<p>Lade Berichte...</p>
 			</div>
 
-			<!-- Error State -->
 			<div v-else-if="error" class="empty-state">
 				<ion-icon :icon="alertCircleOutline" class="empty-icon"></ion-icon>
 				<h2>Fehler beim Laden</h2>
@@ -89,7 +84,6 @@
 				</ion-button>
 			</div>
 
-			<!-- Empty State -->
 			<div v-else-if="filteredReports.length === 0" class="empty-state">
 				<ion-icon :icon="bagOutline" class="empty-icon"></ion-icon>
 				<h2>Keine Berichte gefunden</h2>
@@ -112,7 +106,6 @@
 				</ion-button>
 			</div>
 
-			<!-- Reports Grid -->
 			<div v-else class="reports-grid">
 				<ion-card
 					v-for="(report, index) in filteredReports"
@@ -150,7 +143,6 @@
 					</ion-card-header>
 
 					<ion-card-content class="card-content">
-						<!-- Report Image if available -->
 						<div v-if="report.imageUrl" class="report-image-container">
 							<img
 								:src="report.imageUrl"
@@ -163,12 +155,10 @@
 							<span>Kein Bild verfügbar</span>
 						</div>
 
-						<!-- Report Description -->
 						<p v-if="report.description" class="description">
 							{{ report.description }}
 						</p>
 
-						<!-- Report Metadata -->
 						<div class="metadata">
 							<div class="metadata-item">
 								<ion-icon
@@ -195,7 +185,6 @@
 						</div>
 					</ion-card-content>
 
-					<!-- Enhanced Card Actions -->
 					<div class="card-actions">
 						<ion-button
 							fill="clear"
@@ -205,7 +194,6 @@
 							Bericht ansehen
 						</ion-button>
 
-						<!-- Enhanced Claim Button for Found Items -->
 						<ion-button
 							v-if="report.status.toUpperCase() === 'FOUND'"
 							fill="solid"
@@ -217,7 +205,6 @@
 							Abholen
 						</ion-button>
 
-						<!-- Status indicator for other statuses -->
 						<ion-button
 							v-else-if="report.status.toUpperCase() === 'CLAIMED'"
 							fill="clear"
@@ -240,7 +227,6 @@
 			</div>
 		</div>
 
-		<!-- Claim Confirmation Modal -->
 		<ion-modal :is-open="showClaimModalOpen" @did-dismiss="closeClaimModal">
 			<ion-header>
 				<ion-toolbar>
@@ -254,7 +240,6 @@
 			</ion-header>
 			<ion-content class="claim-modal-content">
 				<div v-if="selectedItemToClaim" class="claim-form">
-					<!-- Item Information -->
 					<div class="item-info-section">
 						<h2>{{ selectedItemToClaim.title }}</h2>
 						<p class="item-description">
@@ -277,7 +262,6 @@
 						</div>
 					</div>
 
-					<!-- Claim Form -->
 					<div class="claim-form-section">
 						<h3>Bestätigung der Abholung</h3>
 						<p class="form-description">
@@ -285,7 +269,6 @@
 							Finder wird benachrichtigt und kann Kontakt mit dir aufnehmen.
 						</p>
 
-						<!-- Claimer Information -->
 						<div class="input-group">
 							<ion-item
 								class="modern-item"
@@ -348,7 +331,6 @@
 							</ion-item>
 						</div>
 
-						<!-- Verification Checklist -->
 						<div class="verification-section">
 							<h4>Verifizierung</h4>
 							<div class="checklist">
@@ -371,7 +353,6 @@
 							</div>
 						</div>
 
-						<!-- Action Buttons -->
 						<div class="modal-actions">
 							<ion-button
 								expand="block"
@@ -405,7 +386,6 @@
 			</ion-content>
 		</ion-modal>
 
-		<!-- Filter Modal -->
 		<ion-modal
 			:is-open="showFilterModal"
 			@did-dismiss="showFilterModal = false">
@@ -420,7 +400,6 @@
 				</ion-toolbar>
 			</ion-header>
 			<ion-content class="filter-modal-content">
-				<!-- Status Filter -->
 				<div class="filter-section">
 					<h3>Status</h3>
 					<ion-radio-group v-model="selectedStatus">
@@ -458,7 +437,6 @@
 					</ion-radio-group>
 				</div>
 
-				<!-- Location Filter -->
 				<div class="filter-section">
 					<h3>Standort</h3>
 					<ion-radio-group v-model="selectedLocation">
@@ -473,7 +451,6 @@
 					</ion-radio-group>
 				</div>
 
-				<!-- Filter Actions -->
 				<div class="filter-actions">
 					<ion-button expand="block" fill="outline" @click="clearAllFilters">
 						Alle Filter löschen
@@ -538,7 +515,6 @@ import { useRouter } from 'vue-router';
 import { useItemStore } from '@/stores/itemStore';
 import type { Item } from '@/models/item';
 
-// Virtual Report Interface
 interface VirtualReport {
 	id: number;
 	title: string;
@@ -558,12 +534,10 @@ const showFilterModal = ref(false);
 const selectedStatus = ref('');
 const selectedLocation = ref('');
 
-// Get items from store and convert to virtual reports
 const items = computed(() => itemStore.getItems || []);
 const isLoading = computed(() => itemStore.isLoading);
 const error = computed(() => itemStore.getError);
 
-// Convert items to virtual reports
 const reports = computed((): VirtualReport[] => {
 	return items.value.map((item: Item) => ({
 		id: item.id,
@@ -573,11 +547,10 @@ const reports = computed((): VirtualReport[] => {
 		location: item.location,
 		dateCreated: item.createdAt,
 		imageUrl: item.imageUrl,
-		reporterName: 'Unbekannt', // Since we don't have user data
+		reporterName: 'Unbekannt',
 	}));
 });
 
-// Load reports when component mounts
 onMounted(async () => {
 	await loadReports();
 });
@@ -590,11 +563,9 @@ const loadReports = async () => {
 	}
 };
 
-// Filter reports based on search and filters
 const filteredReports = computed(() => {
 	let filtered = reports.value;
 
-	// Search filter
 	if (searchTerm.value.trim()) {
 		const search = searchTerm.value.toLowerCase();
 		filtered = filtered.filter(
@@ -605,7 +576,6 @@ const filteredReports = computed(() => {
 		);
 	}
 
-	// Status filter
 	if (selectedStatus.value) {
 		filtered = filtered.filter(
 			(report) =>
@@ -613,7 +583,6 @@ const filteredReports = computed(() => {
 		);
 	}
 
-	// Location filter
 	if (selectedLocation.value) {
 		filtered = filtered.filter(
 			(report) => report.location === selectedLocation.value
@@ -623,14 +592,12 @@ const filteredReports = computed(() => {
 	return filtered;
 });
 
-// Get unique locations for filter
 const uniqueLocations = computed(() => {
 	return [
 		...new Set(reports.value.map((report) => report.location).filter(Boolean)),
 	].sort();
 });
 
-// Statistics
 const foundReportsCount = computed(() => {
 	return filteredReports.value.filter(
 		(report) => report.status.toUpperCase() === 'FOUND'
@@ -656,7 +623,6 @@ const activeFiltersCount = computed(() => {
 	return count;
 });
 
-// Status helpers
 const getStatusText = (status: string) => {
 	switch (status.toUpperCase()) {
 		case 'FOUND':
@@ -706,7 +672,6 @@ const getStatusClass = (status: string) => {
 	return `status-${status.toLowerCase()}`;
 };
 
-// Time helpers
 const getTimeAgo = (dateString: string) => {
 	const date = new Date(dateString);
 	const now = new Date();
@@ -733,7 +698,6 @@ const formatDate = (dateString: string) => {
 	});
 };
 
-// Filter functions
 const toggleFilterModal = () => {
 	showFilterModal.value = !showFilterModal.value;
 };
@@ -756,7 +720,6 @@ const applyFilters = () => {
 	showFilterModal.value = false;
 };
 
-// Navigation functions
 const navigateToReport = (reportId: number) => {
 	router.push(`/items/${reportId}`);
 };
@@ -769,7 +732,6 @@ const editReport = (reportId: number) => {
 	router.push(`/items/${reportId}/edit`);
 };
 
-// Claim functionality state
 const showClaimModalOpen = ref(false);
 const selectedItemToClaim = ref<VirtualReport | null>(null);
 const isSubmittingClaim = ref(false);
@@ -798,10 +760,8 @@ const isClaimFormValid = computed(() => {
 	);
 });
 
-// Enhanced claim functionality
 const showClaimModal = (report: VirtualReport) => {
 	selectedItemToClaim.value = report;
-	// Reset form
 	claimData.value = {
 		claimerName: '',
 		contactInfo: '',
@@ -857,7 +817,6 @@ const submitClaim = async () => {
 	try {
 		isSubmittingClaim.value = true;
 
-		// Create enhanced description with claim information
 		const claimDescription = [
 			'--- ABHOLUNG ANGEFORDERT ---',
 			`Angefordert von: ${claimData.value.claimerName}`,
@@ -874,31 +833,23 @@ const submitClaim = async () => {
 			.filter(Boolean)
 			.join('\n');
 
-		// Update item status to CLAIMED with claim information
 		await itemStore.updateItem(selectedItemToClaim.value.id, {
 			status: 'CLAIMED',
 			description: claimDescription,
 		});
 
-		// TODO: Show success toast
 		console.log('Item successfully claimed');
-
-		// TODO: Send notification to item reporter
-		// await notificationService.notifyItemClaimed(selectedItemToClaim.value.id, claimData.value);
 
 		closeClaimModal();
 
-		// Refresh the reports list
 		await loadReports();
 	} catch (error) {
 		console.error('Error claiming item:', error);
-		// TODO: Show error toast
 	} finally {
 		isSubmittingClaim.value = false;
 	}
 };
 
-// Watch for tab changes
 watch(activeTab, (tab) => {
 	if (tab === 'locations') {
 		router.push('/locations/overview');
@@ -1433,7 +1384,6 @@ watch(activeTab, (tab) => {
 	margin-right: 8px;
 }
 
-/* Responsive Design */
 @media (max-width: 768px) {
 	.reports-grid {
 		grid-template-columns: 1fr;

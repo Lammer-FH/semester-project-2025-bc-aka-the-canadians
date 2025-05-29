@@ -8,7 +8,6 @@
 		</template>
 
 		<div class="locations-container">
-			<!-- Search Section -->
 			<div class="search-section">
 				<ion-searchbar
 					v-model="searchTerm"
@@ -17,7 +16,6 @@
 					class="custom-searchbar"></ion-searchbar>
 			</div>
 
-			<!-- Reports Summary at Locations -->
 			<div class="reports-summary">
 				<h3>Berichte an Standorten</h3>
 				<div class="summary-stats">
@@ -40,13 +38,11 @@
 				</div>
 			</div>
 
-			<!-- Loading State -->
 			<div v-if="isLoading" class="loading-container">
 				<ion-spinner name="crescent" color="primary"></ion-spinner>
 				<p>Lade Standorte...</p>
 			</div>
 
-			<!-- Error State -->
 			<div v-else-if="error" class="empty-state">
 				<ion-icon :icon="alertCircleOutline" class="empty-icon"></ion-icon>
 				<h2>Fehler beim Laden</h2>
@@ -57,7 +53,6 @@
 				</ion-button>
 			</div>
 
-			<!-- Empty State -->
 			<div v-else-if="filteredLocations.length === 0" class="empty-state">
 				<ion-icon :icon="locationOutline" class="empty-icon"></ion-icon>
 				<h2>Keine Standorte gefunden</h2>
@@ -73,7 +68,6 @@
 				</ion-button>
 			</div>
 
-			<!-- Locations Grid -->
 			<div v-else class="locations-grid">
 				<ion-card
 					v-for="(location, index) in filteredLocations"
@@ -106,7 +100,6 @@
 					</ion-card-header>
 
 					<ion-card-content class="card-content">
-						<!-- Reports at this Location -->
 						<div class="reports-at-location">
 							<h4>
 								<ion-icon :icon="flagOutline" class="section-icon"></ion-icon>
@@ -153,7 +146,6 @@
 								</div>
 							</div>
 
-							<!-- Recent Reports Preview -->
 							<div
 								v-if="getRecentReportsForLocation(location.name).length > 0"
 								class="recent-reports">
@@ -191,7 +183,6 @@
 							</div>
 						</div>
 
-						<!-- Location Description -->
 						<div v-if="location.description" class="description">
 							<h4>
 								<ion-icon
@@ -202,7 +193,6 @@
 							<p>{{ location.description }}</p>
 						</div>
 
-						<!-- Location Metadata -->
 						<div class="metadata">
 							<div class="metadata-item">
 								<ion-icon
@@ -221,7 +211,6 @@
 						</div>
 					</ion-card-content>
 
-					<!-- Card Actions -->
 					<div class="card-actions">
 						<ion-button
 							fill="clear"
@@ -289,7 +278,6 @@ import { useItemStore } from '@/stores/itemStore';
 import type { Location } from '@/models/location';
 import type { Item } from '@/models/item';
 
-// Virtual Report Interface (same as in ItemsOverviewPage)
 interface VirtualReport {
 	id: number;
 	title: string;
@@ -307,7 +295,6 @@ const itemStore = useItemStore();
 const activeTab = ref('locations');
 const searchTerm = ref('');
 
-// Get data from stores
 const locations = computed(() => locationStore.getLocations || []);
 const items = computed(() => itemStore.getItems || []);
 const isLoading = computed(
@@ -315,7 +302,6 @@ const isLoading = computed(
 );
 const error = computed(() => locationStore.getError);
 
-// Convert items to virtual reports (same logic as ItemsOverviewPage)
 const reports = computed((): VirtualReport[] => {
 	return items.value.map((item: Item) => ({
 		id: item.id,
@@ -329,7 +315,6 @@ const reports = computed((): VirtualReport[] => {
 	}));
 });
 
-// Load data when component mounts
 onMounted(async () => {
 	await loadLocations();
 	await loadReports();
@@ -351,7 +336,6 @@ const loadReports = async () => {
 	}
 };
 
-// Filter locations based on search
 const filteredLocations = computed(() => {
 	const locationsArray = locations.value;
 	if (!Array.isArray(locationsArray)) {
@@ -370,7 +354,6 @@ const filteredLocations = computed(() => {
 	);
 });
 
-// Report statistics for all locations
 const totalFoundReports = computed(() => {
 	return reports.value.filter(
 		(report) => report.status.toUpperCase() === 'FOUND'
@@ -389,7 +372,6 @@ const totalClaimedReports = computed(() => {
 	).length;
 });
 
-// Functions to get reports for specific locations
 const getReportsForLocation = (locationName: string): VirtualReport[] => {
 	return reports.value.filter(
 		(report) => report.location.toLowerCase() === locationName.toLowerCase()
@@ -423,7 +405,6 @@ const getRecentReportsForLocation = (locationName: string): VirtualReport[] => {
 		.slice(0, 3);
 };
 
-// Status helpers (same as ItemsOverviewPage)
 const getStatusColor = (status: string) => {
 	switch (status.toUpperCase()) {
 		case 'FOUND':
@@ -454,7 +435,6 @@ const getStatusIcon = (status: string) => {
 	}
 };
 
-// Time helpers
 const getTimeAgo = (dateString: string) => {
 	const date = new Date(dateString);
 	const now = new Date();
@@ -481,7 +461,6 @@ const formatDate = (dateString: string) => {
 	});
 };
 
-// Navigation functions
 const navigateToLocation = (locationId: number) => {
 	router.push(`/locations/${locationId}`);
 };
@@ -499,14 +478,12 @@ const navigateToReport = (reportId: number) => {
 };
 
 const viewAllReportsAtLocation = (locationName: string) => {
-	// Navigate to items overview with location filter
 	router.push({
 		path: '/items/overview',
 		query: { location: locationName },
 	});
 };
 
-// Watch for tab changes
 watch(activeTab, (tab) => {
 	if (tab === 'items') {
 		router.push('/items/overview');
@@ -906,7 +883,6 @@ watch(activeTab, (tab) => {
 	}
 }
 
-/* Responsive Design */
 @media (max-width: 768px) {
 	.locations-grid {
 		grid-template-columns: 1fr;

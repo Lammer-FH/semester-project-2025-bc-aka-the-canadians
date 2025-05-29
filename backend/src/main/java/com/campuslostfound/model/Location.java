@@ -27,8 +27,4 @@ public class Location {
     private String floor;
 
     private String roomNumber;
-    
-    // Optionale Geokoordinaten
-    private Double latitude;
-    private Double longitude;
 } 

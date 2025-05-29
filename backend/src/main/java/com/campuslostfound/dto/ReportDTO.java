@@ -6,18 +6,19 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ItemDTO {
+public class ReportDTO {
     private Long id;
-    private String name;
+    private String title;
     private String description;
-    private String category;
-    private String imageUrl;
-    private LocalDateTime dateReported;
-    private LocationDTO location;
+    private LocalDateTime dateCreated;
+    private String type;
     private String status;
+    private UserDTO reportedBy;
+    private List<ItemDTO> items;
 }

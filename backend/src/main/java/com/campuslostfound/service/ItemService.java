@@ -36,6 +36,10 @@ public class ItemService {
         return itemRepository.findByCategory(category);
     }
 
+    public List<Item> getItemsByStatusAndCategory(ItemStatus status, String category) {
+        return itemRepository.findByStatusAndCategory(status, category);
+    }
+    
     public Item saveItem(Item item) {
         return itemRepository.save(item);
     }

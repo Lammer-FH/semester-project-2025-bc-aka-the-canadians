@@ -24,22 +24,22 @@
 
 			<div class="form-content">
 				<div class="input-group">
-					<ion-item
-						class="modern-item"
+					<ion-input
+						v-model="location.name"
+						label="Name des Standorts *"
+						label-placement="stacked"
+						placeholder="z.B. Hauptbibliothek, Mensa Nord, Hörsaal A"
+						class="modern-input"
 						:class="{
-							'item-error': errors.name,
-							'item-filled': location.name,
-						}">
-						<ion-label position="stacked" class="custom-label">
-							<ion-icon :icon="textOutline" class="label-icon"></ion-icon>
-							Name des Standorts *
-						</ion-label>
-						<ion-input
-							v-model="location.name"
-							placeholder="z.B. Hauptbibliothek, Mensa Nord, Hörsaal A"
-							@ionBlur="validateField('name')"
-							:class="{ 'input-error': errors.name }"></ion-input>
-					</ion-item>
+							'input-filled': location.name,
+							'input-error': errors.name,
+						}"
+						@ionBlur="validateField('name')">
+						<ion-icon
+							:icon="textOutline"
+							slot="start"
+							class="input-icon"></ion-icon>
+					</ion-input>
 					<div v-if="errors.name" class="error-message">
 						<ion-icon :icon="alertCircleOutline"></ion-icon>
 						{{ errors.name }}
@@ -47,40 +47,41 @@
 				</div>
 
 				<div class="input-group">
-					<ion-item
-						class="modern-item textarea-item"
-						:class="{ 'item-filled': location.description }">
-						<ion-label position="stacked" class="custom-label">
-							<ion-icon
-								:icon="documentTextOutline"
-								class="label-icon"></ion-icon>
-							Beschreibung
-						</ion-label>
-						<ion-textarea
-							v-model="location.description"
-							placeholder="Detaillierte Beschreibung des Standorts und seiner Besonderheiten..."
-							class="custom-textarea"
-							:auto-grow="true"></ion-textarea>
-					</ion-item>
+					<ion-textarea
+						v-model="location.description"
+						label="Beschreibung"
+						label-placement="stacked"
+						placeholder="Detaillierte Beschreibung des Standorts und seiner Besonderheiten..."
+						class="modern-textarea"
+						:class="{
+							'textarea-filled': location.description,
+						}"
+						:auto-grow="true"
+						rows="3">
+						<ion-icon
+							:icon="documentTextOutline"
+							slot="start"
+							class="input-icon"></ion-icon>
+					</ion-textarea>
 				</div>
 
 				<div class="input-group">
-					<ion-item
-						class="modern-item"
+					<ion-input
+						v-model="location.building"
+						label="Gebäude *"
+						label-placement="stacked"
+						placeholder="z.B. Hauptgebäude, Neubau, Labor"
+						class="modern-input"
 						:class="{
-							'item-error': errors.building,
-							'item-filled': location.building,
-						}">
-						<ion-label position="stacked" class="custom-label">
-							<ion-icon :icon="businessOutline" class="label-icon"></ion-icon>
-							Gebäude *
-						</ion-label>
-						<ion-input
-							v-model="location.building"
-							placeholder="z.B. Hauptgebäude, Neubau, Labor"
-							@ionBlur="validateField('building')"
-							:class="{ 'input-error': errors.building }"></ion-input>
-					</ion-item>
+							'input-filled': location.building,
+							'input-error': errors.building,
+						}"
+						@ionBlur="validateField('building')">
+						<ion-icon
+							:icon="businessOutline"
+							slot="start"
+							class="input-icon"></ion-icon>
+					</ion-input>
 					<div v-if="errors.building" class="error-message">
 						<ion-icon :icon="alertCircleOutline"></ion-icon>
 						{{ errors.building }}
@@ -89,22 +90,22 @@
 
 				<div class="input-row">
 					<div class="input-group half-width">
-						<ion-item
-							class="modern-item"
+						<ion-input
+							v-model="location.floor"
+							label="Etage *"
+							label-placement="stacked"
+							placeholder="z.B. EG, 1, 2, UG"
+							class="modern-input"
 							:class="{
-								'item-error': errors.floor,
-								'item-filled': location.floor,
-							}">
-							<ion-label position="stacked" class="custom-label">
-								<ion-icon :icon="layersOutline" class="label-icon"></ion-icon>
-								Etage *
-							</ion-label>
-							<ion-input
-								v-model="location.floor"
-								placeholder="z.B. EG, 1, 2, UG"
-								@ionBlur="validateField('floor')"
-								:class="{ 'input-error': errors.floor }"></ion-input>
-						</ion-item>
+								'input-filled': location.floor,
+								'input-error': errors.floor,
+							}"
+							@ionBlur="validateField('floor')">
+							<ion-icon
+								:icon="layersOutline"
+								slot="start"
+								class="input-icon"></ion-icon>
+						</ion-input>
 						<div v-if="errors.floor" class="error-message">
 							<ion-icon :icon="alertCircleOutline"></ion-icon>
 							{{ errors.floor }}
@@ -112,22 +113,22 @@
 					</div>
 
 					<div class="input-group half-width">
-						<ion-item
-							class="modern-item"
+						<ion-input
+							v-model="location.room"
+							label="Raum *"
+							label-placement="stacked"
+							placeholder="z.B. 101, A-15, Foyer"
+							class="modern-input"
 							:class="{
-								'item-error': errors.room,
-								'item-filled': location.room,
-							}">
-							<ion-label position="stacked" class="custom-label">
-								<ion-icon :icon="overviewOutline" class="label-icon"></ion-icon>
-								Raum *
-							</ion-label>
-							<ion-input
-								v-model="location.room"
-								placeholder="z.B. 101, A-15, Foyer"
-								@ionBlur="validateField('room')"
-								:class="{ 'input-error': errors.room }"></ion-input>
-						</ion-item>
+								'input-filled': location.room,
+								'input-error': errors.room,
+							}"
+							@ionBlur="validateField('room')">
+							<ion-icon
+								:icon="homeOutline"
+								slot="start"
+								class="input-icon"></ion-icon>
+						</ion-input>
 						<div v-if="errors.room" class="error-message">
 							<ion-icon :icon="alertCircleOutline"></ion-icon>
 							{{ errors.room }}
@@ -136,11 +137,11 @@
 				</div>
 
 				<div class="form-footer-info">
-					<ion-item class="info-item">
+					<div class="info-item">
 						<ion-icon
 							:icon="informationCircleOutline"
-							slot="start"
-							color="primary"></ion-icon>
+							color="primary"
+							class="info-icon"></ion-icon>
 						<div class="info-text">
 							<p>Der neue Standort wird sofort im System verfügbar sein.</p>
 							<p>Nutzer können dann Gegenstände an diesem Standort melden.</p>
@@ -148,7 +149,7 @@
 								* Pflichtfelder müssen ausgefüllt werden.
 							</p>
 						</div>
-					</ion-item>
+					</div>
 				</div>
 			</div>
 		</div>
@@ -157,14 +158,7 @@
 
 <script setup lang="ts">
 import TemplatePage from '@/components/TemplatePage.vue';
-import {
-	IonItem,
-	IonLabel,
-	IonInput,
-	IonTextarea,
-	IonIcon,
-	IonProgressBar,
-} from '@ionic/vue';
+import { IonInput, IonTextarea, IonIcon, IonProgressBar } from '@ionic/vue';
 import {
 	locationOutline,
 	textOutline,
@@ -175,6 +169,7 @@ import {
 	informationCircleOutline,
 	checkmarkCircleOutline,
 	closeCircleOutline,
+	homeOutline,
 } from 'ionicons/icons';
 import { ref, computed, watch } from 'vue';
 import { useRouter } from 'vue-router';
@@ -407,10 +402,11 @@ watch(
 	flex: 1;
 }
 
-.modern-item {
+.modern-input,
+.modern-textarea {
 	--background: var(--ion-color-light-tint);
 	--border-radius: 12px;
-	--padding-start: 16px;
+	--padding-start: 48px;
 	--padding-end: 16px;
 	--padding-top: 12px;
 	--padding-bottom: 12px;
@@ -418,49 +414,41 @@ watch(
 	border-radius: 12px;
 	margin-bottom: 8px;
 	transition: all 0.3s ease;
+	position: relative;
 }
 
-.modern-item.item-filled {
+.modern-input.input-filled,
+.modern-textarea.textarea-filled {
 	border-color: var(--ion-color-primary-tint);
 	--background: rgba(var(--ion-color-primary-rgb), 0.05);
 }
 
-.modern-item.item-error {
+.modern-input.input-error,
+.modern-textarea.textarea-error {
 	border-color: var(--ion-color-danger);
 	--background: rgba(var(--ion-color-danger-rgb), 0.05);
 }
 
-.modern-item:focus-within {
+.modern-input:focus-within,
+.modern-textarea:focus-within {
 	border-color: var(--ion-color-primary);
 	box-shadow: 0 0 0 3px rgba(var(--ion-color-primary-rgb), 0.1);
 	transform: translateY(-2px);
 }
 
-.custom-label {
-	display: flex;
-	align-items: center;
-	gap: 8px;
-	font-weight: 600;
-	color: var(--ion-color-dark);
-	margin-bottom: 4px;
-}
-
-.label-icon {
-	font-size: 18px;
-	color: var(--ion-color-primary);
-}
-
-.custom-textarea {
+.modern-textarea {
 	min-height: 80px;
-	resize: vertical;
+	--padding-start: 48px;
 }
 
-.textarea-item {
-	--padding-bottom: 16px;
-}
-
-.input-error {
-	color: var(--ion-color-danger);
+.input-icon {
+	position: absolute;
+	left: 16px;
+	top: 50%;
+	transform: translateY(-50%);
+	color: var(--ion-color-primary);
+	font-size: 18px;
+	z-index: 10;
 }
 
 .error-message {
@@ -488,9 +476,21 @@ watch(
 }
 
 .info-item {
-	--background: transparent;
-	--padding-start: 0;
-	--padding-end: 0;
+	display: flex;
+	align-items: flex-start;
+	gap: 12px;
+	background: transparent;
+	padding: 0;
+}
+
+.info-icon {
+	font-size: 20px;
+	margin-top: 2px;
+	flex-shrink: 0;
+}
+
+.info-text {
+	flex: 1;
 }
 
 .info-text p {

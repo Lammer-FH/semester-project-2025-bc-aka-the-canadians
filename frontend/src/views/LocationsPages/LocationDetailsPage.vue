@@ -39,9 +39,7 @@
 									Etage {{ location.floor }}
 								</div>
 								<div class="info-item">
-									<ion-icon
-										:icon="overviewOutline"
-										class="info-icon"></ion-icon>
+									<ion-icon :icon="homeOutline" class="info-icon"></ion-icon>
 									Raum {{ location.room }}
 								</div>
 							</div>
@@ -79,9 +77,7 @@
 							</div>
 						</div>
 						<div class="metadata-item">
-							<ion-icon
-								:icon="overviewOutline"
-								class="metadata-icon"></ion-icon>
+							<ion-icon :icon="homeOutline" class="metadata-icon"></ion-icon>
 							<div class="metadata-content">
 								<span class="metadata-label">Raum</span>
 								<span class="metadata-value">{{ location.room }}</span>
@@ -210,6 +206,7 @@ import {
 	eyeOffOutline,
 	flagOutline,
 	checkmarkOutline,
+	homeOutline,
 } from 'ionicons/icons';
 import { ref, computed, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';

@@ -33,22 +33,22 @@
 				</div>
 
 				<div class="input-group">
-					<ion-item
-						class="modern-item"
+					<ion-input
+						v-model="item.name"
+						label="Name des Gegenstands *"
+						label-placement="stacked"
+						placeholder="z.B. Schwarzer Rucksack"
+						class="modern-input"
 						:class="{
-							'item-error': errors.name,
-							'item-filled': item.name,
-						}">
-						<ion-label position="stacked" class="custom-label">
-							<ion-icon :icon="textOutline" class="label-icon"></ion-icon>
-							Name des Gegenstands *
-						</ion-label>
-						<ion-input
-							v-model="item.name"
-							placeholder="z.B. Schwarzer Rucksack"
-							@ionBlur="validateField('name')"
-							:class="{ 'input-error': errors.name }"></ion-input>
-					</ion-item>
+							'input-filled': item.name,
+							'input-error': errors.name,
+						}"
+						@ionBlur="validateField('name')">
+						<ion-icon
+							:icon="textOutline"
+							slot="start"
+							class="input-icon"></ion-icon>
+					</ion-input>
 					<div v-if="errors.name" class="error-message">
 						<ion-icon :icon="alertCircleOutline"></ion-icon>
 						{{ errors.name }}
@@ -56,42 +56,41 @@
 				</div>
 
 				<div class="input-group">
-					<ion-item
-						class="modern-item textarea-item"
+					<ion-textarea
+						v-model="item.description"
+						label="Beschreibung"
+						label-placement="stacked"
+						placeholder="Detaillierte Beschreibung des Gegenstands..."
+						class="modern-textarea"
 						:class="{
-							'item-filled': item.description,
-						}">
-						<ion-label position="stacked" class="custom-label">
-							<ion-icon
-								:icon="documentTextOutline"
-								class="label-icon"></ion-icon>
-							Beschreibung
-						</ion-label>
-						<ion-textarea
-							v-model="item.description"
-							placeholder="Detaillierte Beschreibung des Gegenstands..."
-							class="custom-textarea"
-							:auto-grow="true"></ion-textarea>
-					</ion-item>
+							'textarea-filled': item.description,
+						}"
+						:auto-grow="true"
+						rows="3">
+						<ion-icon
+							:icon="documentTextOutline"
+							slot="start"
+							class="input-icon"></ion-icon>
+					</ion-textarea>
 				</div>
 
 				<div class="input-group">
-					<ion-item
-						class="modern-item"
+					<ion-input
+						v-model="item.location"
+						label="Fundort/Verlustort *"
+						label-placement="stacked"
+						placeholder="z.B. Bibliothek, Hörsaal A1, Mensa"
+						class="modern-input"
 						:class="{
-							'item-error': errors.location,
-							'item-filled': item.location,
-						}">
-						<ion-label position="stacked" class="custom-label">
-							<ion-icon :icon="locationOutline" class="label-icon"></ion-icon>
-							Fundort/Verlustort *
-						</ion-label>
-						<ion-input
-							v-model="item.location"
-							placeholder="z.B. Bibliothek, Hörsaal A1, Mensa"
-							@ionBlur="validateField('location')"
-							:class="{ 'input-error': errors.location }"></ion-input>
-					</ion-item>
+							'input-filled': item.location,
+							'input-error': errors.location,
+						}"
+						@ionBlur="validateField('location')">
+						<ion-icon
+							:icon="locationOutline"
+							slot="start"
+							class="input-icon"></ion-icon>
+					</ion-input>
 					<div v-if="errors.location" class="error-message">
 						<ion-icon :icon="alertCircleOutline"></ion-icon>
 						{{ errors.location }}
@@ -99,25 +98,43 @@
 				</div>
 
 				<div class="input-group">
-					<ion-item
-						class="modern-item"
+					<ion-select
+						v-model="item.status"
+						label="Status *"
+						label-placement="stacked"
+						placeholder="Wähle den Status"
+						interface="popover"
+						class="modern-select"
 						:class="{
-							'item-error': errors.status,
-							'item-filled': item.status,
-						}">
-						<ion-label position="stacked" class="custom-label">
-							<ion-icon :icon="flagOutline" class="label-icon"></ion-icon>
-							Status *
-						</ion-label>
-						<ion-select
-							v-model="item.status"
-							placeholder="Wähle den Status"
-							@ionChange="validateField('status')">
-							<ion-select-option value="LOST">Verloren</ion-select-option>
-							<ion-select-option value="FOUND">Gefunden</ion-select-option>
-							<ion-select-option value="CLAIMED">Abgeholt</ion-select-option>
-						</ion-select>
-					</ion-item>
+							'select-filled': item.status,
+							'select-error': errors.status,
+						}"
+						@ionChange="validateField('status')">
+						<ion-icon
+							:icon="flagOutline"
+							slot="start"
+							class="input-icon"></ion-icon>
+						<ion-select-option value="LOST">
+							<div class="select-option">
+								<ion-icon :icon="searchOutline" class="option-icon"></ion-icon>
+								<span>Verloren</span>
+							</div>
+						</ion-select-option>
+						<ion-select-option value="FOUND">
+							<div class="select-option">
+								<ion-icon :icon="eyeOutline" class="option-icon"></ion-icon>
+								<span>Gefunden</span>
+							</div>
+						</ion-select-option>
+						<ion-select-option value="CLAIMED">
+							<div class="select-option">
+								<ion-icon
+									:icon="checkmarkCircleOutline"
+									class="option-icon"></ion-icon>
+								<span>Abgeholt</span>
+							</div>
+						</ion-select-option>
+					</ion-select>
 					<div v-if="errors.status" class="error-message">
 						<ion-icon :icon="alertCircleOutline"></ion-icon>
 						{{ errors.status }}
@@ -187,11 +204,11 @@
 				</div>
 
 				<div class="form-footer-info">
-					<ion-item class="info-item">
+					<div class="info-item">
 						<ion-icon
 							:icon="informationCircleOutline"
-							slot="start"
-							color="primary"></ion-icon>
+							color="primary"
+							class="info-icon"></ion-icon>
 						<div class="info-text">
 							<p>
 								Alle Änderungen werden automatisch gespeichert, wenn du auf
@@ -199,7 +216,7 @@
 							</p>
 							<p>Mit * markierte Felder sind Pflichtfelder.</p>
 						</div>
-					</ion-item>
+					</div>
 				</div>
 			</div>
 		</div>
@@ -216,8 +233,6 @@
 <script setup lang="ts">
 import TemplatePage from '@/components/TemplatePage.vue';
 import {
-	IonItem,
-	IonLabel,
 	IonInput,
 	IonTextarea,
 	IonIcon,
@@ -242,8 +257,10 @@ import {
 	cameraOutline,
 	cloudUploadOutline,
 	refreshOutline,
+	eyeOutline,
+	searchOutline,
 } from 'ionicons/icons';
-import { ref, computed, watch, onMounted } from 'vue';
+import { ref, computed, watch, onMounted, nextTick } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useItemStore } from '@/stores/itemStore';
 import type { Item } from '@/models/item';
@@ -252,6 +269,7 @@ const router = useRouter();
 const route = useRoute();
 const itemStore = useItemStore();
 
+// Initialize with proper default values
 const item = ref<Item>({
 	id: 0,
 	name: '',
@@ -269,13 +287,14 @@ const errors = ref({
 	status: '',
 });
 
-const isLoading = computed(() => itemStore.isLoading);
-const error = computed(() => itemStore.getError);
+const isLoading = ref(false);
+const error = ref<string | null>(null);
 const isSaving = ref(false);
 const showDeleteAlert = ref(false);
 const imagePreview = ref('');
 const fileInput = ref<HTMLInputElement>();
 
+// Use local loading state instead of store loading state
 const leftFooterButton = computed(() => ({
 	name: 'Abbrechen',
 	color: 'medium',
@@ -290,14 +309,14 @@ const rightFooterButton = computed(() => ({
 		: 'Felder ausfüllen',
 	color: isValid.value ? 'primary' : 'medium',
 	icon: checkmarkCircleOutline,
-	disabled: !isValid.value || isSaving.value,
+	disabled: !isValid.value || isSaving.value || isLoading.value,
 }));
 
 const isValid = computed(() => {
 	return (
-		item.value.name.trim() !== '' &&
-		item.value.location.trim() !== '' &&
-		item.value.status.trim() !== '' &&
+		item.value?.name?.trim() !== '' &&
+		item.value?.location?.trim() !== '' &&
+		item.value?.status?.trim() !== '' &&
 		Object.values(errors.value).every((error) => error === '')
 	);
 });
@@ -317,57 +336,73 @@ const alertButtons = [
 ];
 
 const formatDate = (dateString: string) => {
-	return new Date(dateString).toLocaleDateString('de-DE', {
-		day: '2-digit',
-		month: '2-digit',
-		year: 'numeric',
-		hour: '2-digit',
-		minute: '2-digit',
-	});
+	try {
+		return new Date(dateString).toLocaleDateString('de-DE', {
+			day: '2-digit',
+			month: '2-digit',
+			year: 'numeric',
+			hour: '2-digit',
+			minute: '2-digit',
+		});
+	} catch (error) {
+		console.error('Error formatting date:', error);
+		return 'Ungültiges Datum';
+	}
 };
 
 const validateField = (fieldName: keyof typeof errors.value) => {
-	const value = String(
-		item.value[fieldName as keyof typeof item.value] || ''
-	).trim();
+	try {
+		const value = String(
+			item.value[fieldName as keyof typeof item.value] || ''
+		).trim();
 
-	switch (fieldName) {
-		case 'name':
-			if (!value) {
-				errors.value.name = 'Name ist erforderlich';
-			} else if (value.length < 2) {
-				errors.value.name = 'Name muss mindestens 2 Zeichen haben';
-			} else {
-				errors.value.name = '';
-			}
-			break;
-		case 'location':
-			if (!value) {
-				errors.value.location = 'Standort ist erforderlich';
-			} else {
-				errors.value.location = '';
-			}
-			break;
-		case 'status':
-			if (!value) {
-				errors.value.status = 'Status ist erforderlich';
-			} else {
-				errors.value.status = '';
-			}
-			break;
+		switch (fieldName) {
+			case 'name':
+				if (!value) {
+					errors.value.name = 'Name ist erforderlich';
+				} else if (value.length < 2) {
+					errors.value.name = 'Name muss mindestens 2 Zeichen haben';
+				} else {
+					errors.value.name = '';
+				}
+				break;
+			case 'location':
+				if (!value) {
+					errors.value.location = 'Standort ist erforderlich';
+				} else {
+					errors.value.location = '';
+				}
+				break;
+			case 'status':
+				if (!value) {
+					errors.value.status = 'Status ist erforderlich';
+				} else {
+					errors.value.status = '';
+				}
+				break;
+		}
+	} catch (error) {
+		console.error('Error validating field:', fieldName, error);
 	}
 };
 
 const validateAllFields = () => {
-	validateField('name');
-	validateField('location');
-	validateField('status');
+	try {
+		validateField('name');
+		validateField('location');
+		validateField('status');
+	} catch (error) {
+		console.error('Error validating all fields:', error);
+	}
 };
 
 const loadItem = async () => {
 	try {
+		isLoading.value = true;
+		error.value = null;
+
 		const itemId = Number(route.params.id);
-		if (!itemId) {
+		if (!itemId || isNaN(itemId)) {
 			throw new Error('Invalid item ID');
 		}
 
@@ -375,18 +410,31 @@ const loadItem = async () => {
 		const loadedItem = itemStore.getCurrentItem;
 
 		if (loadedItem) {
+			// Use nextTick to ensure reactivity is properly handled
+			await nextTick();
 			item.value = { ...loadedItem };
 		} else {
 			throw new Error('Item not found');
 		}
-	} catch (error) {
-		console.error('Error loading item:', error);
-		router.back();
+	} catch (err) {
+		console.error('Error loading item:', err);
+		error.value = err instanceof Error ? err.message : 'Unknown error';
+		// Don't navigate away immediately, let user see the error
+		setTimeout(() => {
+			router.back();
+		}, 2000);
+	} finally {
+		isLoading.value = false;
 	}
 };
 
 const handleCancel = () => {
-	router.back();
+	try {
+		router.back();
+	} catch (error) {
+		console.error('Error navigating back:', error);
+		router.push('/items/overview');
+	}
 };
 
 const handleSave = async () => {
@@ -395,9 +443,9 @@ const handleSave = async () => {
 		return;
 	}
 
-	isSaving.value = true;
-
 	try {
+		isSaving.value = true;
+
 		const updateData: Partial<Item> = {
 			name: item.value.name.trim(),
 			description: item.value.description?.trim() || '',
@@ -411,9 +459,11 @@ const handleSave = async () => {
 
 		await itemStore.updateItem(item.value.id, updateData);
 
+		// Navigate back to item details
 		router.push(`/items/${item.value.id}`);
 	} catch (error) {
 		console.error('Error saving item:', error);
+		// You might want to show an error toast here
 	} finally {
 		isSaving.value = false;
 	}
@@ -429,34 +479,48 @@ const confirmDelete = async () => {
 		router.push('/items/overview');
 	} catch (error) {
 		console.error('Error deleting item:', error);
+		// You might want to show an error toast here
 	}
 };
 
 const triggerFileInput = () => {
-	fileInput.value?.click();
+	try {
+		fileInput.value?.click();
+	} catch (error) {
+		console.error('Error triggering file input:', error);
+	}
 };
 
 const handleFileSelect = (event: Event) => {
-	const target = event.target as HTMLInputElement;
-	const file = target.files?.[0];
+	try {
+		const target = event.target as HTMLInputElement;
+		const file = target.files?.[0];
 
-	if (file) {
-		if (!file.type.startsWith('image/')) {
-			console.error('Please select an image file');
-			return;
+		if (file) {
+			if (!file.type.startsWith('image/')) {
+				console.error('Please select an image file');
+				return;
+			}
+
+			const maxSize = 5 * 1024 * 1024; // 5MB
+			if (file.size > maxSize) {
+				console.error('File size must be less than 5MB');
+				return;
+			}
+
+			const reader = new FileReader();
+			reader.onload = (e) => {
+				if (e.target?.result) {
+					imagePreview.value = e.target.result as string;
+				}
+			};
+			reader.onerror = (error) => {
+				console.error('Error reading file:', error);
+			};
+			reader.readAsDataURL(file);
 		}
-
-		const maxSize = 5 * 1024 * 1024; // 5MB
-		if (file.size > maxSize) {
-			console.error('File size must be less than 5MB');
-			return;
-		}
-
-		const reader = new FileReader();
-		reader.onload = (e) => {
-			imagePreview.value = e.target?.result as string;
-		};
-		reader.readAsDataURL(file);
+	} catch (error) {
+		console.error('Error handling file select:', error);
 	}
 };
 
@@ -469,36 +533,65 @@ const takePhoto = async () => {
 };
 
 const removeImage = () => {
-	imagePreview.value = '';
-	item.value.imageUrl = '';
-	if (fileInput.value) {
-		fileInput.value.value = '';
+	try {
+		imagePreview.value = '';
+		if (item.value) {
+			item.value.imageUrl = '';
+		}
+		if (fileInput.value) {
+			fileInput.value.value = '';
+		}
+	} catch (error) {
+		console.error('Error removing image:', error);
 	}
 };
 
+// Wrap watchers in try-catch and add null checks
 watch(
-	() => item.value.name,
-	() => {
-		if (errors.value.name) errors.value.name = '';
+	() => item.value?.name,
+	(newName) => {
+		try {
+			if (newName && errors.value.name) {
+				errors.value.name = '';
+			}
+		} catch (error) {
+			console.error('Error in name watcher:', error);
+		}
 	}
 );
 
 watch(
-	() => item.value.location,
-	() => {
-		if (errors.value.location) errors.value.location = '';
+	() => item.value?.location,
+	(newLocation) => {
+		try {
+			if (newLocation && errors.value.location) {
+				errors.value.location = '';
+			}
+		} catch (error) {
+			console.error('Error in location watcher:', error);
+		}
 	}
 );
 
 watch(
-	() => item.value.status,
-	() => {
-		if (errors.value.status) errors.value.status = '';
+	() => item.value?.status,
+	(newStatus) => {
+		try {
+			if (newStatus && errors.value.status) {
+				errors.value.status = '';
+			}
+		} catch (error) {
+			console.error('Error in status watcher:', error);
+		}
 	}
 );
 
-onMounted(() => {
-	loadItem();
+onMounted(async () => {
+	try {
+		await loadItem();
+	} catch (error) {
+		console.error('Error in onMounted:', error);
+	}
 });
 </script>
 
@@ -586,10 +679,12 @@ onMounted(() => {
 	margin-bottom: 24px;
 }
 
-.modern-item {
+.modern-input,
+.modern-textarea,
+.modern-select {
 	--background: var(--ion-color-light-tint);
 	--border-radius: 12px;
-	--padding-start: 16px;
+	--padding-start: 48px;
 	--padding-end: 16px;
 	--padding-top: 12px;
 	--padding-bottom: 12px;
@@ -597,172 +692,74 @@ onMounted(() => {
 	border-radius: 12px;
 	margin-bottom: 8px;
 	transition: all 0.3s ease;
+	position: relative;
 }
 
-.modern-item.item-filled {
+.modern-input.input-filled,
+.modern-textarea.textarea-filled,
+.modern-select.select-filled {
 	border-color: var(--ion-color-primary-tint);
 	--background: rgba(var(--ion-color-primary-rgb), 0.05);
 }
 
-.modern-item.item-error {
+.modern-input.input-error,
+.modern-textarea.textarea-error,
+.modern-select.select-error {
 	border-color: var(--ion-color-danger);
 	--background: rgba(var(--ion-color-danger-rgb), 0.05);
 }
 
-.modern-item:focus-within {
+.modern-input:focus-within,
+.modern-textarea:focus-within,
+.modern-select:focus-within {
 	border-color: var(--ion-color-primary);
 	box-shadow: 0 0 0 3px rgba(var(--ion-color-primary-rgb), 0.1);
+	transform: translateY(-2px);
 }
 
-.custom-label {
-	display: flex;
-	align-items: center;
-	gap: 8px;
-	font-weight: 600;
-	color: var(--ion-color-dark);
-	margin-bottom: 4px;
-}
-
-.label-icon {
-	font-size: 16px;
-	color: var(--ion-color-primary);
-}
-
-.custom-textarea {
+.modern-textarea {
 	min-height: 80px;
+	--padding-start: 48px;
 }
 
-.textarea-item {
-	--padding-bottom: 16px;
+.input-icon {
+	position: absolute;
+	left: 16px;
+	top: 50%;
+	transform: translateY(-50%);
+	color: var(--ion-color-primary);
+	font-size: 18px;
+	z-index: 10;
 }
 
-.input-error {
-	color: var(--ion-color-danger);
-}
-
-.error-message {
+.select-option {
 	display: flex;
 	align-items: center;
-	gap: 6px;
-	color: var(--ion-color-danger);
-	font-size: 0.85em;
-	margin-top: 4px;
-	padding-left: 4px;
-	animation: shake 0.3s ease-in-out;
+	gap: 12px;
+	padding: 8px 0;
 }
 
-.action-buttons {
-	margin: 40px 0;
-	padding: 20px;
-	border-top: 1px solid var(--ion-color-light-shade);
-	border-bottom: 1px solid var(--ion-color-light-shade);
-}
-
-.delete-button {
-	width: 100%;
-	--border-radius: 12px;
-	height: 48px;
-	font-weight: 600;
-}
-
-.form-footer-info {
-	margin-top: 20px;
-	padding: 20px;
-	background: var(--ion-color-light-tint);
-	border-radius: 12px;
-	border-left: 4px solid var(--ion-color-primary);
+.option-icon {
+	font-size: 18px;
+	color: var(--ion-color-primary);
 }
 
 .info-item {
-	--background: transparent;
-	--padding-start: 0;
-	--padding-end: 0;
-}
-
-.info-text p {
-	margin: 0;
-	color: var(--ion-color-medium);
-	font-size: 0.9em;
-}
-
-.image-upload-section {
-	background: var(--ion-color-light-tint);
-	border-radius: 16px;
-	padding: 20px;
-	border: 2px dashed var(--ion-color-light-shade);
-	transition: all 0.3s ease;
-}
-
-.image-upload-section:hover {
-	border-color: var(--ion-color-primary-tint);
-	background: rgba(var(--ion-color-primary-rgb), 0.02);
-}
-
-.upload-title {
 	display: flex;
-	align-items: center;
-	gap: 8px;
-	color: var(--ion-color-dark);
-	margin: 0 0 8px 0;
-	font-size: 1.1em;
-	font-weight: 600;
-}
-
-.title-icon {
-	font-size: 20px;
-	color: var(--ion-color-primary);
-}
-
-.upload-description {
-	color: var(--ion-color-medium);
-	margin: 0 0 20px 0;
-	font-size: 0.9em;
-	line-height: 1.4;
-}
-
-.image-preview-container {
-	position: relative;
-	margin-bottom: 16px;
-}
-
-.image-preview {
-	width: 100%;
-	max-width: 300px;
-	height: 200px;
-	object-fit: cover;
-	border-radius: 12px;
-	border: 2px solid var(--ion-color-light-shade);
-	display: block;
-	margin: 0 auto;
-	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.remove-image-btn {
-	position: absolute;
-	top: 8px;
-	right: 50%;
-	transform: translateX(calc(50% - 150px));
-	background: rgba(255, 255, 255, 0.9);
-	border-radius: 50%;
-	--padding-start: 8px;
-	--padding-end: 8px;
-	--padding-top: 8px;
-	--padding-bottom: 8px;
-	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-}
-
-.upload-buttons {
-	display: flex;
+	align-items: flex-start;
 	gap: 12px;
-	margin-bottom: 16px;
-	justify-content: center;
+	background: transparent;
+	padding: 0;
 }
 
-.upload-btn {
-	--border-radius: 12px;
-	font-weight: 600;
+.info-icon {
+	font-size: 20px;
+	margin-top: 2px;
+	flex-shrink: 0;
+}
+
+.info-text {
 	flex: 1;
-	max-width: 200px;
 }
 
 @keyframes slideInUp {

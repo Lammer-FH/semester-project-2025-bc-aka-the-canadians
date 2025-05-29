@@ -33,22 +33,22 @@
 				</div>
 
 				<div class="input-group">
-					<ion-item
-						class="modern-item"
+					<ion-input
+						v-model="location.name"
+						label="Name des Standorts *"
+						label-placement="stacked"
+						placeholder="z.B. Hauptbibliothek, Mensa Nord, Hörsaal A"
+						class="modern-input"
 						:class="{
-							'item-error': errors.name,
-							'item-filled': location.name,
-						}">
-						<ion-label position="stacked" class="custom-label">
-							<ion-icon :icon="textOutline" class="label-icon"></ion-icon>
-							Name des Standorts *
-						</ion-label>
-						<ion-input
-							v-model="location.name"
-							placeholder="z.B. Hauptbibliothek, Mensa Nord, Hörsaal A"
-							@ionBlur="validateField('name')"
-							:class="{ 'input-error': errors.name }"></ion-input>
-					</ion-item>
+							'input-filled': location.name,
+							'input-error': errors.name,
+						}"
+						@ionBlur="validateField('name')">
+						<ion-icon
+							:icon="textOutline"
+							slot="start"
+							class="input-icon"></ion-icon>
+					</ion-input>
 					<div v-if="errors.name" class="error-message">
 						<ion-icon :icon="alertCircleOutline"></ion-icon>
 						{{ errors.name }}
@@ -56,40 +56,41 @@
 				</div>
 
 				<div class="input-group">
-					<ion-item
-						class="modern-item textarea-item"
-						:class="{ 'item-filled': location.description }">
-						<ion-label position="stacked" class="custom-label">
-							<ion-icon
-								:icon="documentTextOutline"
-								class="label-icon"></ion-icon>
-							Beschreibung
-						</ion-label>
-						<ion-textarea
-							v-model="location.description"
-							placeholder="Detaillierte Beschreibung des Standorts und seiner Besonderheiten..."
-							class="custom-textarea"
-							:auto-grow="true"></ion-textarea>
-					</ion-item>
+					<ion-textarea
+						v-model="location.description"
+						label="Beschreibung"
+						label-placement="stacked"
+						placeholder="Detaillierte Beschreibung des Standorts und seiner Besonderheiten..."
+						class="modern-textarea"
+						:class="{
+							'textarea-filled': location.description,
+						}"
+						:auto-grow="true"
+						rows="3">
+						<ion-icon
+							:icon="documentTextOutline"
+							slot="start"
+							class="input-icon"></ion-icon>
+					</ion-textarea>
 				</div>
 
 				<div class="input-group">
-					<ion-item
-						class="modern-item"
+					<ion-input
+						v-model="location.building"
+						label="Gebäude *"
+						label-placement="stacked"
+						placeholder="z.B. Hauptgebäude, Neubau, Labor"
+						class="modern-input"
 						:class="{
-							'item-error': errors.building,
-							'item-filled': location.building,
-						}">
-						<ion-label position="stacked" class="custom-label">
-							<ion-icon :icon="businessOutline" class="label-icon"></ion-icon>
-							Gebäude *
-						</ion-label>
-						<ion-input
-							v-model="location.building"
-							placeholder="z.B. Hauptgebäude, Neubau, Labor"
-							@ionBlur="validateField('building')"
-							:class="{ 'input-error': errors.building }"></ion-input>
-					</ion-item>
+							'input-filled': location.building,
+							'input-error': errors.building,
+						}"
+						@ionBlur="validateField('building')">
+						<ion-icon
+							:icon="businessOutline"
+							slot="start"
+							class="input-icon"></ion-icon>
+					</ion-input>
 					<div v-if="errors.building" class="error-message">
 						<ion-icon :icon="alertCircleOutline"></ion-icon>
 						{{ errors.building }}
@@ -98,22 +99,22 @@
 
 				<div class="input-row">
 					<div class="input-group half-width">
-						<ion-item
-							class="modern-item"
+						<ion-input
+							v-model="location.floor"
+							label="Etage *"
+							label-placement="stacked"
+							placeholder="z.B. EG, 1, 2, UG"
+							class="modern-input"
 							:class="{
-								'item-error': errors.floor,
-								'item-filled': location.floor,
-							}">
-							<ion-label position="stacked" class="custom-label">
-								<ion-icon :icon="layersOutline" class="label-icon"></ion-icon>
-								Etage *
-							</ion-label>
-							<ion-input
-								v-model="location.floor"
-								placeholder="z.B. EG, 1, 2, UG"
-								@ionBlur="validateField('floor')"
-								:class="{ 'input-error': errors.floor }"></ion-input>
-						</ion-item>
+								'input-filled': location.floor,
+								'input-error': errors.floor,
+							}"
+							@ionBlur="validateField('floor')">
+							<ion-icon
+								:icon="layersOutline"
+								slot="start"
+								class="input-icon"></ion-icon>
+						</ion-input>
 						<div v-if="errors.floor" class="error-message">
 							<ion-icon :icon="alertCircleOutline"></ion-icon>
 							{{ errors.floor }}
@@ -121,28 +122,29 @@
 					</div>
 
 					<div class="input-group half-width">
-						<ion-item
-							class="modern-item"
+						<ion-input
+							v-model="location.room"
+							label="Raum *"
+							label-placement="stacked"
+							placeholder="z.B. 101, A-15, Foyer"
+							class="modern-input"
 							:class="{
-								'item-error': errors.room,
-								'item-filled': location.room,
-							}">
-							<ion-label position="stacked" class="custom-label">
-								<ion-icon :icon="overviewOutline" class="label-icon"></ion-icon>
-								Raum *
-							</ion-label>
-							<ion-input
-								v-model="location.room"
-								placeholder="z.B. 101, A-15, Foyer"
-								@ionBlur="validateField('room')"
-								:class="{ 'input-error': errors.room }"></ion-input>
-						</ion-item>
+								'input-filled': location.room,
+								'input-error': errors.room,
+							}"
+							@ionBlur="validateField('room')">
+							<ion-icon
+								:icon="homeOutline"
+								slot="start"
+								class="input-icon"></ion-icon>
+						</ion-input>
 						<div v-if="errors.room" class="error-message">
 							<ion-icon :icon="alertCircleOutline"></ion-icon>
 							{{ errors.room }}
 						</div>
 					</div>
 				</div>
+
 				<div class="action-buttons">
 					<ion-button
 						fill="outline"
@@ -156,11 +158,11 @@
 				</div>
 
 				<div class="form-footer-info">
-					<ion-item class="info-item">
+					<div class="info-item">
 						<ion-icon
 							:icon="informationCircleOutline"
-							slot="start"
-							color="primary"></ion-icon>
+							color="primary"
+							class="info-icon"></ion-icon>
 						<div class="info-text">
 							<p>
 								Alle Änderungen werden automatisch gespeichert, wenn du auf
@@ -168,7 +170,7 @@
 							</p>
 							<p>Mit * markierte Felder sind Pflichtfelder.</p>
 						</div>
-					</ion-item>
+					</div>
 				</div>
 			</div>
 		</div>
@@ -185,8 +187,6 @@
 <script setup lang="ts">
 import TemplatePage from '@/components/TemplatePage.vue';
 import {
-	IonItem,
-	IonLabel,
 	IonInput,
 	IonTextarea,
 	IonIcon,
@@ -207,8 +207,9 @@ import {
 	trashOutline,
 	timeOutline,
 	refreshOutline,
+	homeOutline,
 } from 'ionicons/icons';
-import { ref, computed, watch, onMounted } from 'vue';
+import { ref, computed, watch, onMounted, nextTick } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useLocationStore } from '@/stores/locationStore';
 import type { Location } from '@/models/location';
@@ -235,8 +236,8 @@ const errors = ref({
 	room: '',
 });
 
-const isLoading = computed(() => locationStore.isLoading);
-const error = computed(() => locationStore.getError);
+const isLoading = ref(false);
+const error = ref<string | null>(null);
 const isSaving = ref(false);
 const showDeleteAlert = ref(false);
 
@@ -254,17 +255,22 @@ const rightFooterButton = computed(() => ({
 		: 'Felder ausfüllen',
 	color: isValid.value ? 'primary' : 'medium',
 	icon: checkmarkCircleOutline,
-	disabled: !isValid.value || isSaving.value,
+	disabled: !isValid.value || isSaving.value || isLoading.value,
 }));
 
 const isValid = computed(() => {
-	return (
-		location.value.name.trim() !== '' &&
-		location.value.building.trim() !== '' &&
-		location.value.floor.trim() !== '' &&
-		location.value.room.trim() !== '' &&
-		Object.values(errors.value).every((error) => error === '')
-	);
+	try {
+		return (
+			location.value?.name?.trim() !== '' &&
+			location.value?.building?.trim() !== '' &&
+			location.value?.floor?.trim() !== '' &&
+			location.value?.room?.trim() !== '' &&
+			Object.values(errors.value).every((error) => error === '')
+		);
+	} catch (error) {
+		console.error('Error in isValid computed:', error);
+		return false;
+	}
 });
 
 const alertButtons = [
@@ -282,82 +288,111 @@ const alertButtons = [
 ];
 
 const formatDate = (dateString: string) => {
-	return new Date(dateString).toLocaleDateString('de-DE', {
-		day: '2-digit',
-		month: '2-digit',
-		year: 'numeric',
-		hour: '2-digit',
-		minute: '2-digit',
-	});
+	try {
+		return new Date(dateString).toLocaleDateString('de-DE', {
+			day: '2-digit',
+			month: '2-digit',
+			year: 'numeric',
+			hour: '2-digit',
+			minute: '2-digit',
+		});
+	} catch (error) {
+		console.error('Error formatting date:', error);
+		return 'Ungültiges Datum';
+	}
 };
 
 const validateField = (fieldName: keyof typeof errors.value) => {
-	const value = String(
-		location.value[fieldName as keyof typeof location.value] || ''
-	).trim();
+	try {
+		const value = String(
+			location.value?.[fieldName as keyof typeof location.value] || ''
+		).trim();
 
-	switch (fieldName) {
-		case 'name':
-			if (!value) {
-				errors.value.name = 'Name ist erforderlich';
-			} else if (value.length < 2) {
-				errors.value.name = 'Name muss mindestens 2 Zeichen haben';
-			} else {
-				errors.value.name = '';
-			}
-			break;
-		case 'building':
-			if (!value) {
-				errors.value.building = 'Gebäude ist erforderlich';
-			} else {
-				errors.value.building = '';
-			}
-			break;
-		case 'floor':
-			if (!value) {
-				errors.value.floor = 'Etage ist erforderlich';
-			} else {
-				errors.value.floor = '';
-			}
-			break;
-		case 'room':
-			if (!value) {
-				errors.value.room = 'Raum ist erforderlich';
-			} else {
-				errors.value.room = '';
-			}
-			break;
+		switch (fieldName) {
+			case 'name':
+				if (!value) {
+					errors.value.name = 'Name ist erforderlich';
+				} else if (value.length < 2) {
+					errors.value.name = 'Name muss mindestens 2 Zeichen haben';
+				} else {
+					errors.value.name = '';
+				}
+				break;
+			case 'building':
+				if (!value) {
+					errors.value.building = 'Gebäude ist erforderlich';
+				} else {
+					errors.value.building = '';
+				}
+				break;
+			case 'floor':
+				if (!value) {
+					errors.value.floor = 'Etage ist erforderlich';
+				} else {
+					errors.value.floor = '';
+				}
+				break;
+			case 'room':
+				if (!value) {
+					errors.value.room = 'Raum ist erforderlich';
+				} else {
+					errors.value.room = '';
+				}
+				break;
+		}
+	} catch (error) {
+		console.error('Error validating field:', fieldName, error);
 	}
 };
 
 const validateAllFields = () => {
-	validateField('name');
-	validateField('building');
-	validateField('floor');
-	validateField('room');
+	try {
+		validateField('name');
+		validateField('building');
+		validateField('floor');
+		validateField('room');
+	} catch (error) {
+		console.error('Error validating all fields:', error);
+	}
 };
 
 const loadLocation = async () => {
 	try {
+		isLoading.value = true;
+		error.value = null;
+
 		const locationId = Number(route.params.id);
-		if (!locationId) {
+		if (!locationId || isNaN(locationId)) {
 			throw new Error('Invalid location ID');
 		}
 
-		const loadedLocation = await locationStore.fetchLocationById(locationId);
+		await locationStore.fetchLocationById(locationId);
+		const loadedLocation = locationStore.getCurrentLocation;
+
 		if (loadedLocation) {
+			await nextTick();
 			location.value = { ...loadedLocation };
 		} else {
 			throw new Error('Location not found');
 		}
-	} catch (error) {
-		console.error('Error loading location:', error);
-		router.back();
+	} catch (err) {
+		console.error('Error loading location:', err);
+		error.value = err instanceof Error ? err.message : 'Unknown error';
+		setTimeout(() => {
+			router.back();
+		}, 2000);
+	} finally {
+		isLoading.value = false;
 	}
 };
 
 const handleCancel = () => {
-	router.back();
+	try {
+		router.back();
+	} catch (error) {
+		console.error('Error navigating back:', error);
+		router.push('/locations/overview');
+	}
 };
 
 const handleSave = async () => {
@@ -366,12 +401,12 @@ const handleSave = async () => {
 		return;
 	}
 
-	isSaving.value = true;
-
 	try {
+		isSaving.value = true;
+
 		const updateData = {
 			name: location.value.name.trim(),
-			description: location.value.description.trim(),
+			description: location.value.description?.trim() || '',
 			building: location.value.building.trim(),
 			floor: location.value.floor.trim(),
 			room: location.value.room.trim(),
@@ -401,35 +436,63 @@ const confirmDelete = async () => {
 };
 
 watch(
-	() => location.value.name,
-	() => {
-		if (errors.value.name) errors.value.name = '';
+	() => location.value?.name,
+	(newName) => {
+		try {
+			if (newName && errors.value.name) {
+				errors.value.name = '';
+			}
+		} catch (error) {
+			console.error('Error in name watcher:', error);
+		}
 	}
 );
 
 watch(
-	() => location.value.building,
-	() => {
-		if (errors.value.building) errors.value.building = '';
+	() => location.value?.building,
+	(newBuilding) => {
+		try {
+			if (newBuilding && errors.value.building) {
+				errors.value.building = '';
+			}
+		} catch (error) {
+			console.error('Error in building watcher:', error);
+		}
 	}
 );
 
 watch(
-	() => location.value.floor,
-	() => {
-		if (errors.value.floor) errors.value.floor = '';
+	() => location.value?.floor,
+	(newFloor) => {
+		try {
+			if (newFloor && errors.value.floor) {
+				errors.value.floor = '';
+			}
+		} catch (error) {
+			console.error('Error in floor watcher:', error);
+		}
 	}
 );
 
 watch(
-	() => location.value.room,
-	() => {
-		if (errors.value.room) errors.value.room = '';
+	() => location.value?.room,
+	(newRoom) => {
+		try {
+			if (newRoom && errors.value.room) {
+				errors.value.room = '';
+			}
+		} catch (error) {
+			console.error('Error in room watcher:', error);
+		}
 	}
 );
 
-onMounted(() => {
-	loadLocation();
+onMounted(async () => {
+	try {
+		await loadLocation();
+	} catch (error) {
+		console.error('Error in onMounted:', error);
+	}
 });
 </script>
 
@@ -526,10 +589,11 @@ onMounted(() => {
 	flex: 1;
 }
 
-.modern-item {
+.modern-input,
+.modern-textarea {
 	--background: var(--ion-color-light-tint);
 	--border-radius: 12px;
-	--padding-start: 16px;
+	--padding-start: 48px;
 	--padding-end: 16px;
 	--padding-top: 12px;
 	--padding-bottom: 12px;
@@ -537,47 +601,41 @@ onMounted(() => {
 	border-radius: 12px;
 	margin-bottom: 8px;
 	transition: all 0.3s ease;
+	position: relative;
 }
 
-.modern-item.item-filled {
+.modern-input.input-filled,
+.modern-textarea.textarea-filled {
 	border-color: var(--ion-color-primary-tint);
 	--background: rgba(var(--ion-color-primary-rgb), 0.05);
 }
 
-.modern-item.item-error {
+.modern-input.input-error,
+.modern-textarea.textarea-error {
 	border-color: var(--ion-color-danger);
 	--background: rgba(var(--ion-color-danger-rgb), 0.05);
 }
 
-.modern-item:focus-within {
+.modern-input:focus-within,
+.modern-textarea:focus-within {
 	border-color: var(--ion-color-primary);
 	box-shadow: 0 0 0 3px rgba(var(--ion-color-primary-rgb), 0.1);
+	transform: translateY(-2px);
 }
 
-.custom-label {
-	display: flex;
-	align-items: center;
-	gap: 8px;
-	font-weight: 600;
-	color: var(--ion-color-dark);
-	margin-bottom: 4px;
-}
-
-.label-icon {
-	font-size: 16px;
-	color: var(--ion-color-primary);
-}
-
-.custom-textarea {
+.modern-textarea {
 	min-height: 80px;
+	--padding-start: 48px;
 }
 
-.textarea-item {
-	--padding-bottom: 16px;
-}
-
-.input-error {
-	color: var(--ion-color-danger);
+.input-icon {
+	position: absolute;
+	left: 16px;
+	top: 50%;
+	transform: translateY(-50%);
+	color: var(--ion-color-primary);
+	font-size: 18px;
+	z-index: 10;
 }
 
 .error-message {
@@ -608,21 +666,43 @@ onMounted(() => {
 .form-footer-info {
 	margin-top: 20px;
 	padding: 20px;
-	background: var(--ion-color-light-tint);
+	background: linear-gradient(
+		135deg,
+		var(--ion-color-light-tint),
+		var(--ion-color-light)
+	);
 	border-radius: 12px;
 	border-left: 4px solid var(--ion-color-primary);
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .info-item {
-	--background: transparent;
-	--padding-start: 0;
-	--padding-end: 0;
+	display: flex;
+	align-items: flex-start;
+	gap: 12px;
+	background: transparent;
+	padding: 0;
+}
+
+.info-icon {
+	font-size: 20px;
+	margin-top: 2px;
+	flex-shrink: 0;
+}
+
+.info-text {
+	flex: 1;
 }
 
 .info-text p {
-	margin: 0;
-	color: var(--ion-color-medium);
+	margin: 0 0 8px 0;
+	color: var(--ion-color-medium-shade);
 	font-size: 0.9em;
+	line-height: 1.4;
+}
+
+.info-text p:last-child {
+	margin-bottom: 0;
 }
 
 @keyframes slideInUp {
@@ -649,7 +729,6 @@ onMounted(() => {
 	}
 }
 
-/* Responsive Design */
 @media (max-width: 768px) {
 	.form-container {
 		padding: 16px;

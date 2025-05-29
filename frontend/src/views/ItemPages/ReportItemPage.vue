@@ -26,44 +26,37 @@
 
 			<div class="form-content">
 				<div class="input-group">
-					<ion-item
-						class="modern-item"
+					<ion-select
+						v-model="reportData.type"
+						label="Art des Berichts *"
+						label-placement="stacked"
+						placeholder="Wähle eine Option"
+						interface="popover"
+						class="modern-select"
 						:class="{
-							'item-filled': reportData.type,
-							'item-error': errors.type,
-						}">
-						<ion-label position="stacked" class="custom-label">
-							<ion-icon :icon="flagOutline" class="label-icon"></ion-icon>
-							Art des Berichts *
-						</ion-label>
-						<ion-select
-							v-model="reportData.type"
-							placeholder="Wähle eine Option"
-							interface="popover"
-							class="custom-select"
-							@selectionChange="validateField('type')">
-							<ion-select-option value="LOST">
-								<div class="select-option">
-									<ion-icon
-										:icon="searchOutline"
-										class="option-icon"></ion-icon>
-									<div>
-										<strong>Verlustbericht</strong>
-										<p>Ich habe einen Gegenstand verloren</p>
-									</div>
+							'select-filled': reportData.type,
+							'select-error': errors.type,
+						}"
+						@selectionChange="validateField('type')">
+						<ion-select-option value="LOST">
+							<div class="select-option">
+								<ion-icon :icon="searchOutline" class="option-icon"></ion-icon>
+								<div>
+									<strong>Verlustbericht</strong>
+									<p>Ich habe einen Gegenstand verloren</p>
 								</div>
-							</ion-select-option>
-							<ion-select-option value="FOUND">
-								<div class="select-option">
-									<ion-icon :icon="eyeOutline" class="option-icon"></ion-icon>
-									<div>
-										<strong>Fundbericht</strong>
-										<p>Ich habe einen Gegenstand gefunden</p>
-									</div>
+							</div>
+						</ion-select-option>
+						<ion-select-option value="FOUND">
+							<div class="select-option">
+								<ion-icon :icon="eyeOutline" class="option-icon"></ion-icon>
+								<div>
+									<strong>Fundbericht</strong>
+									<p>Ich habe einen Gegenstand gefunden</p>
 								</div>
-							</ion-select-option>
-						</ion-select>
-					</ion-item>
+							</div>
+						</ion-select-option>
+					</ion-select>
 					<div v-if="errors.type" class="error-message">
 						<ion-icon :icon="alertCircleOutline"></ion-icon>
 						{{ errors.type }}
@@ -71,22 +64,17 @@
 				</div>
 
 				<div class="input-group">
-					<ion-item
-						class="modern-item"
+					<ion-input
+						v-model="reportData.itemName"
+						label="Name des Gegenstands *"
+						label-placement="stacked"
+						placeholder="z.B. iPhone 14, Schlüsselbund, Rucksack..."
+						class="modern-input"
 						:class="{
-							'item-filled': reportData.itemName,
-							'item-error': errors.itemName,
-						}">
-						<ion-label position="stacked" class="custom-label">
-							<ion-icon :icon="textOutline" class="label-icon"></ion-icon>
-							Name des Gegenstands *
-						</ion-label>
-						<ion-input
-							v-model="reportData.itemName"
-							placeholder="z.B. iPhone 14, Schlüsselbund, Rucksack..."
-							class="custom-input"
-							@ionBlur="validateField('itemName')"></ion-input>
-					</ion-item>
+							'input-filled': reportData.itemName,
+							'input-error': errors.itemName,
+						}"
+						@ionBlur="validateField('itemName')"></ion-input>
 					<div v-if="errors.itemName" class="error-message">
 						<ion-icon :icon="alertCircleOutline"></ion-icon>
 						{{ errors.itemName }}
@@ -94,56 +82,42 @@
 				</div>
 
 				<div class="input-group">
-					<ion-item
-						class="modern-item textarea-item"
+					<ion-textarea
+						v-model="reportData.description"
+						label="Beschreibung"
+						label-placement="stacked"
+						placeholder="Beschreibe den Gegenstand detailliert: Farbe, Größe, besondere Merkmale, wo du ihn verloren/gefunden hast..."
+						class="modern-textarea"
 						:class="{
-							'item-filled': reportData.description,
-						}">
-						<ion-label position="stacked" class="custom-label">
-							<ion-icon
-								:icon="documentTextOutline"
-								class="label-icon"></ion-icon>
-							Beschreibung
-						</ion-label>
-						<ion-textarea
-							v-model="reportData.description"
-							placeholder="Beschreibe den Gegenstand detailliert: Farbe, Größe, besondere Merkmale, wo du ihn verloren/gefunden hast..."
-							class="custom-textarea"
-							rows="4"></ion-textarea>
-					</ion-item>
+							'textarea-filled': reportData.description,
+						}"
+						rows="4"></ion-textarea>
 				</div>
 
 				<div class="input-group">
-					<ion-item
-						class="modern-item"
+					<ion-select
+						v-model="reportData.location"
+						label="Standort *"
+						label-placement="stacked"
+						placeholder="Wähle einen Standort"
+						interface="popover"
+						class="modern-select"
 						:class="{
-							'item-filled': reportData.location,
-							'item-error': errors.location,
-						}">
-						<ion-label position="stacked" class="custom-label">
-							<ion-icon :icon="locationOutline" class="label-icon"></ion-icon>
-							Standort *
-						</ion-label>
-						<ion-select
-							v-model="reportData.location"
-							placeholder="Wähle einen Standort"
-							interface="popover"
-							class="custom-select"
-							@selectionChange="validateField('location')">
-							<ion-select-option
-								v-for="location in availableLocations"
-								:key="location.id"
-								:value="location.name">
-								{{ location.name }} - {{ location.building }}, Etage
-								{{ location.floor }}
-							</ion-select-option>
-							<ion-select-option value="other">
-								<strong
-									>Anderer Standort (bitte in Beschreibung angeben)</strong
-								>
-							</ion-select-option>
-						</ion-select>
-					</ion-item>
+							'select-filled': reportData.location,
+							'select-error': errors.location,
+						}"
+						@selectionChange="validateField('location')">
+						<ion-select-option
+							v-for="location in availableLocations"
+							:key="location.id"
+							:value="location.name">
+							{{ location.name }} - {{ location.building }}, Etage
+							{{ location.floor }}
+						</ion-select-option>
+						<ion-select-option value="other">
+							<strong>Anderer Standort (bitte in Beschreibung angeben)</strong>
+						</ion-select-option>
+					</ion-select>
 					<div v-if="errors.location" class="error-message">
 						<ion-icon :icon="alertCircleOutline"></ion-icon>
 						{{ errors.location }}
@@ -160,41 +134,31 @@
 						gefunden haben.
 					</p>
 
-					<ion-item
-						class="modern-item"
+					<ion-input
+						v-model="reportData.reporterName"
+						label="Dein Name *"
+						label-placement="stacked"
+						placeholder="Vor- und Nachname"
+						class="modern-input"
 						:class="{
-							'item-filled': reportData.reporterName,
-							'item-error': errors.reporterName,
-						}">
-						<ion-label position="stacked" class="custom-label">
-							<ion-icon :icon="personOutline" class="label-icon"></ion-icon>
-							Dein Name *
-						</ion-label>
-						<ion-input
-							v-model="reportData.reporterName"
-							placeholder="Vor- und Nachname"
-							class="custom-input"
-							@ionBlur="validateField('reporterName')"></ion-input>
-					</ion-item>
+							'input-filled': reportData.reporterName,
+							'input-error': errors.reporterName,
+						}"
+						@ionBlur="validateField('reporterName')"></ion-input>
 					<div v-if="errors.reporterName" class="error-message">
 						<ion-icon :icon="alertCircleOutline"></ion-icon>
 						{{ errors.reporterName }}
 					</div>
 
-					<ion-item
-						class="modern-item"
+					<ion-input
+						v-model="reportData.contactInfo"
+						label="Kontakt (optional)"
+						label-placement="stacked"
+						placeholder="E-Mail oder Telefon"
+						class="modern-input"
 						:class="{
-							'item-filled': reportData.contactInfo,
-						}">
-						<ion-label position="stacked" class="custom-label">
-							<ion-icon :icon="mailOutline" class="label-icon"></ion-icon>
-							Kontakt (optional)
-						</ion-label>
-						<ion-input
-							v-model="reportData.contactInfo"
-							placeholder="E-Mail oder Telefon"
-							class="custom-input"></ion-input>
-					</ion-item>
+							'input-filled': reportData.contactInfo,
+						}"></ion-input>
 				</div>
 
 				<div class="input-group">
@@ -676,7 +640,9 @@ watch(
 	line-height: 1.4;
 }
 
-.modern-item {
+.modern-select,
+.modern-input,
+.modern-textarea {
 	--background: var(--ion-color-light-tint);
 	--border-radius: 12px;
 	--padding-start: 16px;
@@ -689,43 +655,31 @@ watch(
 	transition: all 0.3s ease;
 }
 
-.modern-item.item-filled {
+.modern-select.select-filled,
+.modern-input.input-filled,
+.modern-textarea.textarea-filled {
 	border-color: var(--ion-color-primary-tint);
 	--background: rgba(var(--ion-color-primary-rgb), 0.05);
 }
 
-.modern-item.item-error {
+.modern-select.select-error,
+.modern-input.input-error,
+.modern-textarea.textarea-error {
 	border-color: var(--ion-color-danger);
 	--background: rgba(var(--ion-color-danger-rgb), 0.05);
 }
 
-.modern-item:focus-within {
+.modern-select:focus-within,
+.modern-input:focus-within,
+.modern-textarea:focus-within {
 	border-color: var(--ion-color-primary);
 	box-shadow: 0 0 0 3px rgba(var(--ion-color-primary-rgb), 0.1);
 	transform: translateY(-2px);
 }
 
-.custom-label {
-	display: flex;
-	align-items: center;
-	gap: 8px;
-	font-weight: 600;
-	color: var(--ion-color-dark);
-	margin-bottom: 4px;
-}
-
-.label-icon {
-	font-size: 18px;
-	color: var(--ion-color-primary);
-}
-
-.custom-textarea {
+.modern-textarea {
 	min-height: 80px;
 	resize: vertical;
-}
-
-.textarea-item {
-	--padding-bottom: 16px;
 }
 
 .select-option {

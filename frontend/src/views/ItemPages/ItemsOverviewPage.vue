@@ -488,6 +488,9 @@ import {
 	IonRadio,
 	IonItem,
 	IonLabel,
+	IonInput,
+	IonTextarea,
+	IonCheckbox,
 } from '@ionic/vue';
 import {
 	bagOutline,
@@ -509,6 +512,8 @@ import {
 	personOutline,
 	flagOutline,
 	checkmarkOutline,
+	documentTextOutline,
+	mailOutline,
 } from 'ionicons/icons';
 import { ref, computed, watch, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
@@ -1268,10 +1273,6 @@ watch(activeTab, (tab) => {
 	gap: 8px;
 	color: var(--ion-color-medium);
 	font-size: 0.9em;
-}
-
-.detail-icon {
-	font-size: 16px;
 }
 
 .claim-form-section h3 {

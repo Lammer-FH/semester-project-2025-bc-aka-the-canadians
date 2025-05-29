@@ -25,17 +25,17 @@
 					<div class="header-content">
 						<div class="header-left">
 							<ion-chip
-								:color="getStatusColor(item.status)"
+								:color="getStatusColor(item.status || '')"
 								class="status-chip">
 								<ion-icon
-									:icon="getStatusIcon(item.status)"
+									:icon="getStatusIcon(item.status || '')"
 									class="chip-icon"></ion-icon>
-								{{ getStatusText(item.status) }}
+								{{ getStatusText(item.status || '') }}
 							</ion-chip>
 							<div class="report-meta">
 								<span class="report-id">Bericht #{{ item.id }}</span>
 								<span class="report-date">{{
-									formatDate(item.createdAt)
+									formatDate(item.createdAt || '')
 								}}</span>
 							</div>
 						</div>
@@ -56,7 +56,7 @@
 					<div class="image-container">
 						<img
 							:src="item.imageUrl"
-							:alt="item.name"
+							:alt="item.name || 'Bild'"
 							class="item-image"
 							@click="openImageModal" />
 						<ion-button
@@ -76,7 +76,9 @@
 
 				<div class="info-card main-info">
 					<div class="card-header">
-						<h1 class="item-title">{{ item.name }}</h1>
+						<h1 class="item-title">
+							{{ item.name || 'Unbekannter Gegenstand' }}
+						</h1>
 						<div class="title-actions">
 							<ion-button fill="clear" size="small" @click="shareItem">
 								<ion-icon :icon="shareOutline" slot="icon-only"></ion-icon>
@@ -86,7 +88,7 @@
 
 					<div class="status-section">
 						<div
-							v-if="item.status.toUpperCase() === 'FOUND'"
+							v-if="item.status && item.status.toUpperCase() === 'FOUND'"
 							class="found-item-section">
 							<div class="action-banner found-banner">
 								<div class="banner-content">
@@ -112,7 +114,7 @@
 						</div>
 
 						<div
-							v-else-if="item.status.toUpperCase() === 'LOST'"
+							v-else-if="item.status && item.status.toUpperCase() === 'LOST'"
 							class="lost-item-section">
 							<div class="action-banner lost-banner">
 								<div class="banner-content">
@@ -138,7 +140,7 @@
 						</div>
 
 						<div
-							v-else-if="item.status.toUpperCase() === 'CLAIMED'"
+							v-else-if="item.status && item.status.toUpperCase() === 'CLAIMED'"
 							class="claimed-item-section">
 							<div class="action-banner claimed-banner">
 								<div class="banner-content">
@@ -156,7 +158,9 @@
 						</div>
 
 						<div
-							v-else-if="item.status.toUpperCase() === 'RETURNED'"
+							v-else-if="
+								item.status && item.status.toUpperCase() === 'RETURNED'
+							"
 							class="returned-item-section">
 							<div class="action-banner returned-banner">
 								<div class="banner-content">
@@ -218,7 +222,9 @@
 							<ion-icon
 								:icon="businessOutline"
 								class="location-icon"></ion-icon>
-							<span class="location-name">{{ item.location }}</span>
+							<span class="location-name">{{
+								item.location || 'Unbekannter Standort'
+							}}</span>
 						</div>
 						<ion-button fill="clear" size="small" @click="viewLocationReports">
 							<ion-icon :icon="flagOutline" slot="start"></ion-icon>
@@ -237,24 +243,26 @@
 							<div class="timeline-marker created"></div>
 							<div class="timeline-content">
 								<h4>Bericht erstellt</h4>
-								<p>{{ formatDetailedDate(item.createdAt) }}</p>
+								<p>{{ formatDetailedDate(item.createdAt || '') }}</p>
 								<span class="timeline-type">{{
-									getReportType(item.status)
+									getReportType(item.status || '')
 								}}</span>
 							</div>
 						</div>
-						<div v-if="item.updatedAt !== item.createdAt" class="timeline-item">
+						<div
+							v-if="item.updatedAt && item.updatedAt !== item.createdAt"
+							class="timeline-item">
 							<div class="timeline-marker updated"></div>
 							<div class="timeline-content">
 								<h4>Status aktualisiert</h4>
 								<p>{{ formatDetailedDate(item.updatedAt) }}</p>
 								<span class="timeline-status">{{
-									getStatusText(item.status)
+									getStatusText(item.status || '')
 								}}</span>
 							</div>
 						</div>
 						<div
-							v-if="item.status.toUpperCase() === 'CLAIMED'"
+							v-if="item.status && item.status.toUpperCase() === 'CLAIMED'"
 							class="timeline-item">
 							<div class="timeline-marker claimed"></div>
 							<div class="timeline-content">
@@ -299,16 +307,17 @@
 							@click="navigateToReport(related.id)">
 							<div class="related-content">
 								<ion-chip
-									:color="getStatusColor(related.status)"
+									:color="getStatusColor(related.status || '')"
 									class="related-status">
 									<ion-icon
-										:icon="getStatusIcon(related.status)"
+										:icon="getStatusIcon(related.status || '')"
 										class="chip-icon"></ion-icon>
-									{{ getStatusText(related.status) }}
+									{{ getStatusText(related.status || '') }}
 								</ion-chip>
-								<h4>{{ related.name }}</h4>
+								<h4>{{ related.name || 'Unbekannter Gegenstand' }}</h4>
 								<p>
-									{{ related.location }} • {{ getTimeAgo(related.createdAt) }}
+									{{ related.location || 'Unbekannter Standort' }} •
+									{{ getTimeAgo(related.createdAt || '') }}
 								</p>
 							</div>
 							<ion-icon
@@ -320,7 +329,7 @@
 
 				<div class="action-buttons">
 					<ion-button
-						v-if="item.status.toUpperCase() === 'FOUND'"
+						v-if="item.status && item.status.toUpperCase() === 'FOUND'"
 						expand="block"
 						size="large"
 						color="success"
@@ -330,7 +339,7 @@
 					</ion-button>
 
 					<ion-button
-						v-else-if="item.status.toUpperCase() === 'LOST'"
+						v-else-if="item.status && item.status.toUpperCase() === 'LOST'"
 						expand="block"
 						size="large"
 						fill="outline"
@@ -388,7 +397,7 @@
 					<img
 						v-if="item?.imageUrl"
 						:src="item.imageUrl"
-						:alt="item.name"
+						:alt="item.name || 'Bild'"
 						class="modal-image" />
 				</div>
 			</ion-content>
@@ -451,7 +460,7 @@ import {
 	layersOutline,
 	chevronForwardOutline,
 } from 'ionicons/icons';
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, nextTick } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useItemStore } from '@/stores/itemStore';
 import type { Item } from '@/models/item';
@@ -467,16 +476,20 @@ const showDeleteAlert = ref(false);
 const showClaimAlert = ref(false);
 const showStatistics = ref(false);
 const viewCount = ref(0);
-
-const isLoading = computed(() => itemStore.isLoading);
-const error = computed(() => itemStore.getError);
+const isLoading = ref(false);
+const error = ref<string | null>(null);
 
 const daysSinceReported = computed(() => {
-	if (!item.value?.createdAt) return 0;
-	const reportDate = new Date(item.value.createdAt);
-	const now = new Date();
-	const diffTime = Math.abs(now.getTime() - reportDate.getTime());
-	return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+	try {
+		if (!item.value?.createdAt) return 0;
+		const reportDate = new Date(item.value.createdAt);
+		const now = new Date();
+		const diffTime = Math.abs(now.getTime() - reportDate.getTime());
+		return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+	} catch (error) {
+		console.error('Error calculating days since reported:', error);
+		return 0;
+	}
 });
 
 const leftFooterButton = computed(() => ({
@@ -505,20 +518,29 @@ const deleteAlertButtons = [
 ];
 
 const claimAlertMessage = computed(() => {
-	if (!item.value) return '';
+	try {
+		if (!item.value) return 'Laden...';
 
-	return `
-        <div style="text-align: left; padding: 8px;">
-            <p><strong>Gegenstand:</strong> ${item.value.name}</p>
-            <p><strong>Standort:</strong> ${item.value.location}</p>
-            <br>
-            <p>Möchtest du diesen Gegenstand zur Abholung anfordern?</p>
-            <p style="color: #666; font-size: 0.9em;">
-                Der Finder wird benachrichtigt und kann dich kontaktieren, 
-                um die Abholung zu koordinieren.
-            </p>
-        </div>
-    `;
+		return `
+            <div style="text-align: left; padding: 8px;">
+                <p><strong>Gegenstand:</strong> ${
+									item.value.name || 'Unbekannt'
+								}</p>
+                <p><strong>Standort:</strong> ${
+									item.value.location || 'Unbekannt'
+								}</p>
+                <br>
+                <p>Möchtest du diesen Gegenstand zur Abholung anfordern?</p>
+                <p style="color: #666; font-size: 0.9em;">
+                    Der Finder wird benachrichtigt und kann dich kontaktieren, 
+                    um die Abholung zu koordinieren.
+                </p>
+            </div>
+        `;
+	} catch (error) {
+		console.error('Error generating claim alert message:', error);
+		return 'Fehler beim Laden der Nachricht.';
+	}
 });
 
 const claimAlertButtons = [
@@ -536,19 +558,33 @@ const claimAlertButtons = [
 
 const loadItem = async () => {
 	try {
+		isLoading.value = true;
+		error.value = null;
+
 		const itemId = parseInt(route.params.id as string);
 		if (isNaN(itemId)) {
 			throw new Error('Invalid item ID');
 		}
 
-		const fetchedItem = await itemStore.fetchItemById(itemId);
+		await itemStore.fetchItemById(itemId);
+		const fetchedItem = itemStore.getCurrentItem;
+
 		if (fetchedItem) {
-			item.value = fetchedItem;
+			await nextTick();
+			item.value = { ...fetchedItem };
 			await loadRelatedReports();
 			await loadItemStatistics(itemId);
+		} else {
+			throw new Error('Item not found');
 		}
-	} catch (error) {
-		console.error('Error loading item:', error);
+	} catch (err) {
+		console.error('Error loading item:', err);
+		error.value = err instanceof Error ? err.message : 'Unknown error';
+		setTimeout(() => {
+			router.back();
+		}, 2000);
+	} finally {
+		isLoading.value = false;
 	}
 };
 
@@ -557,14 +593,14 @@ const loadRelatedReports = async () => {
 
 	try {
 		await itemStore.fetchItems();
-		const allItems = itemStore.getItems;
+		const allItems = itemStore.getItems || [];
 
 		relatedReports.value = allItems
 			.filter(
 				(i) =>
 					i.id !== item.value!.id &&
 					i.location === item.value!.location &&
-					i.status.toUpperCase() !== 'CLAIMED'
+					i.status?.toUpperCase() !== 'CLAIMED'
 			)
 			.slice(0, 3);
 	} catch (error) {
@@ -578,154 +614,244 @@ const loadItemStatistics = async (itemId: number) => {
 		viewCount.value = Math.floor(Math.random() * 50) + 5;
 	} catch (error) {
 		console.error('Error loading statistics:', error);
+		viewCount.value = 0;
 	}
 };
 
 const getStatusColor = (status: string): string => {
-	switch (status.toUpperCase()) {
-		case 'FOUND':
-			return 'success';
-		case 'LOST':
-			return 'warning';
-		case 'CLAIMED':
-			return 'medium';
-		case 'RETURNED':
-			return 'success';
-		default:
-			return 'primary';
+	try {
+		if (!status) return 'primary';
+
+		switch (status.toUpperCase()) {
+			case 'FOUND':
+				return 'success';
+			case 'LOST':
+				return 'warning';
+			case 'CLAIMED':
+				return 'medium';
+			case 'RETURNED':
+				return 'success';
+			default:
+				return 'primary';
+		}
+	} catch (error) {
+		console.error('Error getting status color:', error);
+		return 'primary';
 	}
 };
 
 const getStatusIcon = (status: string): string => {
-	switch (status.toUpperCase()) {
-		case 'FOUND':
-			return eyeOutline;
-		case 'LOST':
-			return searchOutline;
-		case 'CLAIMED':
-			return checkmarkOutline;
-		case 'RETURNED':
-			return checkmarkCircleOutline;
-		default:
-			return flagOutline;
+	try {
+		if (!status) return flagOutline;
+
+		switch (status.toUpperCase()) {
+			case 'FOUND':
+				return eyeOutline;
+			case 'LOST':
+				return searchOutline;
+			case 'CLAIMED':
+				return checkmarkOutline;
+			case 'RETURNED':
+				return checkmarkCircleOutline;
+			default:
+				return flagOutline;
+		}
+	} catch (error) {
+		console.error('Error getting status icon:', error);
+		return flagOutline;
 	}
 };
 
 const getStatusText = (status: string): string => {
-	switch (status.toUpperCase()) {
-		case 'FOUND':
-			return 'Gefunden';
-		case 'LOST':
-			return 'Verloren';
-		case 'CLAIMED':
-			return 'Abgeholt';
-		case 'RETURNED':
-			return 'Zurückgegeben';
-		default:
-			return status;
+	try {
+		if (!status) return 'Unbekannt';
+
+		switch (status.toUpperCase()) {
+			case 'FOUND':
+				return 'Gefunden';
+			case 'LOST':
+				return 'Verloren';
+			case 'CLAIMED':
+				return 'Abgeholt';
+			case 'RETURNED':
+				return 'Zurückgegeben';
+			default:
+				return status;
+		}
+	} catch (error) {
+		console.error('Error getting status text:', error);
+		return 'Unbekannt';
 	}
 };
 
 const getReportType = (status: string): string => {
-	return status.toUpperCase() === 'LOST' ? 'Verlustbericht' : 'Fundbericht';
+	try {
+		if (!status) return 'Bericht';
+		return status.toUpperCase() === 'LOST' ? 'Verlustbericht' : 'Fundbericht';
+	} catch (error) {
+		console.error('Error getting report type:', error);
+		return 'Bericht';
+	}
 };
 
 const formatDate = (dateString: string) => {
-	return new Date(dateString).toLocaleDateString('de-DE', {
-		day: '2-digit',
-		month: '2-digit',
-		year: 'numeric',
-		hour: '2-digit',
-		minute: '2-digit',
-	});
+	try {
+		if (!dateString) return 'Unbekanntes Datum';
+		return new Date(dateString).toLocaleDateString('de-DE', {
+			day: '2-digit',
+			month: '2-digit',
+			year: 'numeric',
+			hour: '2-digit',
+			minute: '2-digit',
+		});
+	} catch (error) {
+		console.error('Error formatting date:', error);
+		return 'Ungültiges Datum';
+	}
 };
 
 const formatDetailedDate = (dateString: string) => {
-	return new Date(dateString).toLocaleDateString('de-DE', {
-		weekday: 'long',
-		day: '2-digit',
-		month: 'long',
-		year: 'numeric',
-		hour: '2-digit',
-		minute: '2-digit',
-	});
+	try {
+		if (!dateString) return 'Unbekanntes Datum';
+		return new Date(dateString).toLocaleDateString('de-DE', {
+			weekday: 'long',
+			day: '2-digit',
+			month: 'long',
+			year: 'numeric',
+			hour: '2-digit',
+			minute: '2-digit',
+		});
+	} catch (error) {
+		console.error('Error formatting detailed date:', error);
+		return 'Ungültiges Datum';
+	}
 };
 
 const getTimeAgo = (dateString: string) => {
-	const date = new Date(dateString);
-	const now = new Date();
-	const diffInHours = Math.floor(
-		(now.getTime() - date.getTime()) / (1000 * 60 * 60)
-	);
+	try {
+		if (!dateString) return 'Unbekannt';
 
-	if (diffInHours < 1) return 'Vor wenigen Minuten';
-	if (diffInHours < 24) return `Vor ${diffInHours} Stunden`;
+		const date = new Date(dateString);
+		const now = new Date();
+		const diffInHours = Math.floor(
+			(now.getTime() - date.getTime()) / (1000 * 60 * 60)
+		);
 
-	const diffInDays = Math.floor(diffInHours / 24);
-	if (diffInDays < 7) return `Vor ${diffInDays} Tagen`;
+		if (diffInHours < 1) return 'Vor wenigen Minuten';
+		if (diffInHours < 24) return `Vor ${diffInHours} Stunden`;
 
-	return date.toLocaleDateString('de-DE');
+		const diffInDays = Math.floor(diffInHours / 24);
+		if (diffInDays < 7) return `Vor ${diffInDays} Tagen`;
+
+		return date.toLocaleDateString('de-DE');
+	} catch (error) {
+		console.error('Error getting time ago:', error);
+		return 'Unbekannt';
+	}
 };
 
 const getCleanDescription = (description: string): string => {
-	const parts = description.split('--- Berichtinformationen ---');
-	return parts[0].trim() || 'Keine Beschreibung verfügbar.';
+	try {
+		if (!description) return 'Keine Beschreibung verfügbar.';
+		const parts = description.split('--- Berichtinformationen ---');
+		return parts[0]?.trim() || 'Keine Beschreibung verfügbar.';
+	} catch (error) {
+		console.error('Error getting clean description:', error);
+		return 'Keine Beschreibung verfügbar.';
+	}
 };
 
 const getReporterInfo = (
 	description: string
 ): Record<string, string> | null => {
-	const metadataMatch = description.match(
-		/--- Berichtinformationen ---([\s\S]*?)(?:--- |$)/
-	);
-	if (!metadataMatch) return null;
+	try {
+		if (!description) return null;
 
-	const metadata = metadataMatch[1];
-	const info: Record<string, string> = {};
+		const metadataMatch = description.match(
+			/--- Berichtinformationen ---([\s\S]*?)(?:--- |$)/
+		);
+		if (!metadataMatch) return null;
 
-	const lines = metadata.split('\n').filter((line) => line.trim());
-	lines.forEach((line) => {
-		const [key, ...valueParts] = line.split(':');
-		if (key && valueParts.length > 0) {
-			info[key.trim()] = valueParts.join(':').trim();
-		}
-	});
+		const metadata = metadataMatch[1];
+		const info: Record<string, string> = {};
 
-	return Object.keys(info).length > 0 ? info : null;
+		const lines = metadata.split('\n').filter((line) => line.trim());
+		lines.forEach((line) => {
+			const [key, ...valueParts] = line.split(':');
+			if (key && valueParts.length > 0) {
+				info[key.trim()] = valueParts.join(':').trim();
+			}
+		});
+
+		return Object.keys(info).length > 0 ? info : null;
+	} catch (error) {
+		console.error('Error getting reporter info:', error);
+		return null;
+	}
 };
 
 const getLocationReportsCount = (): number => {
-	return relatedReports.value.length + 1; // +1 for current item
+	try {
+		return relatedReports.value.length + 1; // +1 for current item
+	} catch (error) {
+		console.error('Error getting location reports count:', error);
+		return 1;
+	}
 };
 
 const toggleStatistics = () => {
-	showStatistics.value = !showStatistics.value;
+	try {
+		showStatistics.value = !showStatistics.value;
+	} catch (error) {
+		console.error('Error toggling statistics:', error);
+	}
 };
 
 const handleBack = () => {
-	router.back();
+	try {
+		router.back();
+	} catch (error) {
+		console.error('Error navigating back:', error);
+		router.push('/items/overview');
+	}
 };
 
 const handleEdit = () => {
-	if (item.value) {
-		router.push(`/items/${item.value.id}/edit`);
+	try {
+		if (item.value?.id) {
+			router.push(`/items/${item.value.id}/edit`);
+		}
+	} catch (error) {
+		console.error('Error navigating to edit:', error);
 	}
 };
 
 const openImageModal = () => {
-	showImageModal.value = true;
+	try {
+		showImageModal.value = true;
+	} catch (error) {
+		console.error('Error opening image modal:', error);
+	}
 };
 
 const closeImageModal = () => {
-	showImageModal.value = false;
+	try {
+		showImageModal.value = false;
+	} catch (error) {
+		console.error('Error closing image modal:', error);
+	}
 };
 
 const showDeleteConfirmation = () => {
-	showDeleteAlert.value = true;
+	try {
+		showDeleteAlert.value = true;
+	} catch (error) {
+		console.error('Error showing delete confirmation:', error);
+	}
 };
 
 const confirmDelete = async () => {
-	if (!item.value) return;
+	if (!item.value?.id) return;
 
 	try {
 		const success = await itemStore.deleteItem(item.value.id);
@@ -738,11 +864,15 @@ const confirmDelete = async () => {
 };
 
 const showClaimDialog = () => {
-	showClaimAlert.value = true;
+	try {
+		showClaimAlert.value = true;
+	} catch (error) {
+		console.error('Error showing claim dialog:', error);
+	}
 };
 
 const processClaim = async () => {
-	if (!item.value) return;
+	if (!item.value?.id) return;
 
 	try {
 		const currentDate = new Date().toLocaleDateString('de-DE');
@@ -752,7 +882,7 @@ const processClaim = async () => {
 			'Status: Warten auf Bestätigung des Finders',
 			'',
 			'--- ORIGINAL BESCHREIBUNG ---',
-			item.value.description,
+			item.value.description || '',
 		].join('\n');
 
 		const updatedItem = await itemStore.updateItem(item.value.id, {
@@ -771,14 +901,18 @@ const processClaim = async () => {
 };
 
 const reportFound = () => {
-	router.push({
-		path: '/items/report',
-		query: {
-			type: 'FOUND',
-			name: item.value?.name,
-			location: item.value?.location,
-		},
-	});
+	try {
+		router.push({
+			path: '/items/report',
+			query: {
+				type: 'FOUND',
+				name: item.value?.name || '',
+				location: item.value?.location || '',
+			},
+		});
+	} catch (error) {
+		console.error('Error navigating to report found:', error);
+	}
 };
 
 const shareItem = async () => {
@@ -786,10 +920,10 @@ const shareItem = async () => {
 
 	try {
 		const shareData = {
-			title: `Lost & Found: ${item.value.name}`,
-			text: `${getStatusText(item.value.status)}: ${item.value.name} am ${
-				item.value.location
-			}`,
+			title: `Lost & Found: ${item.value.name || 'Unbekannt'}`,
+			text: `${getStatusText(item.value.status || '')}: ${
+				item.value.name || 'Unbekannt'
+			} am ${item.value.location || 'Unbekannt'}`,
 			url: window.location.href,
 		};
 
@@ -805,18 +939,32 @@ const shareItem = async () => {
 };
 
 const viewLocationReports = () => {
-	router.push({
-		path: '/items/overview',
-		query: { location: item.value?.location },
-	});
+	try {
+		router.push({
+			path: '/items/overview',
+			query: { location: item.value?.location || '' },
+		});
+	} catch (error) {
+		console.error('Error navigating to location reports:', error);
+	}
 };
 
 const navigateToReport = (reportId: number) => {
-	router.push(`/items/${reportId}`);
+	try {
+		if (reportId) {
+			router.push(`/items/${reportId}`);
+		}
+	} catch (error) {
+		console.error('Error navigating to report:', error);
+	}
 };
 
-onMounted(() => {
-	loadItem();
+onMounted(async () => {
+	try {
+		await loadItem();
+	} catch (error) {
+		console.error('Error in onMounted:', error);
+	}
 });
 </script>
 

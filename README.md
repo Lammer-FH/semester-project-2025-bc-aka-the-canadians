@@ -9,9 +9,13 @@ Our users can use the service to report found items and view existing reports.
 - Spring Boot Backend
 - Ionic Vue.js Frontend
 
-# Planning & Specification
+# MS1: Planning & Specification
 
 You can find the documentation for the planning and specification [here](documentation/planning_and_specification.md)
+
+# MS2: Partial Implementation
+
+You can find the documentation for the partial implementation [here](documentation/partial_implementation.md)
 
 # Contribution Guidelines
 

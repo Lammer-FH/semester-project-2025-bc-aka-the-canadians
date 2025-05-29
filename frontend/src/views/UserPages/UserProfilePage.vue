@@ -6,104 +6,146 @@
 		:headline="'Mein Profil'"
 		@leftFooterButtonClicked="handleCancel"
 		@rightFooterButtonClicked="handleSave">
-		
 		<div class="profile-container">
-			<!-- Loading State -->
 			<div v-if="isLoading" class="loading-container">
 				<ion-spinner name="crescent" color="primary"></ion-spinner>
 				<p>Lade Profil...</p>
 			</div>
 
-			<div v-else class="content-wrapper">
-				<!-- Profile Header -->
+			<div v-else-if="error && !user" class="empty-state">
+				<ion-icon :icon="alertCircleOutline" class="empty-icon"></ion-icon>
+				<h2>Fehler beim Laden</h2>
+				<p>{{ error }}</p>
+				<ion-button @click="loadUserProfile">
+					<ion-icon :icon="refreshOutline" slot="start"></ion-icon>
+					Erneut versuchen
+				</ion-button>
+			</div>
+
+			<div v-else-if="user" class="content-wrapper">
 				<div class="profile-header">
 					<div class="avatar-section">
 						<div class="avatar-container">
-							<img 
-								v-if="user.avatar" 
-								:src="user.avatar" 
-								:alt="user.name"
-								class="avatar-image"
-							/>
+							<img
+								v-if="user.avatar"
+								:src="user.avatar"
+								:alt="getFullName(user)"
+								class="avatar-image" />
 							<div v-else class="avatar-placeholder">
 								<ion-icon :icon="personOutline" class="avatar-icon"></ion-icon>
 							</div>
-							<ion-button 
-								fill="clear" 
-								size="small" 
+							<ion-button
+								fill="clear"
+								size="small"
 								class="avatar-edit-button"
-								@click="handleAvatarEdit"
-							>
+								@click="handleAvatarEdit">
 								<ion-icon :icon="cameraOutline" slot="icon-only"></ion-icon>
 							</ion-button>
 						</div>
 						<div class="user-info">
-							<h1>{{ user.name }}</h1>
+							<h1>{{ getFullName(user) }}</h1>
 							<p>{{ user.email }}</p>
 							<ion-chip color="primary" outline>
 								<ion-icon :icon="timeOutline" class="chip-icon"></ion-icon>
-								Mitglied seit {{ formatDate(user.joinedAt) }}
+								Mitglied seit {{ formatDate(user.createdAt) }}
 							</ion-chip>
 						</div>
 					</div>
 				</div>
 
-				<!-- Profile Form -->
 				<div class="profile-form">
 					<h3>Persönliche Informationen</h3>
-					
-					<!-- Name Field -->
+
 					<div class="form-group">
-						<ion-item 
-							class="modern-item" 
-							:class="{ 
-								'item-editing': editingField === 'name',
-								'item-error': errors.name,
-								'item-filled': user.name 
-							}"
-						>
+						<ion-item
+							class="modern-item"
+							:class="{
+								'item-editing': editingField === 'firstName',
+								'item-error': errors.firstName,
+								'item-filled': user.firstName,
+							}">
 							<ion-label position="stacked" class="custom-label">
 								<ion-icon :icon="personOutline" class="label-icon"></ion-icon>
-								Vollständiger Name *
+								Vorname *
 							</ion-label>
 							<ion-input
-								v-if="editingField === 'name'"
-								v-model="editData.name"
-								placeholder="Gib deinen Namen ein"
-								@ionBlur="validateField('name')"
-								:class="{ 'input-error': errors.name }"
-								autofocus
-							></ion-input>
-							<div v-else class="display-value">{{ user.name }}</div>
-							<ion-button 
-								fill="clear" 
-								size="small" 
+								v-if="editingField === 'firstName'"
+								v-model="editData.firstName"
+								placeholder="Gib deinen Vornamen ein"
+								@ionBlur="validateField('firstName')"
+								:class="{ 'input-error': errors.firstName }"
+								autofocus></ion-input>
+							<div v-else class="display-value">{{ user.firstName }}</div>
+							<ion-button
+								fill="clear"
+								size="small"
 								slot="end"
-								:color="editingField === 'name' ? 'success' : 'primary'"
-								@click="toggleEdit('name')"
-							>
-								<ion-icon 
-									:icon="editingField === 'name' ? checkmarkOutline : createOutline" 
-									slot="icon-only"
-								></ion-icon>
+								:color="editingField === 'firstName' ? 'success' : 'primary'"
+								@click="toggleEdit('firstName')">
+								<ion-icon
+									:icon="
+										editingField === 'firstName'
+											? checkmarkOutline
+											: createOutline
+									"
+									slot="icon-only"></ion-icon>
 							</ion-button>
 						</ion-item>
-						<div v-if="errors.name" class="error-message">
+						<div v-if="errors.firstName" class="error-message">
 							<ion-icon :icon="alertCircleOutline"></ion-icon>
-							{{ errors.name }}
+							{{ errors.firstName }}
 						</div>
 					</div>
 
-					<!-- Email Field -->
 					<div class="form-group">
-						<ion-item 
-							class="modern-item" 
-							:class="{ 
+						<ion-item
+							class="modern-item"
+							:class="{
+								'item-editing': editingField === 'lastName',
+								'item-error': errors.lastName,
+								'item-filled': user.lastName,
+							}">
+							<ion-label position="stacked" class="custom-label">
+								<ion-icon :icon="personOutline" class="label-icon"></ion-icon>
+								Nachname *
+							</ion-label>
+							<ion-input
+								v-if="editingField === 'lastName'"
+								v-model="editData.lastName"
+								placeholder="Gib deinen Nachnamen ein"
+								@ionBlur="validateField('lastName')"
+								:class="{ 'input-error': errors.lastName }"
+								autofocus></ion-input>
+							<div v-else class="display-value">{{ user.lastName }}</div>
+							<ion-button
+								fill="clear"
+								size="small"
+								slot="end"
+								:color="editingField === 'lastName' ? 'success' : 'primary'"
+								@click="toggleEdit('lastName')">
+								<ion-icon
+									:icon="
+										editingField === 'lastName'
+											? checkmarkOutline
+											: createOutline
+									"
+									slot="icon-only"></ion-icon>
+							</ion-button>
+						</ion-item>
+						<div v-if="errors.lastName" class="error-message">
+							<ion-icon :icon="alertCircleOutline"></ion-icon>
+							{{ errors.lastName }}
+						</div>
+					</div>
+
+					<div class="form-group">
+						<ion-item
+							class="modern-item"
+							:class="{
 								'item-editing': editingField === 'email',
 								'item-error': errors.email,
-								'item-filled': user.email 
-							}"
-						>
+								'item-filled': user.email,
+							}">
 							<ion-label position="stacked" class="custom-label">
 								<ion-icon :icon="mailOutline" class="label-icon"></ion-icon>
 								E-Mail-Adresse *
@@ -115,20 +157,19 @@
 								placeholder="deine.email@example.com"
 								@ionBlur="validateField('email')"
 								:class="{ 'input-error': errors.email }"
-								autofocus
-							></ion-input>
+								autofocus></ion-input>
 							<div v-else class="display-value">{{ user.email }}</div>
-							<ion-button 
-								fill="clear" 
-								size="small" 
+							<ion-button
+								fill="clear"
+								size="small"
 								slot="end"
 								:color="editingField === 'email' ? 'success' : 'primary'"
-								@click="toggleEdit('email')"
-							>
-								<ion-icon 
-									:icon="editingField === 'email' ? checkmarkOutline : createOutline" 
-									slot="icon-only"
-								></ion-icon>
+								@click="toggleEdit('email')">
+								<ion-icon
+									:icon="
+										editingField === 'email' ? checkmarkOutline : createOutline
+									"
+									slot="icon-only"></ion-icon>
 							</ion-button>
 						</ion-item>
 						<div v-if="errors.email" class="error-message">
@@ -137,115 +178,106 @@
 						</div>
 					</div>
 
-					<!-- Phone Field -->
 					<div class="form-group">
-						<ion-item 
-							class="modern-item" 
-							:class="{ 
-								'item-editing': editingField === 'phone',
-								'item-filled': user.phone 
-							}"
-						>
+						<ion-item class="modern-item item-filled">
 							<ion-label position="stacked" class="custom-label">
-								<ion-icon :icon="callOutline" class="label-icon"></ion-icon>
-								Telefonnummer
+								<ion-icon :icon="personOutline" class="label-icon"></ion-icon>
+								Benutzername
 							</ion-label>
-							<ion-input
-								v-if="editingField === 'phone'"
-								v-model="editData.phone"
-								type="tel"
-								placeholder="+43 123 456789"
-								autofocus
-							></ion-input>
-							<div v-else class="display-value">{{ user.phone || 'Nicht angegeben' }}</div>
-							<ion-button 
-								fill="clear" 
-								size="small" 
-								slot="end"
-								:color="editingField === 'phone' ? 'success' : 'primary'"
-								@click="toggleEdit('phone')"
-							>
-								<ion-icon 
-									:icon="editingField === 'phone' ? checkmarkOutline : createOutline" 
-									slot="icon-only"
-								></ion-icon>
-							</ion-button>
+							<div class="display-value">{{ user.username }}</div>
+							<ion-note slot="end" color="medium">Nicht änderbar</ion-note>
 						</ion-item>
 					</div>
 				</div>
 
-				<!-- Account Actions -->
 				<div class="account-actions">
 					<h3>Konto-Einstellungen</h3>
-					
+
 					<ion-list class="action-list">
 						<ion-item button @click="changePassword" class="action-item">
-							<ion-icon :icon="lockClosedOutline" slot="start" color="primary"></ion-icon>
+							<ion-icon
+								:icon="lockClosedOutline"
+								slot="start"
+								color="primary"></ion-icon>
 							<ion-label>
 								<h4>Passwort ändern</h4>
 								<p>Dein Passwort für mehr Sicherheit aktualisieren</p>
 							</ion-label>
-							<ion-icon :icon="chevronForwardOutline" slot="end" color="medium"></ion-icon>
+							<ion-icon
+								:icon="chevronForwardOutline"
+								slot="end"
+								color="medium"></ion-icon>
 						</ion-item>
 
 						<ion-item button @click="notificationSettings" class="action-item">
-							<ion-icon :icon="notificationsOutline" slot="start" color="primary"></ion-icon>
+							<ion-icon
+								:icon="notificationsOutline"
+								slot="start"
+								color="primary"></ion-icon>
 							<ion-label>
 								<h4>Benachrichtigungen</h4>
 								<p>E-Mail- und Push-Benachrichtigungen verwalten</p>
 							</ion-label>
-							<ion-icon :icon="chevronForwardOutline" slot="end" color="medium"></ion-icon>
+							<ion-icon
+								:icon="chevronForwardOutline"
+								slot="end"
+								color="medium"></ion-icon>
 						</ion-item>
 
 						<ion-item button @click="privacySettings" class="action-item">
-							<ion-icon :icon="shieldCheckmarkOutline" slot="start" color="primary"></ion-icon>
+							<ion-icon
+								:icon="shieldCheckmarkOutline"
+								slot="start"
+								color="primary"></ion-icon>
 							<ion-label>
 								<h4>Datenschutz</h4>
-								<p>Datenschutz- und Sicherheitseinstellungen</p>
+								<p>Deine Privatsphäre-Einstellungen verwalten</p>
 							</ion-label>
-							<ion-icon :icon="chevronForwardOutline" slot="end" color="medium"></ion-icon>
+							<ion-icon
+								:icon="chevronForwardOutline"
+								slot="end"
+								color="medium"></ion-icon>
 						</ion-item>
 					</ion-list>
 				</div>
 
-				<!-- Statistics Section -->
 				<div class="statistics-section">
 					<h3>Deine Aktivität</h3>
 					<div class="stats-grid">
 						<div class="stat-card">
 							<ion-icon :icon="bagOutline" class="stat-icon"></ion-icon>
 							<div class="stat-content">
-								<span class="stat-number">{{ userStats.itemsReported }}</span>
-								<span class="stat-label">Gegenstände gemeldet</span>
+								<div class="stat-number">{{ userStats.itemsReported }}</div>
+								<div class="stat-label">Gemeldete Gegenstände</div>
 							</div>
 						</div>
 						<div class="stat-card">
-							<ion-icon :icon="checkmarkCircleOutline" class="stat-icon"></ion-icon>
+							<ion-icon
+								:icon="checkmarkCircleOutline"
+								class="stat-icon"></ion-icon>
 							<div class="stat-content">
-								<span class="stat-number">{{ userStats.itemsClaimed }}</span>
-								<span class="stat-label">Gegenstände abgeholt</span>
+								<div class="stat-number">{{ userStats.itemsClaimed }}</div>
+								<div class="stat-label">Abgeholte Gegenstände</div>
 							</div>
 						</div>
 						<div class="stat-card">
 							<ion-icon :icon="trophyOutline" class="stat-icon"></ion-icon>
 							<div class="stat-content">
-								<span class="stat-number">{{ userStats.helpfulReports }}</span>
-								<span class="stat-label">Hilfreiche Meldungen</span>
+								<div class="stat-number">{{ userStats.helpfulReports }}</div>
+								<div class="stat-label">Hilfreiche Meldungen</div>
 							</div>
 						</div>
 					</div>
 				</div>
 
-				<!-- Danger Zone -->
 				<div class="danger-zone">
 					<h3>Gefährlicher Bereich</h3>
-					<ion-button 
-						fill="outline" 
-						color="danger" 
+					<ion-button
+						fill="outline"
+						color="danger"
 						expand="block"
-						@click="deleteAccount"
 						class="delete-button"
-					>
+						@click="deleteAccount">
 						<ion-icon :icon="trashOutline" slot="start"></ion-icon>
 						Konto löschen
 					</ion-button>
@@ -253,14 +285,12 @@
 			</div>
 		</div>
 
-		<!-- Delete Account Confirmation -->
 		<ion-alert
 			:is-open="showDeleteAlert"
 			header="Konto löschen"
 			message="Bist du sicher, dass du dein Konto löschen möchtest? Diese Aktion kann nicht rückgängig gemacht werden und alle deine Daten werden dauerhaft gelöscht."
 			:buttons="deleteAlertButtons"
-			@didDismiss="showDeleteAlert = false"
-		></ion-alert>
+			@didDismiss="showDeleteAlert = false"></ion-alert>
 	</template-page>
 </template>
 
@@ -276,6 +306,7 @@ import {
 	IonSpinner,
 	IonAlert,
 	IonList,
+	IonNote,
 } from '@ionic/vue';
 import {
 	personOutline,
@@ -284,7 +315,6 @@ import {
 	createOutline,
 	checkmarkOutline,
 	mailOutline,
-	callOutline,
 	alertCircleOutline,
 	lockClosedOutline,
 	notificationsOutline,
@@ -296,38 +326,41 @@ import {
 	trashOutline,
 	closeOutline,
 	saveOutline,
+	refreshOutline,
 } from 'ionicons/icons';
-import { ref, computed, reactive, watch } from 'vue';
+import { ref, computed, reactive, watch, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { useUserStore } from '@/stores/userStore';
+import type { User, UserUpdateData } from '@/models/user';
 
 const router = useRouter();
+const userStore = useUserStore();
 
-const user = ref({
-	name: 'Max Mustermann',
-	phone: '+43 123 456789',
-	email: 'max.mustermann@example.com',
-	avatar: '',
-	joinedAt: '2023-09-15T10:00:00Z',
-});
+const user = computed(() => userStore.getCurrentUser);
+const isLoading = computed(() => userStore.isLoading);
+const error = computed(() => userStore.getError);
+
+// Mock user ID for now - in a real app, this would come from authentication
+const CURRENT_USER_ID = 1;
 
 const userStats = ref({
-	itemsReported: 12,
-	itemsClaimed: 8,
-	helpfulReports: 15,
+	itemsReported: 0,
+	itemsClaimed: 0,
+	helpfulReports: 0,
 });
 
 const editData = reactive({
-	name: '',
+	firstName: '',
+	lastName: '',
 	email: '',
-	phone: '',
 });
 
 const errors = ref({
-	name: '',
+	firstName: '',
+	lastName: '',
 	email: '',
 });
 
-const isLoading = ref(false);
 const editingField = ref<string | null>(null);
 const hasChanges = ref(false);
 const showDeleteAlert = ref(false);
@@ -359,6 +392,31 @@ const deleteAlertButtons = [
 	},
 ];
 
+onMounted(async () => {
+	await loadUserProfile();
+});
+
+const loadUserProfile = async () => {
+	try {
+		await userStore.fetchUserById(CURRENT_USER_ID);
+		loadUserStats();
+	} catch (error) {
+		console.error('Error loading user profile:', error);
+	}
+};
+
+const loadUserStats = async () => {
+	userStats.value = {
+		itemsReported: 12,
+		itemsClaimed: 8,
+		helpfulReports: 15,
+	};
+};
+
+const getFullName = (user: User): string => {
+	return `${user.firstName} ${user.lastName}`.trim();
+};
+
 const formatDate = (dateString: string) => {
 	return new Date(dateString).toLocaleDateString('de-DE', {
 		month: 'long',
@@ -367,24 +425,33 @@ const formatDate = (dateString: string) => {
 };
 
 const validateField = (fieldName: keyof typeof errors.value) => {
-	const value = editData[fieldName as keyof typeof editData].trim();
-	
+	const value = editData[fieldName as keyof typeof editData]?.trim() || '';
+
 	switch (fieldName) {
-		case 'name':
+		case 'firstName':
 			if (!value) {
-				errors.value.name = 'Name ist erforderlich';
+				errors.value.firstName = 'Vorname ist erforderlich';
 			} else if (value.length < 2) {
-				errors.value.name = 'Name muss mindestens 2 Zeichen haben';
+				errors.value.firstName = 'Vorname muss mindestens 2 Zeichen lang sein';
 			} else {
-				errors.value.name = '';
+				errors.value.firstName = '';
+			}
+			break;
+		case 'lastName':
+			if (!value) {
+				errors.value.lastName = 'Nachname ist erforderlich';
+			} else if (value.length < 2) {
+				errors.value.lastName = 'Nachname muss mindestens 2 Zeichen lang sein';
+			} else {
+				errors.value.lastName = '';
 			}
 			break;
 		case 'email':
 			const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 			if (!value) {
-				errors.value.email = 'E-Mail ist erforderlich';
+				errors.value.email = 'E-Mail-Adresse ist erforderlich';
 			} else if (!emailRegex.test(value)) {
-				errors.value.email = 'Ungültige E-Mail-Adresse';
+				errors.value.email = 'Bitte gib eine gültige E-Mail-Adresse ein';
 			} else {
 				errors.value.email = '';
 			}
@@ -392,69 +459,67 @@ const validateField = (fieldName: keyof typeof errors.value) => {
 	}
 };
 
-const toggleEdit = (fieldName: string) => {
+const toggleEdit = async (fieldName: string) => {
 	if (editingField.value === fieldName) {
-		// Save the field
-		if (fieldName === 'name' || fieldName === 'email') {
-			validateField(fieldName as keyof typeof errors.value);
-			if (errors.value[fieldName as keyof typeof errors.value]) {
-				return; // Don't save if there are errors
-			}
+		validateField(fieldName as keyof typeof errors.value);
+
+		if (!errors.value[fieldName as keyof typeof errors.value] && user.value) {
+			user.value[fieldName as keyof User] =
+				editData[fieldName as keyof typeof editData];
+			editingField.value = null;
+			hasChanges.value = true;
 		}
-		
-		user.value[fieldName as keyof typeof user.value] = editData[fieldName as keyof typeof editData];
-		editingField.value = null;
-		hasChanges.value = true;
 	} else {
-		// Start editing
-		editData[fieldName as keyof typeof editData] = user.value[fieldName as keyof typeof user.value];
-		editingField.value = fieldName;
+		if (user.value) {
+			editData[fieldName as keyof typeof editData] = user.value[
+				fieldName as keyof User
+			] as string;
+			editingField.value = fieldName;
+		}
 	}
 };
 
 const handleCancel = () => {
 	if (hasChanges.value) {
-		// Show confirmation dialog
-		// For now, just navigate back
+		hasChanges.value = false;
+		editingField.value = null;
 	}
 	router.back();
 };
 
 const handleSave = async () => {
-	if (!hasChanges.value) return;
-	
+	if (!hasChanges.value || !user.value) return;
+
 	try {
-		// TODO: Implement actual save logic
-		console.log('Saving user profile:', user.value);
-		
-		// Simulate API call
-		await new Promise(resolve => setTimeout(resolve, 1000));
-		
+		const updateData: UserUpdateData = {
+			firstName: user.value.firstName,
+			lastName: user.value.lastName,
+			email: user.value.email,
+		};
+
+		await userStore.updateUser(user.value.id, updateData);
 		hasChanges.value = false;
-		// TODO: Show success toast
+		editingField.value = null;
+
+		console.log('Profile updated successfully');
 	} catch (error) {
-		console.error('Error saving profile:', error);
-		// TODO: Show error toast
+		console.error('Error updating profile:', error);
 	}
 };
 
 const handleAvatarEdit = () => {
-	// TODO: Implement avatar upload functionality
 	console.log('Avatar edit clicked');
 };
 
 const changePassword = () => {
-	// TODO: Navigate to change password page
 	console.log('Change password clicked');
 };
 
 const notificationSettings = () => {
-	// TODO: Navigate to notification settings
 	console.log('Notification settings clicked');
 };
 
 const privacySettings = () => {
-	// TODO: Navigate to privacy settings
 	console.log('Privacy settings clicked');
 };
 
@@ -464,30 +529,24 @@ const deleteAccount = () => {
 
 const confirmDeleteAccount = async () => {
 	try {
-		// TODO: Implement account deletion
-		console.log('Deleting account');
-		
-		// Simulate API call
-		await new Promise(resolve => setTimeout(resolve, 1000));
-		
-		// TODO: Navigate to login or home
+		console.log('Delete account confirmed');
 		router.push('/');
 	} catch (error) {
 		console.error('Error deleting account:', error);
-		// TODO: Show error toast
 	}
 };
 
-// Watch for changes to update hasChanges
 watch(
-	[() => editData.name, () => editData.email, () => editData.phone],
+	[() => editData.firstName, () => editData.lastName, () => editData.email],
 	() => {
-		// Check if any field has changed
-		const hasNameChanged = editData.name !== user.value.name;
-		const hasEmailChanged = editData.email !== user.value.email;
-		const hasPhoneChanged = editData.phone !== user.value.phone;
-		
-		hasChanges.value = hasNameChanged || hasEmailChanged || hasPhoneChanged;
+		if (user.value) {
+			const hasFirstNameChanged = editData.firstName !== user.value.firstName;
+			const hasLastNameChanged = editData.lastName !== user.value.lastName;
+			const hasEmailChanged = editData.email !== user.value.email;
+
+			hasChanges.value =
+				hasFirstNameChanged || hasLastNameChanged || hasEmailChanged;
+		}
 	},
 	{ deep: true }
 );
@@ -513,13 +572,32 @@ watch(
 	color: var(--ion-color-medium);
 }
 
+.empty-state {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+	padding: 60px 20px;
+}
+
+.empty-icon {
+	font-size: 64px;
+	color: var(--ion-color-medium);
+	margin-bottom: 20px;
+}
+
 .content-wrapper {
 	padding: 20px;
 	animation: fadeInUp 0.6s ease-out;
 }
 
 .profile-header {
-	background: linear-gradient(135deg, var(--ion-color-primary), var(--ion-color-primary-shade));
+	background: linear-gradient(
+		135deg,
+		var(--ion-color-primary),
+		var(--ion-color-primary-shade)
+	);
 	color: white;
 	padding: 30px 24px;
 	border-radius: 16px;
@@ -760,49 +838,53 @@ watch(
 }
 
 @keyframes shake {
-	0%, 100% { transform: translateX(0); }
-	25% { transform: translateX(-5px); }
-	75% { transform: translateX(5px); }
+	0%,
+	100% {
+		transform: translateX(0);
+	}
+	25% {
+		transform: translateX(-5px);
+	}
+	75% {
+		transform: translateX(5px);
+	}
 }
 
-/* Responsive Design */
 @media (max-width: 768px) {
 	.content-wrapper {
-		padding: 16px;
+		padding: 12px;
 	}
-	
+
 	.avatar-section {
 		flex-direction: column;
 		text-align: center;
-		gap: 16px;
-	}
-	
-	.stats-grid {
-		grid-template-columns: 1fr;
 		gap: 12px;
 	}
-	
+
+	.stats-grid {
+		grid-template-columns: 1fr;
+	}
+
 	.stat-card {
 		justify-content: center;
-		text-align: center;
 	}
 }
 
 @media (max-width: 480px) {
 	.profile-header {
-		padding: 24px 20px;
+		padding: 20px 16px;
 	}
-	
+
 	.avatar-image,
 	.avatar-placeholder {
 		width: 60px;
 		height: 60px;
 	}
-	
+
 	.avatar-icon {
 		font-size: 30px;
 	}
-	
+
 	.user-info h1 {
 		font-size: 1.3em;
 	}

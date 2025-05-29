@@ -195,7 +195,7 @@
 						</div>
 					</ion-card-content>
 
-					<!-- Card Actions -->
+					<!-- Enhanced Card Actions -->
 					<div class="card-actions">
 						<ion-button
 							fill="clear"
@@ -204,15 +204,30 @@
 							<ion-icon :icon="eyeOutline" slot="start"></ion-icon>
 							Bericht ansehen
 						</ion-button>
+
+						<!-- Enhanced Claim Button for Found Items -->
 						<ion-button
 							v-if="report.status.toUpperCase() === 'FOUND'"
-							fill="clear"
+							fill="solid"
 							size="small"
 							color="success"
-							@click.stop="claimItem(report.id)">
+							class="claim-button"
+							@click.stop="showClaimModal(report)">
 							<ion-icon :icon="handRightOutline" slot="start"></ion-icon>
 							Abholen
 						</ion-button>
+
+						<!-- Status indicator for other statuses -->
+						<ion-button
+							v-else-if="report.status.toUpperCase() === 'CLAIMED'"
+							fill="clear"
+							size="small"
+							color="medium"
+							disabled>
+							<ion-icon :icon="checkmarkCircleOutline" slot="start"></ion-icon>
+							Bereits abgeholt
+						</ion-button>
+
 						<ion-button
 							fill="clear"
 							size="small"
@@ -224,6 +239,171 @@
 				</ion-card>
 			</div>
 		</div>
+
+		<!-- Claim Confirmation Modal -->
+		<ion-modal :is-open="showClaimModalOpen" @did-dismiss="closeClaimModal">
+			<ion-header>
+				<ion-toolbar>
+					<ion-title>Gegenstand abholen</ion-title>
+					<ion-buttons slot="end">
+						<ion-button @click="closeClaimModal">
+							<ion-icon :icon="closeOutline"></ion-icon>
+						</ion-button>
+					</ion-buttons>
+				</ion-toolbar>
+			</ion-header>
+			<ion-content class="claim-modal-content">
+				<div v-if="selectedItemToClaim" class="claim-form">
+					<!-- Item Information -->
+					<div class="item-info-section">
+						<h2>{{ selectedItemToClaim.title }}</h2>
+						<p class="item-description">
+							{{ selectedItemToClaim.description }}
+						</p>
+						<div class="item-details">
+							<div class="detail-row">
+								<ion-icon
+									:icon="locationOutline"
+									class="detail-icon"></ion-icon>
+								<span>{{ selectedItemToClaim.location }}</span>
+							</div>
+							<div class="detail-row">
+								<ion-icon :icon="timeOutline" class="detail-icon"></ion-icon>
+								<span
+									>Gemeldet
+									{{ getTimeAgo(selectedItemToClaim.dateCreated) }}</span
+								>
+							</div>
+						</div>
+					</div>
+
+					<!-- Claim Form -->
+					<div class="claim-form-section">
+						<h3>Bestätigung der Abholung</h3>
+						<p class="form-description">
+							Bitte bestätige, dass du diesen Gegenstand abholen möchtest. Der
+							Finder wird benachrichtigt und kann Kontakt mit dir aufnehmen.
+						</p>
+
+						<!-- Claimer Information -->
+						<div class="input-group">
+							<ion-item
+								class="modern-item"
+								:class="{
+									'item-filled': claimData.claimerName,
+									'item-error': claimErrors.claimerName,
+								}">
+								<ion-label position="stacked" class="custom-label">
+									<ion-icon :icon="personOutline" class="label-icon"></ion-icon>
+									Dein Name *
+								</ion-label>
+								<ion-input
+									v-model="claimData.claimerName"
+									placeholder="Vor- und Nachname"
+									class="custom-input"
+									@ionBlur="validateClaimField('claimerName')"></ion-input>
+							</ion-item>
+							<div v-if="claimErrors.claimerName" class="error-message">
+								<ion-icon :icon="alertCircleOutline"></ion-icon>
+								{{ claimErrors.claimerName }}
+							</div>
+						</div>
+
+						<div class="input-group">
+							<ion-item
+								class="modern-item"
+								:class="{
+									'item-filled': claimData.contactInfo,
+									'item-error': claimErrors.contactInfo,
+								}">
+								<ion-label position="stacked" class="custom-label">
+									<ion-icon :icon="mailOutline" class="label-icon"></ion-icon>
+									Kontaktinformationen *
+								</ion-label>
+								<ion-input
+									v-model="claimData.contactInfo"
+									placeholder="E-Mail oder Telefonnummer"
+									class="custom-input"
+									@ionBlur="validateClaimField('contactInfo')"></ion-input>
+							</ion-item>
+							<div v-if="claimErrors.contactInfo" class="error-message">
+								<ion-icon :icon="alertCircleOutline"></ion-icon>
+								{{ claimErrors.contactInfo }}
+							</div>
+						</div>
+
+						<div class="input-group">
+							<ion-item class="modern-item textarea-item">
+								<ion-label position="stacked" class="custom-label">
+									<ion-icon
+										:icon="documentTextOutline"
+										class="label-icon"></ion-icon>
+									Zusätzliche Informationen (optional)
+								</ion-label>
+								<ion-textarea
+									v-model="claimData.additionalInfo"
+									placeholder="Warum glaubst du, dass dies dein Gegenstand ist? Beschreibe besondere Merkmale..."
+									class="custom-textarea"
+									rows="3"></ion-textarea>
+							</ion-item>
+						</div>
+
+						<!-- Verification Checklist -->
+						<div class="verification-section">
+							<h4>Verifizierung</h4>
+							<div class="checklist">
+								<ion-item class="checklist-item">
+									<ion-checkbox
+										v-model="claimData.confirmOwnership"
+										slot="start"></ion-checkbox>
+									<ion-label>
+										Ich bestätige, dass dies mein verlorener Gegenstand ist
+									</ion-label>
+								</ion-item>
+								<ion-item class="checklist-item">
+									<ion-checkbox
+										v-model="claimData.confirmContact"
+										slot="start"></ion-checkbox>
+									<ion-label>
+										Ich bin bereit, vom Finder kontaktiert zu werden
+									</ion-label>
+								</ion-item>
+							</div>
+						</div>
+
+						<!-- Action Buttons -->
+						<div class="modal-actions">
+							<ion-button
+								expand="block"
+								fill="outline"
+								@click="closeClaimModal"
+								:disabled="isSubmittingClaim">
+								Abbrechen
+							</ion-button>
+							<ion-button
+								expand="block"
+								@click="submitClaim"
+								:disabled="!isClaimFormValid || isSubmittingClaim"
+								color="success">
+								<ion-spinner
+									v-if="isSubmittingClaim"
+									name="crescent"
+									class="spinner"></ion-spinner>
+								<ion-icon
+									v-else
+									:icon="handRightOutline"
+									slot="start"></ion-icon>
+								{{
+									isSubmittingClaim
+										? 'Wird bearbeitet...'
+										: 'Abholung bestätigen'
+								}}
+							</ion-button>
+						</div>
+					</div>
+				</div>
+			</ion-content>
+		</ion-modal>
 
 		<!-- Filter Modal -->
 		<ion-modal
@@ -589,21 +769,133 @@ const editReport = (reportId: number) => {
 	router.push(`/items/${reportId}/edit`);
 };
 
-// Claim functionality
-const claimItem = async (reportId: number) => {
-	try {
-		await itemStore.updateItem(reportId, { status: 'CLAIMED' });
-		// TODO: Show success toast
-	} catch (error) {
-		console.error('Error claiming item:', error);
-		// TODO: Show error toast
+// Claim functionality state
+const showClaimModalOpen = ref(false);
+const selectedItemToClaim = ref<VirtualReport | null>(null);
+const isSubmittingClaim = ref(false);
+
+const claimData = ref({
+	claimerName: '',
+	contactInfo: '',
+	additionalInfo: '',
+	confirmOwnership: false,
+	confirmContact: false,
+});
+
+const claimErrors = ref({
+	claimerName: '',
+	contactInfo: '',
+});
+
+const isClaimFormValid = computed(() => {
+	return (
+		claimData.value.claimerName.trim() !== '' &&
+		claimData.value.contactInfo.trim() !== '' &&
+		claimData.value.confirmOwnership &&
+		claimData.value.confirmContact &&
+		!claimErrors.value.claimerName &&
+		!claimErrors.value.contactInfo
+	);
+});
+
+// Enhanced claim functionality
+const showClaimModal = (report: VirtualReport) => {
+	selectedItemToClaim.value = report;
+	// Reset form
+	claimData.value = {
+		claimerName: '',
+		contactInfo: '',
+		additionalInfo: '',
+		confirmOwnership: false,
+		confirmContact: false,
+	};
+	claimErrors.value = {
+		claimerName: '',
+		contactInfo: '',
+	};
+	showClaimModalOpen.value = true;
+};
+
+const closeClaimModal = () => {
+	showClaimModalOpen.value = false;
+	selectedItemToClaim.value = null;
+};
+
+const validateClaimField = (fieldName: keyof typeof claimErrors.value) => {
+	const value =
+		claimData.value[fieldName as keyof typeof claimData.value]
+			?.toString()
+			.trim() || '';
+
+	switch (fieldName) {
+		case 'claimerName':
+			if (!value) {
+				claimErrors.value.claimerName = 'Name ist erforderlich';
+			} else if (value.length < 2) {
+				claimErrors.value.claimerName =
+					'Name muss mindestens 2 Zeichen lang sein';
+			} else {
+				claimErrors.value.claimerName = '';
+			}
+			break;
+		case 'contactInfo':
+			if (!value) {
+				claimErrors.value.contactInfo =
+					'Kontaktinformationen sind erforderlich';
+			} else if (value.length < 5) {
+				claimErrors.value.contactInfo = 'Gültige Kontaktinformationen eingeben';
+			} else {
+				claimErrors.value.contactInfo = '';
+			}
+			break;
 	}
 };
 
-// Error handling
-const handleImageError = (event: Event) => {
-	const img = event.target as HTMLImageElement;
-	img.style.display = 'none';
+const submitClaim = async () => {
+	if (!selectedItemToClaim.value || !isClaimFormValid.value) return;
+
+	try {
+		isSubmittingClaim.value = true;
+
+		// Create enhanced description with claim information
+		const claimDescription = [
+			'--- ABHOLUNG ANGEFORDERT ---',
+			`Angefordert von: ${claimData.value.claimerName}`,
+			`Kontakt: ${claimData.value.contactInfo}`,
+			`Datum der Anfrage: ${new Date().toLocaleDateString('de-DE')}`,
+			'',
+			claimData.value.additionalInfo
+				? `Zusätzliche Informationen: ${claimData.value.additionalInfo}`
+				: '',
+			'',
+			'--- ORIGINAL BESCHREIBUNG ---',
+			selectedItemToClaim.value.description,
+		]
+			.filter(Boolean)
+			.join('\n');
+
+		// Update item status to CLAIMED with claim information
+		await itemStore.updateItem(selectedItemToClaim.value.id, {
+			status: 'CLAIMED',
+			description: claimDescription,
+		});
+
+		// TODO: Show success toast
+		console.log('Item successfully claimed');
+
+		// TODO: Send notification to item reporter
+		// await notificationService.notifyItemClaimed(selectedItemToClaim.value.id, claimData.value);
+
+		closeClaimModal();
+
+		// Refresh the reports list
+		await loadReports();
+	} catch (error) {
+		console.error('Error claiming item:', error);
+		// TODO: Show error toast
+	} finally {
+		isSubmittingClaim.value = false;
+	}
 };
 
 // Watch for tab changes
@@ -965,26 +1257,180 @@ watch(activeTab, (tab) => {
 	gap: 12px;
 }
 
-@keyframes fadeInUp {
-	from {
-		opacity: 0;
-		transform: translateY(30px);
+.claim-button {
+	--background: var(--ion-color-success);
+	--color: white;
+	font-weight: 600;
+	animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+	0% {
+		transform: scale(1);
 	}
-	to {
-		opacity: 1;
-		transform: translateY(0);
+	50% {
+		transform: scale(1.05);
+	}
+	100% {
+		transform: scale(1);
 	}
 }
 
-@keyframes slideInUp {
-	from {
-		opacity: 0;
-		transform: translateY(40px);
-	}
-	to {
-		opacity: 1;
-		transform: translateY(0);
-	}
+.claim-modal-content {
+	padding: 20px;
+}
+
+.claim-form {
+	max-width: 500px;
+	margin: 0 auto;
+}
+
+.item-info-section {
+	background: var(--ion-color-light-tint);
+	border-radius: 12px;
+	padding: 20px;
+	margin-bottom: 24px;
+	border-left: 4px solid var(--ion-color-success);
+}
+
+.item-info-section h2 {
+	color: var(--ion-color-dark);
+	margin: 0 0 8px 0;
+	font-weight: 600;
+}
+
+.item-description {
+	color: var(--ion-color-medium-shade);
+	margin: 0 0 16px 0;
+	line-height: 1.4;
+}
+
+.item-details {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.detail-row {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	color: var(--ion-color-medium);
+	font-size: 0.9em;
+}
+
+.detail-icon {
+	font-size: 16px;
+}
+
+.claim-form-section h3 {
+	color: var(--ion-color-dark);
+	margin: 0 0 8px 0;
+	font-weight: 600;
+}
+
+.form-description {
+	color: var(--ion-color-medium);
+	margin: 0 0 20px 0;
+	line-height: 1.4;
+	font-size: 0.9em;
+}
+
+.input-group {
+	margin-bottom: 20px;
+}
+
+.modern-item {
+	--background: var(--ion-color-light-tint);
+	--border-radius: 8px;
+	border: 2px solid var(--ion-color-light-shade);
+	border-radius: 8px;
+	margin-bottom: 8px;
+	transition: border-color 0.3s ease;
+}
+
+.modern-item.item-filled {
+	border-color: var(--ion-color-success-tint);
+	--background: rgba(var(--ion-color-success-rgb), 0.05);
+}
+
+.modern-item.item-error {
+	border-color: var(--ion-color-danger);
+	--background: rgba(var(--ion-color-danger-rgb), 0.05);
+}
+
+.modern-item:focus-within {
+	border-color: var(--ion-color-success);
+	box-shadow: 0 0 0 3px rgba(var(--ion-color-success-rgb), 0.1);
+}
+
+.custom-label {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	font-weight: 600;
+	color: var(--ion-color-dark);
+}
+
+.label-icon {
+	font-size: 16px;
+	color: var(--ion-color-success);
+}
+
+.custom-textarea {
+	min-height: 60px;
+}
+
+.textarea-item {
+	--padding-bottom: 12px;
+}
+
+.error-message {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	color: var(--ion-color-danger);
+	font-size: 0.85em;
+	margin-top: 4px;
+}
+
+.verification-section {
+	background: var(--ion-color-light-tint);
+	border-radius: 8px;
+	padding: 16px;
+	margin: 20px 0;
+}
+
+.verification-section h4 {
+	color: var(--ion-color-dark);
+	margin: 0 0 12px 0;
+	font-weight: 600;
+}
+
+.checklist {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.checklist-item {
+	--background: transparent;
+	--padding-start: 0;
+	--padding-end: 0;
+	--min-height: auto;
+}
+
+.modal-actions {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	margin-top: 24px;
+}
+
+.spinner {
+	width: 16px;
+	height: 16px;
+	margin-right: 8px;
 }
 
 /* Responsive Design */
@@ -1013,6 +1459,14 @@ watch(activeTab, (tab) => {
 
 	.card-actions {
 		flex-direction: column;
+		gap: 8px;
+	}
+
+	.claim-modal-content {
+		padding: 16px;
+	}
+
+	.modal-actions {
 		gap: 8px;
 	}
 }

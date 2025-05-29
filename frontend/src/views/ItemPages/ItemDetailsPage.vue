@@ -1,6 +1,5 @@
 <template>
 	<template-page
-		:headline="item?.name || 'Gegenstand Details'"
 		:leftFooterButton="leftFooterButton"
 		:rightFooterButton="rightFooterButton"
 		@leftFooterButtonClicked="handleBack"
@@ -38,6 +37,88 @@
 							class="expand-button"
 							@click="openImageModal">
 							<ion-icon :icon="expandOutline" slot="icon-only"></ion-icon>
+						</ion-button>
+					</div>
+				</div>
+
+				<!-- Enhanced Status Section -->
+				<div class="info-card status-card">
+					<div class="card-header">
+						<div class="title-section">
+							<h1 class="item-title">{{ item.name }}</h1>
+							<ion-chip
+								:color="getStatusColor(item.status)"
+								class="status-chip">
+								<ion-icon
+									:icon="getStatusIcon(item.status)"
+									class="chip-icon"></ion-icon>
+								{{ getStatusText(item.status) }}
+							</ion-chip>
+						</div>
+					</div>
+
+					<!-- Claim Action Section for Found Items -->
+					<div
+						v-if="item.status.toUpperCase() === 'FOUND'"
+						class="claim-action-section">
+						<div class="claim-info">
+							<h3>
+								<ion-icon
+									:icon="handRightOutline"
+									class="section-icon"></ion-icon>
+								Ist das dein verlorener Gegenstand?
+							</h3>
+							<p>
+								Wenn du glaubst, dass dies dein verlorener Gegenstand ist,
+								kannst du ihn hier zur Abholung anfordern.
+							</p>
+						</div>
+						<ion-button
+							expand="block"
+							size="large"
+							color="success"
+							class="claim-button"
+							@click="showClaimDialog">
+							<ion-icon :icon="handRightOutline" slot="start"></ion-icon>
+							Gegenstand abholen
+						</ion-button>
+					</div>
+
+					<!-- Already Claimed Section -->
+					<div
+						v-else-if="item.status.toUpperCase() === 'CLAIMED'"
+						class="claimed-section">
+						<div class="claimed-info">
+							<ion-icon
+								:icon="checkmarkCircleOutline"
+								class="claimed-icon"></ion-icon>
+							<div class="claimed-text">
+								<h3>Bereits zur Abholung angefordert</h3>
+								<p>
+									Dieser Gegenstand wurde bereits von jemandem zur Abholung
+									angefordert.
+								</p>
+							</div>
+						</div>
+					</div>
+
+					<!-- Lost Item Section -->
+					<div
+						v-else-if="item.status.toUpperCase() === 'LOST'"
+						class="lost-section">
+						<div class="lost-info">
+							<ion-icon :icon="searchOutline" class="lost-icon"></ion-icon>
+							<div class="lost-text">
+								<h3>Verlorener Gegenstand</h3>
+								<p>
+									Wenn du diesen Gegenstand gefunden hast, kontaktiere bitte den
+									Besitzer oder melde einen Fundbericht.
+								</p>
+							</div>
+						</div>
+						<ion-button expand="block" fill="outline" @click="reportFound">
+							<ion-icon :icon="megaphoneOutline" slot="start"></ion-icon>
+							Fund melden
 						</ion-button>
 					</div>
 				</div>
@@ -137,45 +218,27 @@
 						Aktionen
 					</h3>
 					<div class="action-buttons">
-						<ion-button
-							fill="solid"
-							color="primary"
-							expand="block"
-							class="action-btn"
-							@click="handleEdit">
-							<ion-icon :icon="createOutline" slot="start"></ion-icon>
-							Bearbeiten
-						</ion-button>
-
-						<ion-button
-							v-if="item.status !== 'CLAIMED'"
-							fill="outline"
-							color="success"
-							expand="block"
-							class="action-btn"
-							@click="markAsClaimed">
-							<ion-icon :icon="checkmarkCircleOutline" slot="start"></ion-icon>
-							Als abgeholt markieren
-						</ion-button>
-
-						<ion-button
-							fill="outline"
-							color="medium"
-							expand="block"
-							class="action-btn"
-							@click="shareItem">
+						<ion-button expand="block" fill="outline" @click="shareItem">
 							<ion-icon :icon="shareOutline" slot="start"></ion-icon>
 							Teilen
 						</ion-button>
 
 						<ion-button
+							v-if="item.status.toUpperCase() === 'FOUND'"
+							expand="block"
+							color="success"
+							@click="showClaimDialog">
+							<ion-icon :icon="handRightOutline" slot="start"></ion-icon>
+							Gegenstand abholen
+						</ion-button>
+
+						<ion-button
+							expand="block"
 							fill="outline"
 							color="danger"
-							expand="block"
-							class="action-btn"
 							@click="showDeleteConfirmation">
 							<ion-icon :icon="trashOutline" slot="start"></ion-icon>
-							Löschen
+							Bericht löschen
 						</ion-button>
 					</div>
 				</div>
@@ -199,6 +262,15 @@
 				</div>
 			</div>
 		</div>
+
+		<!-- Enhanced Claim Alert -->
+		<ion-alert
+			:is-open="showClaimAlert"
+			header="Gegenstand abholen"
+			:message="claimAlertMessage"
+			:buttons="claimAlertButtons"
+			@didDismiss="showClaimAlert = false">
+		</ion-alert>
 
 		<!-- Image Modal -->
 		<ion-modal :is-open="showImageModal" @didDismiss="closeImageModal">
@@ -230,14 +302,6 @@
 			message="Bist du sicher, dass du diesen Gegenstand löschen möchtest? Diese Aktion kann nicht rückgängig gemacht werden."
 			:buttons="deleteAlertButtons"
 			@didDismiss="showDeleteAlert = false"></ion-alert>
-
-		<!-- Claim Confirmation Alert -->
-		<ion-alert
-			:is-open="showClaimAlert"
-			header="Als abgeholt markieren"
-			message="Möchtest du diesen Gegenstand als abgeholt markieren? Dies bedeutet, dass er erfolgreich seinem Besitzer zurückgegeben wurde."
-			:buttons="claimAlertButtons"
-			@didDismiss="showClaimAlert = false"></ion-alert>
 	</template-page>
 </template>
 
@@ -281,6 +345,9 @@ import {
 	eyeOffOutline,
 	flagOutline,
 	checkmarkOutline,
+	handRightOutline,
+	searchOutline,
+	megaphoneOutline,
 } from 'ionicons/icons';
 import { ref, computed, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
@@ -337,6 +404,23 @@ const deleteAlertButtons = [
 	},
 ];
 
+const claimAlertMessage = computed(() => {
+	if (!item.value) return '';
+
+	return `
+        <div style="text-align: left; padding: 8px;">
+            <p><strong>Gegenstand:</strong> ${item.value.name}</p>
+            <p><strong>Standort:</strong> ${item.value.location}</p>
+            <br>
+            <p>Möchtest du diesen Gegenstand zur Abholung anfordern?</p>
+            <p style="color: #666; font-size: 0.9em;">
+                Der Finder wird benachrichtigt und kann dich kontaktieren, 
+                um die Abholung zu koordinieren.
+            </p>
+        </div>
+    `;
+});
+
 const claimAlertButtons = [
 	{
 		text: 'Abbrechen',
@@ -344,10 +428,9 @@ const claimAlertButtons = [
 		cssClass: 'alert-button-cancel',
 	},
 	{
-		text: 'Als abgeholt markieren',
-		role: 'confirm',
+		text: 'Ja, abholen',
 		cssClass: 'alert-button-confirm',
-		handler: () => confirmClaim(),
+		handler: () => processClaim(),
 	},
 ];
 
@@ -473,22 +556,55 @@ const markAsClaimed = () => {
 	showClaimAlert.value = true;
 };
 
-const confirmClaim = async () => {
+const showClaimDialog = () => {
+	showClaimAlert.value = true;
+};
+
+const processClaim = async () => {
 	if (!item.value) return;
 
 	try {
-		const updatedItem = await itemStore.updateItem(item.value.id, {
+		// Create enhanced description with claim information
+		const currentDate = new Date().toLocaleDateString('de-DE');
+		const claimDescription = [
+			'--- ABHOLUNG ANGEFORDERT ---',
+			`Angefordert am: ${currentDate}`,
+			'Status: Warten auf Bestätigung des Finders',
+			'',
+			'--- ORIGINAL BESCHREIBUNG ---',
+			item.value.description,
+		].join('\n');
+
+		// Update item status
+		await itemStore.updateItem(item.value.id, {
 			status: 'CLAIMED',
+			description: claimDescription,
 		});
 
-		if (updatedItem) {
-			item.value = updatedItem;
-		}
+		// Reload item data
+		await loadItem();
+
 		// TODO: Show success toast
+		console.log('Item claimed successfully');
+
+		// TODO: Send notification to finder
+		// await notificationService.notifyItemClaimed(item.value.id);
 	} catch (error) {
-		console.error('Error updating item status:', error);
+		console.error('Error claiming item:', error);
 		// TODO: Show error toast
 	}
+};
+
+const reportFound = () => {
+	// Navigate to report creation with pre-filled data
+	router.push({
+		path: '/items/report',
+		query: {
+			type: 'FOUND',
+			name: item.value?.name,
+			location: item.value?.location,
+		},
+	});
 };
 
 const shareItem = async () => {
@@ -792,45 +908,174 @@ onMounted(() => {
 	}
 }
 
+/* Enhanced Status Section Styles */
+.status-card {
+	background: linear-gradient(135deg, var(--ion-color-light-tint), white);
+	border: 2px solid var(--ion-color-light-shade);
+	position: relative;
+	overflow: hidden;
+}
+
+.claim-action-section {
+	background: linear-gradient(
+		135deg,
+		var(--ion-color-success-tint),
+		rgba(var(--ion-color-success-rgb), 0.1)
+	);
+	border-radius: 12px;
+	padding: 20px;
+	margin-top: 16px;
+	border-left: 4px solid var(--ion-color-success);
+}
+
+.claim-info h3 {
+	color: var(--ion-color-dark);
+	margin: 0 0 8px 0;
+	font-weight: 600;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.claim_info p {
+	color: var(--ion-color-medium-shade);
+	margin: 0 0 16px 0;
+	line-height: 1.4;
+}
+
+.claim-button {
+	--background: var(--ion-color-success);
+	--color: white;
+	font-weight: 600;
+	font-size: 1.1em;
+	animation: glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes glow {
+	from {
+		box-shadow: 0 0 10px rgba(var(--ion-color-success-rgb), 0.5);
+	}
+	to {
+		box-shadow: 0 0 20px rgba(var(--ion-color-success-rgb), 0.8),
+			0 0 30px rgba(var(--ion-color-success-rgb), 0.6);
+	}
+}
+
+.claimed-section {
+	background: linear-gradient(
+		135deg,
+		var(--ion-color-medium-tint),
+		rgba(var(--ion-color-medium-rgb), 0.1)
+	);
+	border-radius: 12px;
+	padding: 20px;
+	margin-top: 16px;
+	border-left: 4px solid var(--ion-color-medium);
+}
+
+.claimed-info {
+	display: flex;
+	align-items: flex-start;
+	gap: 16px;
+}
+
+.claimed-icon {
+	font-size: 24px;
+	color: var(--ion-color-medium);
+	margin-top: 4px;
+	flex-shrink: 0;
+}
+
+.claimed-text h3 {
+	color: var(--ion-color-dark);
+	margin: 0 0 4px 0;
+	font-weight: 600;
+}
+
+.claimed-text p {
+	color: var(--ion-color-medium-shade);
+	margin: 0;
+	line-height: 1.4;
+}
+
+.lost-section {
+	background: linear-gradient(
+		135deg,
+		var(--ion-color-warning-tint),
+		rgba(var(--ion-color-warning-rgb), 0.1)
+	);
+	border-radius: 12px;
+	padding: 20px;
+	margin-top: 16px;
+	border-left: 4px solid var(--ion-color-warning);
+}
+
+.lost-info {
+	display: flex;
+	align-items: flex-start;
+	gap: 16px;
+	margin-bottom: 16px;
+}
+
+.lost-icon {
+	font-size: 24px;
+	color: var(--ion-color-warning);
+	margin-top: 4px;
+	flex-shrink: 0;
+}
+
+.lost-text h3 {
+	color: var(--ion-color-dark);
+	margin: 0 0 4px 0;
+	font-weight: 600;
+}
+
+.lost-text p {
+	color: var(--ion-color-medium-shade);
+	margin: 0;
+	line-height: 1.4;
+}
+
+.action-buttons {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 12px;
+	margin-top: 24px;
+}
+
+/* Alert Styles */
+:global(.alert-button-confirm) {
+	color: var(--ion-color-success) !important;
+	font-weight: 600 !important;
+}
+
+:global(.alert-button-cancel) {
+	color: var(--ion-color-medium) !important;
+}
+
 /* Responsive Design */
 @media (min-width: 768px) {
-	.details-container {
-		padding: 24px;
-	}
-
-	.title-section {
-		flex-direction: row;
-		align-items: center;
-		justify-content: space-between;
-	}
-
-	.metadata-grid {
-		grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-	}
-
 	.action-buttons {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-		gap: 12px;
+		grid-template-columns: repeat(2, 1fr);
 	}
 }
 
 @media (max-width: 480px) {
-	.details-container {
-		padding: 12px;
-	}
-
-	.info-card {
+	.claim-action-section,
+	.claimed-section,
+	.lost-section {
 		padding: 16px;
-		margin-bottom: 12px;
 	}
 
-	.item-title {
-		font-size: 1.3em;
+	.claimed-info,
+	.lost-info {
+		flex-direction: column;
+		gap: 12px;
 	}
 
-	.item-image {
-		height: 250px;
+	.claimed-icon,
+	.lost-icon {
+		align-self: center;
 	}
 }
 </style>

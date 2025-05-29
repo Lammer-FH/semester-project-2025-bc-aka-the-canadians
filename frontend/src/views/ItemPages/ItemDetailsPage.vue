@@ -8,7 +8,7 @@
 			<!-- Loading State -->
 			<div v-if="isLoading" class="loading-container">
 				<ion-spinner name="crescent" color="primary"></ion-spinner>
-				<p>Lade Gegenstand...</p>
+				<p>Lade Bericht...</p>
 			</div>
 
 			<!-- Error State -->
@@ -24,6 +24,38 @@
 
 			<!-- Item Details -->
 			<div v-else-if="item" class="item-details">
+				<!-- Report Header -->
+				<div class="report-header">
+					<div class="header-content">
+						<div class="header-left">
+							<ion-chip
+								:color="getStatusColor(item.status)"
+								class="status-chip">
+								<ion-icon
+									:icon="getStatusIcon(item.status)"
+									class="chip-icon"></ion-icon>
+								{{ getStatusText(item.status) }}
+							</ion-chip>
+							<div class="report-meta">
+								<span class="report-id">Bericht #{{ item.id }}</span>
+								<span class="report-date">{{
+									formatDate(item.createdAt)
+								}}</span>
+							</div>
+						</div>
+						<div class="header-right">
+							<div class="view-count">
+								<ion-icon :icon="eyeOutline" class="view-icon"></ion-icon>
+								<span>{{ viewCount }} Aufrufe</span>
+							</div>
+							<div class="days-since">
+								<ion-icon :icon="timeOutline" class="time-icon"></ion-icon>
+								<span>Vor {{ daysSinceReported }} Tagen</span>
+							</div>
+						</div>
+					</div>
+				</div>
+
 				<!-- Image Section -->
 				<div v-if="item.imageUrl" class="image-section">
 					<div class="image-container">
@@ -38,107 +70,123 @@
 							@click="openImageModal">
 							<ion-icon :icon="expandOutline" slot="icon-only"></ion-icon>
 						</ion-button>
-					</div>
-				</div>
-
-				<!-- Enhanced Status Section -->
-				<div class="info-card status-card">
-					<div class="card-header">
-						<div class="title-section">
-							<h1 class="item-title">{{ item.name }}</h1>
-							<ion-chip
-								:color="getStatusColor(item.status)"
-								class="status-chip">
-								<ion-icon
-									:icon="getStatusIcon(item.status)"
-									class="chip-icon"></ion-icon>
-								{{ getStatusText(item.status) }}
+						<div class="image-overlay">
+							<ion-chip color="dark" class="image-chip">
+								<ion-icon :icon="cameraOutline" class="chip-icon"></ion-icon>
+								Zum Vergrößern tippen
 							</ion-chip>
 						</div>
-					</div>
-
-					<!-- Claim Action Section for Found Items -->
-					<div
-						v-if="item.status.toUpperCase() === 'FOUND'"
-						class="claim-action-section">
-						<div class="claim-info">
-							<h3>
-								<ion-icon
-									:icon="handRightOutline"
-									class="section-icon"></ion-icon>
-								Ist das dein verlorener Gegenstand?
-							</h3>
-							<p>
-								Wenn du glaubst, dass dies dein verlorener Gegenstand ist,
-								kannst du ihn hier zur Abholung anfordern.
-							</p>
-						</div>
-						<ion-button
-							expand="block"
-							size="large"
-							color="success"
-							class="claim-button"
-							@click="showClaimDialog">
-							<ion-icon :icon="handRightOutline" slot="start"></ion-icon>
-							Gegenstand abholen
-						</ion-button>
-					</div>
-
-					<!-- Already Claimed Section -->
-					<div
-						v-else-if="item.status.toUpperCase() === 'CLAIMED'"
-						class="claimed-section">
-						<div class="claimed-info">
-							<ion-icon
-								:icon="checkmarkCircleOutline"
-								class="claimed-icon"></ion-icon>
-							<div class="claimed-text">
-								<h3>Bereits zur Abholung angefordert</h3>
-								<p>
-									Dieser Gegenstand wurde bereits von jemandem zur Abholung
-									angefordert.
-								</p>
-							</div>
-						</div>
-					</div>
-
-					<!-- Lost Item Section -->
-					<div
-						v-else-if="item.status.toUpperCase() === 'LOST'"
-						class="lost-section">
-						<div class="lost-info">
-							<ion-icon :icon="searchOutline" class="lost-icon"></ion-icon>
-							<div class="lost-text">
-								<h3>Verlorener Gegenstand</h3>
-								<p>
-									Wenn du diesen Gegenstand gefunden hast, kontaktiere bitte den
-									Besitzer oder melde einen Fundbericht.
-								</p>
-							</div>
-						</div>
-						<ion-button expand="block" fill="outline" @click="reportFound">
-							<ion-icon :icon="megaphoneOutline" slot="start"></ion-icon>
-							Fund melden
-						</ion-button>
 					</div>
 				</div>
 
 				<!-- Main Info Card -->
 				<div class="info-card main-info">
 					<div class="card-header">
-						<div class="title-section">
-							<h1 class="item-title">{{ item.name }}</h1>
-							<ion-chip
-								:color="getStatusColor(item.status)"
-								class="status-chip">
-								<ion-icon
-									:icon="getStatusIcon(item.status)"
-									class="chip-icon"></ion-icon>
-								{{ getStatusText(item.status) }}
-							</ion-chip>
+						<h1 class="item-title">{{ item.name }}</h1>
+						<div class="title-actions">
+							<ion-button fill="clear" size="small" @click="shareItem">
+								<ion-icon :icon="shareOutline" slot="icon-only"></ion-icon>
+							</ion-button>
 						</div>
 					</div>
 
+					<!-- Enhanced Status Section based on item status -->
+					<div class="status-section">
+						<!-- Found Item Actions -->
+						<div
+							v-if="item.status.toUpperCase() === 'FOUND'"
+							class="found-item-section">
+							<div class="action-banner found-banner">
+								<div class="banner-content">
+									<ion-icon :icon="eyeOutline" class="banner-icon"></ion-icon>
+									<div class="banner-text">
+										<h3>Gefundener Gegenstand</h3>
+										<p>
+											Ist das dein verlorener Gegenstand? Du kannst ihn zur
+											Abholung anfordern.
+										</p>
+									</div>
+								</div>
+								<ion-button
+									expand="block"
+									size="large"
+									color="success"
+									class="claim-button"
+									@click="showClaimDialog">
+									<ion-icon :icon="handRightOutline" slot="start"></ion-icon>
+									Gegenstand abholen
+								</ion-button>
+							</div>
+						</div>
+
+						<!-- Lost Item Actions -->
+						<div
+							v-else-if="item.status.toUpperCase() === 'LOST'"
+							class="lost-item-section">
+							<div class="action-banner lost-banner">
+								<div class="banner-content">
+									<ion-icon
+										:icon="searchOutline"
+										class="banner-icon"></ion-icon>
+									<div class="banner-text">
+										<h3>Verlorener Gegenstand</h3>
+										<p>
+											Jemand sucht nach diesem Gegenstand. Hast du ihn gefunden?
+										</p>
+									</div>
+								</div>
+								<ion-button
+									expand="block"
+									fill="outline"
+									color="warning"
+									@click="reportFound">
+									<ion-icon :icon="megaphoneOutline" slot="start"></ion-icon>
+									Fund melden
+								</ion-button>
+							</div>
+						</div>
+
+						<!-- Claimed Item Status -->
+						<div
+							v-else-if="item.status.toUpperCase() === 'CLAIMED'"
+							class="claimed-item-section">
+							<div class="action-banner claimed-banner">
+								<div class="banner-content">
+									<ion-icon
+										:icon="checkmarkCircleOutline"
+										class="banner-icon"></ion-icon>
+									<div class="banner-text">
+										<h3>Zur Abholung angefordert</h3>
+										<p>
+											Dieser Gegenstand wurde bereits zur Abholung angefordert.
+										</p>
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<!-- Returned Item Status -->
+						<div
+							v-else-if="item.status.toUpperCase() === 'RETURNED'"
+							class="returned-item-section">
+							<div class="action-banner returned-banner">
+								<div class="banner-content">
+									<ion-icon
+										:icon="checkmarkCircleOutline"
+										class="banner-icon"></ion-icon>
+									<div class="banner-text">
+										<h3>Erfolgreich zurückgegeben</h3>
+										<p>
+											Dieser Gegenstand wurde erfolgreich an den Besitzer
+											zurückgegeben.
+										</p>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- Description Section -->
 					<div v-if="item.description" class="description-section">
 						<h3>
 							<ion-icon
@@ -146,7 +194,30 @@
 								class="section-icon"></ion-icon>
 							Beschreibung
 						</h3>
-						<p class="description-text">{{ item.description }}</p>
+						<div class="description-content">
+							<p class="description-text">
+								{{ getCleanDescription(item.description) }}
+							</p>
+
+							<!-- Reporter Information if available -->
+							<div
+								v-if="getReporterInfo(item.description)"
+								class="reporter-info">
+								<h4>
+									<ion-icon :icon="personOutline" class="info-icon"></ion-icon>
+									Bericht-Details
+								</h4>
+								<div class="reporter-details">
+									<div
+										v-for="(info, key) in getReporterInfo(item.description)"
+										:key="key"
+										class="info-row">
+										<span class="info-label">{{ key }}:</span>
+										<span class="info-value">{{ info }}</span>
+									</div>
+								</div>
+							</div>
+						</div>
 					</div>
 				</div>
 
@@ -157,79 +228,153 @@
 						Standort
 					</h3>
 					<div class="location-details">
-						<ion-item class="detail-item">
+						<div class="location-primary">
 							<ion-icon
 								:icon="businessOutline"
-								slot="start"
-								color="primary"></ion-icon>
-							<ion-label>
-								<h4>Fundort/Verlustort</h4>
-								<p>{{ item.location }}</p>
-							</ion-label>
-						</ion-item>
+								class="location-icon"></ion-icon>
+							<span class="location-name">{{ item.location }}</span>
+						</div>
+						<ion-button fill="clear" size="small" @click="viewLocationReports">
+							<ion-icon :icon="flagOutline" slot="start"></ion-icon>
+							Weitere Berichte an diesem Standort
+						</ion-button>
 					</div>
 				</div>
 
-				<!-- Metadata Card -->
-				<div class="info-card metadata-info">
+				<!-- Report Timeline Card -->
+				<div class="info-card timeline-info">
 					<h3>
-						<ion-icon
-							:icon="informationCircleOutline"
-							class="section-icon"></ion-icon>
-						Details
+						<ion-icon :icon="timeOutline" class="section-icon"></ion-icon>
+						Bericht-Verlauf
 					</h3>
-					<div class="metadata-grid">
-						<div class="metadata-item">
-							<ion-icon
-								:icon="calendarOutline"
-								class="metadata-icon"></ion-icon>
-							<div class="metadata-content">
-								<span class="metadata-label">Gemeldet am</span>
-								<span class="metadata-value">{{
-									formatDate(item.createdAt)
+					<div class="timeline">
+						<div class="timeline-item">
+							<div class="timeline-marker created"></div>
+							<div class="timeline-content">
+								<h4>Bericht erstellt</h4>
+								<p>{{ formatDetailedDate(item.createdAt) }}</p>
+								<span class="timeline-type">{{
+									getReportType(item.status)
 								}}</span>
 							</div>
 						</div>
-						<div v-if="item.updatedAt !== item.createdAt" class="metadata-item">
-							<ion-icon :icon="timeOutline" class="metadata-icon"></ion-icon>
-							<div class="metadata-content">
-								<span class="metadata-label">Zuletzt aktualisiert</span>
-								<span class="metadata-value">{{
-									formatDate(item.updatedAt)
+						<div v-if="item.updatedAt !== item.createdAt" class="timeline-item">
+							<div class="timeline-marker updated"></div>
+							<div class="timeline-content">
+								<h4>Status aktualisiert</h4>
+								<p>{{ formatDetailedDate(item.updatedAt) }}</p>
+								<span class="timeline-status">{{
+									getStatusText(item.status)
 								}}</span>
 							</div>
 						</div>
-						<div class="metadata-item">
-							<ion-icon
-								:icon="fingerPrintOutline"
-								class="metadata-icon"></ion-icon>
-							<div class="metadata-content">
-								<span class="metadata-label">ID</span>
-								<span class="metadata-value">#{{ item.id }}</span>
+						<div
+							v-if="item.status.toUpperCase() === 'CLAIMED'"
+							class="timeline-item">
+							<div class="timeline-marker claimed"></div>
+							<div class="timeline-content">
+								<h4>Abholung angefordert</h4>
+								<p>Warten auf Bestätigung</p>
 							</div>
 						</div>
 					</div>
 				</div>
 
-				<!-- Actions Card -->
-				<div class="info-card actions-card">
+				<!-- Statistics Card -->
+				<div v-if="showStatistics" class="info-card stats-info">
 					<h3>
-						<ion-icon :icon="settingsOutline" class="section-icon"></ion-icon>
-						Aktionen
+						<ion-icon :icon="statsChartOutline" class="section-icon"></ion-icon>
+						Statistiken
 					</h3>
-					<div class="action-buttons">
+					<div class="stats-grid">
+						<div class="stat-item">
+							<div class="stat-number">{{ viewCount }}</div>
+							<div class="stat-label">Aufrufe</div>
+						</div>
+						<div class="stat-item">
+							<div class="stat-number">{{ daysSinceReported }}</div>
+							<div class="stat-label">Tage alt</div>
+						</div>
+						<div class="stat-item">
+							<div class="stat-number">{{ getLocationReportsCount() }}</div>
+							<div class="stat-label">Berichte am Standort</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- Related Reports Card -->
+				<div v-if="relatedReports.length > 0" class="info-card related-reports">
+					<h3>
+						<ion-icon :icon="layersOutline" class="section-icon"></ion-icon>
+						Ähnliche Berichte
+					</h3>
+					<div class="related-list">
+						<div
+							v-for="related in relatedReports"
+							:key="related.id"
+							class="related-item"
+							@click="navigateToReport(related.id)">
+							<div class="related-content">
+								<ion-chip
+									:color="getStatusColor(related.status)"
+									class="related-status">
+									<ion-icon
+										:icon="getStatusIcon(related.status)"
+										class="chip-icon"></ion-icon>
+									{{ getStatusText(related.status) }}
+								</ion-chip>
+								<h4>{{ related.name }}</h4>
+								<p>
+									{{ related.location }} • {{ getTimeAgo(related.createdAt) }}
+								</p>
+							</div>
+							<ion-icon
+								:icon="chevronForwardOutline"
+								class="chevron-icon"></ion-icon>
+						</div>
+					</div>
+				</div>
+
+				<!-- Action Buttons -->
+				<div class="action-buttons">
+					<ion-button
+						v-if="item.status.toUpperCase() === 'FOUND'"
+						expand="block"
+						size="large"
+						color="success"
+						@click="showClaimDialog">
+						<ion-icon :icon="handRightOutline" slot="start"></ion-icon>
+						Gegenstand abholen
+					</ion-button>
+
+					<ion-button
+						v-else-if="item.status.toUpperCase() === 'LOST'"
+						expand="block"
+						size="large"
+						fill="outline"
+						color="warning"
+						@click="reportFound">
+						<ion-icon :icon="megaphoneOutline" slot="start"></ion-icon>
+						Fund melden
+					</ion-button>
+
+					<div class="secondary-actions">
 						<ion-button expand="block" fill="outline" @click="shareItem">
 							<ion-icon :icon="shareOutline" slot="start"></ion-icon>
-							Teilen
+							Bericht teilen
 						</ion-button>
 
 						<ion-button
-							v-if="item.status.toUpperCase() === 'FOUND'"
 							expand="block"
-							color="success"
-							@click="showClaimDialog">
-							<ion-icon :icon="handRightOutline" slot="start"></ion-icon>
-							Gegenstand abholen
+							fill="outline"
+							color="medium"
+							@click="toggleStatistics">
+							<ion-icon :icon="statsChartOutline" slot="start"></ion-icon>
+							{{
+								showStatistics
+									? 'Statistiken ausblenden'
+									: 'Statistiken anzeigen'
+							}}
 						</ion-button>
 
 						<ion-button
@@ -242,44 +387,17 @@
 						</ion-button>
 					</div>
 				</div>
-
-				<!-- Statistics Card (if available) -->
-				<div v-if="showStatistics" class="info-card stats-card">
-					<h3>
-						<ion-icon :icon="statsChartOutline" class="section-icon"></ion-icon>
-						Statistiken
-					</h3>
-					<div class="stats-grid">
-						<div class="stat-item">
-							<span class="stat-number">{{ viewCount }}</span>
-							<span class="stat-label">Aufrufe</span>
-						</div>
-						<div class="stat-item">
-							<span class="stat-number">{{ daysSinceReported }}</span>
-							<span class="stat-label">Tage online</span>
-						</div>
-					</div>
-				</div>
 			</div>
 		</div>
 
-		<!-- Enhanced Claim Alert -->
-		<ion-alert
-			:is-open="showClaimAlert"
-			header="Gegenstand abholen"
-			:message="claimAlertMessage"
-			:buttons="claimAlertButtons"
-			@didDismiss="showClaimAlert = false">
-		</ion-alert>
-
-		<!-- Image Modal -->
-		<ion-modal :is-open="showImageModal" @didDismiss="closeImageModal">
+		<!-- Enhanced Image Modal -->
+		<ion-modal :is-open="showImageModal" @did-dismiss="closeImageModal">
 			<ion-header>
 				<ion-toolbar>
-					<ion-title>{{ item?.name }}</ion-title>
+					<ion-title>Bericht-Foto</ion-title>
 					<ion-buttons slot="end">
 						<ion-button @click="closeImageModal">
-							<ion-icon :icon="closeOutline" slot="icon-only"></ion-icon>
+							<ion-icon :icon="closeOutline"></ion-icon>
 						</ion-button>
 					</ion-buttons>
 				</ion-toolbar>
@@ -295,11 +413,19 @@
 			</ion-content>
 		</ion-modal>
 
+		<!-- Enhanced Claim Alert -->
+		<ion-alert
+			:is-open="showClaimAlert"
+			header="Gegenstand abholen"
+			:message="claimAlertMessage"
+			:buttons="claimAlertButtons"
+			@didDismiss="showClaimAlert = false"></ion-alert>
+
 		<!-- Delete Confirmation Alert -->
 		<ion-alert
 			:is-open="showDeleteAlert"
-			header="Gegenstand löschen"
-			message="Bist du sicher, dass du diesen Gegenstand löschen möchtest? Diese Aktion kann nicht rückgängig gemacht werden."
+			header="Bericht löschen"
+			message="Möchtest du diesen Bericht wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden."
 			:buttons="deleteAlertButtons"
 			@didDismiss="showDeleteAlert = false"></ion-alert>
 	</template-page>
@@ -312,8 +438,6 @@ import {
 	IonButton,
 	IonSpinner,
 	IonChip,
-	IonItem,
-	IonLabel,
 	IonModal,
 	IonHeader,
 	IonToolbar,
@@ -331,23 +455,23 @@ import {
 	documentTextOutline,
 	locationOutline,
 	businessOutline,
-	informationCircleOutline,
 	calendarOutline,
 	timeOutline,
-	fingerPrintOutline,
-	settingsOutline,
-	checkmarkCircleOutline,
 	shareOutline,
 	trashOutline,
 	statsChartOutline,
 	closeOutline,
 	eyeOutline,
-	eyeOffOutline,
 	flagOutline,
 	checkmarkOutline,
 	handRightOutline,
 	searchOutline,
 	megaphoneOutline,
+	checkmarkCircleOutline,
+	personOutline,
+	cameraOutline,
+	layersOutline,
+	chevronForwardOutline,
 } from 'ionicons/icons';
 import { ref, computed, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
@@ -360,11 +484,12 @@ const itemStore = useItemStore();
 
 // State
 const item = ref<Item | null>(null);
+const relatedReports = ref<Item[]>([]);
 const showImageModal = ref(false);
 const showDeleteAlert = ref(false);
 const showClaimAlert = ref(false);
-const viewCount = ref(0);
 const showStatistics = ref(false);
+const viewCount = ref(0);
 
 // Computed
 const isLoading = computed(() => itemStore.isLoading);
@@ -398,7 +523,6 @@ const deleteAlertButtons = [
 	},
 	{
 		text: 'Löschen',
-		role: 'destructive',
 		cssClass: 'alert-button-confirm',
 		handler: () => confirmDelete(),
 	},
@@ -437,59 +561,79 @@ const claimAlertButtons = [
 // Methods
 const loadItem = async () => {
 	try {
-		const itemId = Number(route.params.id);
-		if (!itemId) {
+		const itemId = parseInt(route.params.id as string);
+		if (isNaN(itemId)) {
 			throw new Error('Invalid item ID');
 		}
 
-		const loadedItem = await itemStore.fetchItemById(itemId);
-		if (loadedItem) {
-			item.value = loadedItem;
-			// TODO: Load view statistics from backend
-			loadItemStatistics(itemId);
-		} else {
-			throw new Error('Item not found');
+		const fetchedItem = await itemStore.fetchItemById(itemId);
+		if (fetchedItem) {
+			item.value = fetchedItem;
+			await loadRelatedReports();
+			await loadItemStatistics(itemId);
 		}
 	} catch (error) {
 		console.error('Error loading item:', error);
-		// Navigate back if item cannot be loaded
-		router.back();
+	}
+};
+
+const loadRelatedReports = async () => {
+	if (!item.value) return;
+
+	try {
+		// Fetch all items and filter for related ones
+		await itemStore.fetchItems();
+		const allItems = itemStore.getItems;
+
+		// Find related items (same location, different ID, not claimed)
+		relatedReports.value = allItems
+			.filter(
+				(i) =>
+					i.id !== item.value!.id &&
+					i.location === item.value!.location &&
+					i.status.toUpperCase() !== 'CLAIMED'
+			)
+			.slice(0, 3); // Limit to 3 related reports
+	} catch (error) {
+		console.error('Error loading related reports:', error);
+		relatedReports.value = [];
 	}
 };
 
 const loadItemStatistics = async (itemId: number) => {
 	try {
-		// TODO: Implement API call to get item statistics
-		// For now, using mock data
-		viewCount.value = Math.floor(Math.random() * 50) + 1;
-		showStatistics.value = true;
+		// Mock view count - in a real app, this would come from backend
+		viewCount.value = Math.floor(Math.random() * 50) + 5;
 	} catch (error) {
-		console.error('Error loading item statistics:', error);
-		showStatistics.value = false;
+		console.error('Error loading statistics:', error);
 	}
 };
 
 const getStatusColor = (status: string): string => {
 	switch (status.toUpperCase()) {
-		case 'LOST':
-			return 'danger';
 		case 'FOUND':
+			return 'success';
+		case 'LOST':
 			return 'warning';
 		case 'CLAIMED':
+			return 'medium';
+		case 'RETURNED':
 			return 'success';
 		default:
-			return 'medium';
+			return 'primary';
 	}
 };
 
 const getStatusIcon = (status: string): string => {
 	switch (status.toUpperCase()) {
-		case 'LOST':
-			return eyeOffOutline;
 		case 'FOUND':
 			return eyeOutline;
+		case 'LOST':
+			return searchOutline;
 		case 'CLAIMED':
 			return checkmarkOutline;
+		case 'RETURNED':
+			return checkmarkCircleOutline;
 		default:
 			return flagOutline;
 	}
@@ -497,15 +641,21 @@ const getStatusIcon = (status: string): string => {
 
 const getStatusText = (status: string): string => {
 	switch (status.toUpperCase()) {
-		case 'LOST':
-			return 'Verloren';
 		case 'FOUND':
 			return 'Gefunden';
+		case 'LOST':
+			return 'Verloren';
 		case 'CLAIMED':
 			return 'Abgeholt';
+		case 'RETURNED':
+			return 'Zurückgegeben';
 		default:
 			return status;
 	}
+};
+
+const getReportType = (status: string): string => {
+	return status.toUpperCase() === 'LOST' ? 'Verlustbericht' : 'Fundbericht';
 };
 
 const formatDate = (dateString: string) => {
@@ -516,6 +666,70 @@ const formatDate = (dateString: string) => {
 		hour: '2-digit',
 		minute: '2-digit',
 	});
+};
+
+const formatDetailedDate = (dateString: string) => {
+	return new Date(dateString).toLocaleDateString('de-DE', {
+		weekday: 'long',
+		day: '2-digit',
+		month: 'long',
+		year: 'numeric',
+		hour: '2-digit',
+		minute: '2-digit',
+	});
+};
+
+const getTimeAgo = (dateString: string) => {
+	const date = new Date(dateString);
+	const now = new Date();
+	const diffInHours = Math.floor(
+		(now.getTime() - date.getTime()) / (1000 * 60 * 60)
+	);
+
+	if (diffInHours < 1) return 'Vor wenigen Minuten';
+	if (diffInHours < 24) return `Vor ${diffInHours} Stunden`;
+
+	const diffInDays = Math.floor(diffInHours / 24);
+	if (diffInDays < 7) return `Vor ${diffInDays} Tagen`;
+
+	return date.toLocaleDateString('de-DE');
+};
+
+// Description parsing functions
+const getCleanDescription = (description: string): string => {
+	// Remove the report metadata section
+	const parts = description.split('--- Berichtinformationen ---');
+	return parts[0].trim() || 'Keine Beschreibung verfügbar.';
+};
+
+const getReporterInfo = (
+	description: string
+): Record<string, string> | null => {
+	const metadataMatch = description.match(
+		/--- Berichtinformationen ---([\s\S]*?)(?:--- |$)/
+	);
+	if (!metadataMatch) return null;
+
+	const metadata = metadataMatch[1];
+	const info: Record<string, string> = {};
+
+	const lines = metadata.split('\n').filter((line) => line.trim());
+	lines.forEach((line) => {
+		const [key, ...valueParts] = line.split(':');
+		if (key && valueParts.length > 0) {
+			info[key.trim()] = valueParts.join(':').trim();
+		}
+	});
+
+	return Object.keys(info).length > 0 ? info : null;
+};
+
+const getLocationReportsCount = (): number => {
+	return relatedReports.value.length + 1; // +1 for current item
+};
+
+const toggleStatistics = () => {
+	showStatistics.value = !showStatistics.value;
 };
 
 const handleBack = () => {
@@ -544,16 +758,13 @@ const confirmDelete = async () => {
 	if (!item.value) return;
 
 	try {
-		await itemStore.deleteItem(item.value.id);
-		router.push('/items/overview');
+		const success = await itemStore.deleteItem(item.value.id);
+		if (success) {
+			router.push('/items/overview');
+		}
 	} catch (error) {
 		console.error('Error deleting item:', error);
-		// TODO: Show error toast
 	}
-};
-
-const markAsClaimed = () => {
-	showClaimAlert.value = true;
 };
 
 const showClaimDialog = () => {
@@ -576,22 +787,21 @@ const processClaim = async () => {
 		].join('\n');
 
 		// Update item status
-		await itemStore.updateItem(item.value.id, {
+		const updatedItem = await itemStore.updateItem(item.value.id, {
 			status: 'CLAIMED',
 			description: claimDescription,
 		});
 
-		// Reload item data
-		await loadItem();
+		if (updatedItem) {
+			item.value = updatedItem;
+		}
 
-		// TODO: Show success toast
 		console.log('Item claimed successfully');
 
 		// TODO: Send notification to finder
 		// await notificationService.notifyItemClaimed(item.value.id);
 	} catch (error) {
 		console.error('Error claiming item:', error);
-		// TODO: Show error toast
 	}
 };
 
@@ -611,25 +821,35 @@ const shareItem = async () => {
 	if (!item.value) return;
 
 	try {
-		const shareUrl = `${window.location.origin}/items/${item.value.id}`;
 		const shareData = {
-			title: item.value.name,
-			text: `${item.value.description || 'Gegenstand gefunden/verloren'}`,
-			url: shareUrl,
+			title: `Lost & Found: ${item.value.name}`,
+			text: `${getStatusText(item.value.status)}: ${item.value.name} am ${
+				item.value.location
+			}`,
+			url: window.location.href,
 		};
 
 		if (navigator.share) {
 			await navigator.share(shareData);
 		} else {
 			// Fallback: copy to clipboard
-			await navigator.clipboard.writeText(shareUrl);
-			// TODO: Show success toast
+			await navigator.clipboard.writeText(window.location.href);
 			console.log('Link copied to clipboard');
 		}
 	} catch (error) {
-		console.error('Error sharing item:', error);
-		// TODO: Show error toast
+		console.error('Error sharing:', error);
 	}
+};
+
+const viewLocationReports = () => {
+	router.push({
+		path: '/items/overview',
+		query: { location: item.value?.location },
+	});
+};
+
+const navigateToReport = (reportId: number) => {
+	router.push(`/items/${reportId}`);
 };
 
 onMounted(() => {
@@ -643,6 +863,7 @@ onMounted(() => {
 	max-width: 800px;
 	margin: 0 auto;
 	min-height: 100vh;
+	background: var(--ion-color-light-tint);
 }
 
 .loading-container {
@@ -678,23 +899,98 @@ onMounted(() => {
 	animation: slideInUp 0.6s ease-out;
 }
 
+/* Report Header */
+.report-header {
+	background: linear-gradient(
+		135deg,
+		var(--ion-color-primary),
+		var(--ion-color-primary-shade)
+	);
+	color: white;
+	padding: 20px;
+	border-radius: 12px;
+	margin-bottom: 16px;
+	box-shadow: 0 4px 12px rgba(var(--ion-color-primary-rgb), 0.3);
+}
+
+.header-content {
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-start;
+	gap: 16px;
+}
+
+.header-left {
+	flex: 1;
+}
+
+.status-chip {
+	--background: rgba(255, 255, 255, 0.2);
+	--color: white;
+	margin-bottom: 8px;
+}
+
+.chip-icon {
+	font-size: 14px;
+	margin-right: 4px;
+}
+
+.report-meta {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	font-size: 0.9em;
+	opacity: 0.9;
+}
+
+.report-id {
+	font-weight: 600;
+}
+
+.report-date {
+	opacity: 0.8;
+}
+
+.header-right {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	text-align: right;
+	font-size: 0.85em;
+	opacity: 0.9;
+}
+
+.view-count,
+.days-since {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	justify-content: flex-end;
+}
+
+.view-icon,
+.time-icon {
+	font-size: 14px;
+}
+
+/* Image Section */
 .image-section {
-	margin-bottom: 20px;
+	margin-bottom: 16px;
 }
 
 .image-container {
 	position: relative;
-	border-radius: 16px;
+	border-radius: 12px;
 	overflow: hidden;
-	box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .item-image {
 	width: 100%;
 	height: 300px;
 	object-fit: cover;
-	cursor: pointer;
 	transition: transform 0.3s ease;
+	cursor: pointer;
 }
 
 .item-image:hover {
@@ -705,18 +1001,28 @@ onMounted(() => {
 	position: absolute;
 	top: 12px;
 	right: 12px;
-	background: rgba(255, 255, 255, 0.9);
-	border-radius: 50%;
-	--padding-start: 8px;
-	--padding-end: 8px;
-	--padding-top: 8px;
-	--padding-bottom: 8px;
-	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+	--background: rgba(0, 0, 0, 0.5);
+	--color: white;
+	--border-radius: 50%;
+	backdrop-filter: blur(10px);
 }
 
+.image-overlay {
+	position: absolute;
+	bottom: 12px;
+	left: 12px;
+}
+
+.image-chip {
+	--background: rgba(0, 0, 0, 0.7);
+	--color: white;
+	backdrop-filter: blur(10px);
+}
+
+/* Info Cards */
 .info-card {
 	background: white;
-	border-radius: 16px;
+	border-radius: 12px;
 	padding: 20px;
 	margin-bottom: 16px;
 	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
@@ -724,162 +1030,372 @@ onMounted(() => {
 }
 
 .card-header {
-	margin-bottom: 20px;
-}
-
-.title-section {
 	display: flex;
-	flex-direction: column;
-	gap: 12px;
+	justify-content: space-between;
+	align-items: flex-start;
+	margin-bottom: 16px;
 }
 
 .item-title {
 	color: var(--ion-color-dark);
 	margin: 0;
-	font-size: 1.5em;
-	font-weight: 700;
+	font-size: 1.8em;
+	font-weight: 600;
 	line-height: 1.2;
 }
 
-.status-chip {
-	align-self: flex-start;
+.title-actions {
+	display: flex;
+	gap: 8px;
+}
+
+/* Status Sections */
+.status-section {
+	margin-bottom: 20px;
+}
+
+.action-banner {
+	border-radius: 12px;
+	padding: 20px;
+	border-left: 4px solid;
+}
+
+.found-banner {
+	background: linear-gradient(
+		135deg,
+		var(--ion-color-success-tint),
+		rgba(var(--ion-color-success-rgb), 0.1)
+	);
+	border-left-color: var(--ion-color-success);
+}
+
+.lost-banner {
+	background: linear-gradient(
+		135deg,
+		var(--ion-color-warning-tint),
+		rgba(var(--ion-color-warning-rgb), 0.1)
+	);
+	border-left-color: var(--ion-color-warning);
+}
+
+.claimed-banner,
+.returned-banner {
+	background: linear-gradient(
+		135deg,
+		var(--ion-color-medium-tint),
+		rgba(var(--ion-color-medium-rgb), 0.1)
+	);
+	border-left-color: var(--ion-color-medium);
+}
+
+.banner-content {
+	display: flex;
+	align-items: flex-start;
+	gap: 16px;
+	margin-bottom: 16px;
+}
+
+.banner-icon {
+	font-size: 24px;
+	margin-top: 4px;
+	flex-shrink: 0;
+}
+
+.banner-text h3 {
+	color: var(--ion-color-dark);
+	margin: 0 0 4px 0;
 	font-weight: 600;
 }
 
-.chip-icon {
-	font-size: 16px;
-	margin-right: 4px;
+.banner-text p {
+	color: var(--ion-color-medium-shade);
+	margin: 0;
+	line-height: 1.4;
 }
 
-.description-section h3,
-.info-card h3 {
-	display: flex;
-	align-items: center;
-	gap: 8px;
+.claim-button {
+	--background: var(--ion-color-success);
+	--color: white;
+	font-weight: 600;
+	font-size: 1.1em;
+	animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+	0% {
+		transform: scale(1);
+	}
+	50% {
+		transform: scale(1.02);
+	}
+	100% {
+		transform: scale(1);
+	}
+}
+
+/* Description Section */
+.description-section h3 {
 	color: var(--ion-color-dark);
 	margin: 0 0 16px 0;
 	font-size: 1.1em;
 	font-weight: 600;
+	display: flex;
+	align-items: center;
+	gap: 8px;
 }
 
 .section-icon {
-	font-size: 20px;
+	font-size: 18px;
 	color: var(--ion-color-primary);
 }
 
+.description-content {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+}
+
 .description-text {
-	color: var(--ion-color-dark);
+	color: var(--ion-color-medium-shade);
 	line-height: 1.6;
 	margin: 0;
 	font-size: 1em;
 }
 
-.location-details,
-.action-buttons {
+.reporter-info {
+	background: var(--ion-color-light-tint);
+	border-radius: 8px;
+	padding: 16px;
+	border-left: 4px solid var(--ion-color-primary);
+}
+
+.reporter-info h4 {
+	color: var(--ion-color-dark);
+	margin: 0 0 12px 0;
+	font-size: 1em;
+	font-weight: 600;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.info-icon {
+	font-size: 16px;
+	color: var(--ion-color-primary);
+}
+
+.reporter-details {
 	display: flex;
 	flex-direction: column;
-	gap: 12px;
+	gap: 8px;
 }
 
-.detail-item {
-	--background: var(--ion-color-light-tint);
-	--border-radius: 8px;
-	--padding-start: 12px;
-	--padding-end: 12px;
-	border-radius: 8px;
-}
-
-.detail-item h4 {
-	margin: 0 0 4px 0;
-	font-weight: 600;
-	color: var(--ion-color-dark);
-}
-
-.detail-item p {
-	margin: 0;
-	color: var(--ion-color-medium);
+.info-row {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
 	font-size: 0.9em;
 }
 
-.metadata-grid {
-	display: grid;
-	grid-template-columns: 1fr;
-	gap: 16px;
-}
-
-.metadata-item {
-	display: flex;
-	align-items: center;
-	gap: 12px;
-	padding: 12px;
-	background: var(--ion-color-light-tint);
-	border-radius: 8px;
-}
-
-.metadata-icon {
-	font-size: 20px;
-	color: var(--ion-color-primary);
-	flex-shrink: 0;
-}
-
-.metadata-content {
-	display: flex;
-	flex-direction: column;
-	gap: 2px;
-}
-
-.metadata-label {
-	font-size: 0.8em;
+.info-label {
 	color: var(--ion-color-medium);
 	font-weight: 500;
 }
 
-.metadata-value {
-	font-size: 0.9em;
+.info-value {
 	color: var(--ion-color-dark);
-	font-weight: 600;
+	text-align: right;
 }
 
-.action-btn {
-	--border-radius: 12px;
-	height: 48px;
-	font-weight: 600;
-	margin-bottom: 8px;
+/* Location Details */
+.location-details {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
 }
 
+.location-primary {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	font-size: 1.1em;
+}
+
+.location-icon {
+	font-size: 20px;
+	color: var(--ion-color-primary);
+}
+
+.location-name {
+	color: var(--ion-color-dark);
+	font-weight: 500;
+}
+
+/* Timeline */
+.timeline {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+}
+
+.timeline-item {
+	display: flex;
+	align-items: flex-start;
+	gap: 16px;
+	position: relative;
+}
+
+.timeline-item:not(:last-child)::after {
+	content: '';
+	position: absolute;
+	left: 11px;
+	top: 24px;
+	bottom: -16px;
+	width: 2px;
+	background: var(--ion-color-light-shade);
+}
+
+.timeline-marker {
+	width: 24px;
+	height: 24px;
+	border-radius: 50%;
+	border: 3px solid;
+	background: white;
+	flex-shrink: 0;
+	margin-top: 2px;
+}
+
+.timeline-marker.created {
+	border-color: var(--ion-color-primary);
+}
+
+.timeline-marker.updated {
+	border-color: var(--ion-color-warning);
+}
+
+.timeline-marker.claimed {
+	border-color: var(--ion-color-success);
+}
+
+.timeline-content h4 {
+	color: var(--ion-color-dark);
+	margin: 0 0 4px 0;
+	font-weight: 600;
+	font-size: 0.95em;
+}
+
+.timeline-content p {
+	color: var(--ion-color-medium);
+	margin: 0 0 4px 0;
+	font-size: 0.9em;
+}
+
+.timeline-type,
+.timeline-status {
+	display: inline-block;
+	padding: 2px 8px;
+	border-radius: 12px;
+	font-size: 0.75em;
+	font-weight: 500;
+	background: var(--ion-color-light-shade);
+	color: var(--ion-color-medium-shade);
+}
+
+/* Statistics */
 .stats-grid {
 	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+	grid-template-columns: repeat(3, 1fr);
 	gap: 16px;
 }
 
 .stat-item {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	padding: 16px;
-	background: var(--ion-color-light-tint);
-	border-radius: 12px;
 	text-align: center;
+	background: var(--ion-color-light-tint);
+	padding: 16px;
+	border-radius: 8px;
 }
 
 .stat-number {
 	font-size: 1.8em;
 	font-weight: 700;
 	color: var(--ion-color-primary);
-	line-height: 1;
+	margin-bottom: 4px;
 }
 
 .stat-label {
-	font-size: 0.8em;
 	color: var(--ion-color-medium);
-	margin-top: 4px;
+	font-size: 0.85em;
 	font-weight: 500;
+}
+
+/* Related Reports */
+.related-list {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.related-item {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 12px;
+	background: var(--ion-color-light-tint);
+	border-radius: 8px;
+	cursor: pointer;
+	transition: all 0.2s ease;
+}
+
+.related-item:hover {
+	background: var(--ion-color-light-shade);
+	transform: translateX(4px);
+}
+
+.related-content {
+	flex: 1;
+}
+
+.related-status {
+	font-size: 0.8em;
+	margin-bottom: 4px;
+}
+
+.related-content h4 {
+	color: var(--ion-color-dark);
+	margin: 0 0 4px 0;
+	font-weight: 600;
+	font-size: 0.95em;
+}
+
+.related-content p {
+	color: var(--ion-color-medium);
+	margin: 0;
+	font-size: 0.85em;
+}
+
+.chevron-icon {
+	color: var(--ion-color-medium);
+	font-size: 16px;
+}
+
+/* Action Buttons */
+.action-buttons {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	margin-top: 24px;
+}
+
+.secondary-actions {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 8px;
+	margin-top: 8px;
 }
 
 /* Modal Styles */
 .modal-content {
-	--background: var(--ion-color-dark);
+	background: black;
 }
 
 .modal-image-container {
@@ -894,7 +1410,16 @@ onMounted(() => {
 	max-width: 100%;
 	max-height: 100%;
 	object-fit: contain;
-	border-radius: 8px;
+}
+
+/* Alert Styles */
+:global(.alert-button-confirm) {
+	color: var(--ion-color-success) !important;
+	font-weight: 600 !important;
+}
+
+:global(.alert-button-cancel) {
+	color: var(--ion-color-medium) !important;
 }
 
 @keyframes slideInUp {
@@ -908,174 +1433,71 @@ onMounted(() => {
 	}
 }
 
-/* Enhanced Status Section Styles */
-.status-card {
-	background: linear-gradient(135deg, var(--ion-color-light-tint), white);
-	border: 2px solid var(--ion-color-light-shade);
-	position: relative;
-	overflow: hidden;
-}
-
-.claim-action-section {
-	background: linear-gradient(
-		135deg,
-		var(--ion-color-success-tint),
-		rgba(var(--ion-color-success-rgb), 0.1)
-	);
-	border-radius: 12px;
-	padding: 20px;
-	margin-top: 16px;
-	border-left: 4px solid var(--ion-color-success);
-}
-
-.claim-info h3 {
-	color: var(--ion-color-dark);
-	margin: 0 0 8px 0;
-	font-weight: 600;
-	display: flex;
-	align-items: center;
-	gap: 8px;
-}
-
-.claim_info p {
-	color: var(--ion-color-medium-shade);
-	margin: 0 0 16px 0;
-	line-height: 1.4;
-}
-
-.claim-button {
-	--background: var(--ion-color-success);
-	--color: white;
-	font-weight: 600;
-	font-size: 1.1em;
-	animation: glow 2s ease-in-out infinite alternate;
-}
-
-@keyframes glow {
-	from {
-		box-shadow: 0 0 10px rgba(var(--ion-color-success-rgb), 0.5);
-	}
-	to {
-		box-shadow: 0 0 20px rgba(var(--ion-color-success-rgb), 0.8),
-			0 0 30px rgba(var(--ion-color-success-rgb), 0.6);
-	}
-}
-
-.claimed-section {
-	background: linear-gradient(
-		135deg,
-		var(--ion-color-medium-tint),
-		rgba(var(--ion-color-medium-rgb), 0.1)
-	);
-	border-radius: 12px;
-	padding: 20px;
-	margin-top: 16px;
-	border-left: 4px solid var(--ion-color-medium);
-}
-
-.claimed-info {
-	display: flex;
-	align-items: flex-start;
-	gap: 16px;
-}
-
-.claimed-icon {
-	font-size: 24px;
-	color: var(--ion-color-medium);
-	margin-top: 4px;
-	flex-shrink: 0;
-}
-
-.claimed-text h3 {
-	color: var(--ion-color-dark);
-	margin: 0 0 4px 0;
-	font-weight: 600;
-}
-
-.claimed-text p {
-	color: var(--ion-color-medium-shade);
-	margin: 0;
-	line-height: 1.4;
-}
-
-.lost-section {
-	background: linear-gradient(
-		135deg,
-		var(--ion-color-warning-tint),
-		rgba(var(--ion-color-warning-rgb), 0.1)
-	);
-	border-radius: 12px;
-	padding: 20px;
-	margin-top: 16px;
-	border-left: 4px solid var(--ion-color-warning);
-}
-
-.lost-info {
-	display: flex;
-	align-items: flex-start;
-	gap: 16px;
-	margin-bottom: 16px;
-}
-
-.lost-icon {
-	font-size: 24px;
-	color: var(--ion-color-warning);
-	margin-top: 4px;
-	flex-shrink: 0;
-}
-
-.lost-text h3 {
-	color: var(--ion-color-dark);
-	margin: 0 0 4px 0;
-	font-weight: 600;
-}
-
-.lost-text p {
-	color: var(--ion-color-medium-shade);
-	margin: 0;
-	line-height: 1.4;
-}
-
-.action-buttons {
-	display: grid;
-	grid-template-columns: 1fr;
-	gap: 12px;
-	margin-top: 24px;
-}
-
-/* Alert Styles */
-:global(.alert-button-confirm) {
-	color: var(--ion-color-success) !important;
-	font-weight: 600 !important;
-}
-
-:global(.alert-button-cancel) {
-	color: var(--ion-color-medium) !important;
-}
-
 /* Responsive Design */
-@media (min-width: 768px) {
-	.action-buttons {
-		grid-template-columns: repeat(2, 1fr);
-	}
-}
-
-@media (max-width: 480px) {
-	.claim-action-section,
-	.claimed-section,
-	.lost-section {
-		padding: 16px;
+@media (max-width: 768px) {
+	.details-container {
+		padding: 12px;
 	}
 
-	.claimed-info,
-	.lost-info {
+	.header-content {
 		flex-direction: column;
 		gap: 12px;
 	}
 
-	.claimed-icon,
-	.lost-icon {
-		align-self: center;
+	.header-right {
+		align-self: stretch;
+		text-align: left;
+	}
+
+	.view-count,
+	.days-since {
+		justify-content: flex-start;
+	}
+
+	.stats-grid {
+		grid-template-columns: 1fr;
+	}
+
+	.secondary-actions {
+		grid-template-columns: 1fr;
+	}
+
+	.banner-content {
+		flex-direction: column;
+		gap: 12px;
+		text-align: center;
+	}
+}
+
+@media (max-width: 480px) {
+	.item-title {
+		font-size: 1.5em;
+	}
+
+	.card-header {
+		flex-direction: column;
+		gap: 12px;
+	}
+
+	.title-actions {
+		align-self: stretch;
+		justify-content: center;
+	}
+
+	.info-row {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 4px;
+	}
+
+	.info-value {
+		text-align: left;
+	}
+}
+
+@media (min-width: 768px) {
+	.secondary-actions {
+		grid-template-columns: repeat(3, 1fr);
 	}
 }
 </style>

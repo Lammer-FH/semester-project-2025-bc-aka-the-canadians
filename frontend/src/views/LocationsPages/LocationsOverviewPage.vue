@@ -1,40 +1,60 @@
 <template>
 	<template-page
+		:headline="'Standorte durchsuchen'"
 		addButtonPath="/locations/add"
 		addButtonText="Neuen Standort hinzufügen">
 		<template #header>
-			<ion-toolbar>
-				<navigation-tabs
-					:modelValue="activeTab"
-					@update:modelValue="activeTab = $event"
-					class="full-width-tabs" />
-			</ion-toolbar>
-			<ion-toolbar>
-				<ion-searchbar
-					v-model="searchTerm"
-					placeholder="Standorte durchsuchen..."
-					show-clear-button="focus"
-					:debounce="300"
-					class="custom-searchbar" />
-			</ion-toolbar>
+			<NavigationTabs v-model="activeTab" />
 		</template>
 
-		<div v-if="activeTab === 'locations'" class="locations-container">
-			<!-- Error State -->
-			<div v-if="error && !isLoading" class="empty-state">
-				<ion-icon :icon="alertCircleOutline" class="empty-icon"></ion-icon>
-				<h2>Fehler beim Laden</h2>
-				<p>{{ error }}</p>
-				<ion-button @click="locationStore.fetchLocations()">
-					<ion-icon :icon="refreshOutline" slot="start"></ion-icon>
-					Erneut versuchen
-				</ion-button>
+		<div class="locations-container">
+			<!-- Search Section -->
+			<div class="search-section">
+				<ion-searchbar
+					v-model="searchTerm"
+					placeholder="Nach Standorten suchen..."
+					debounce="300"
+					class="custom-searchbar"></ion-searchbar>
+			</div>
+
+			<!-- Reports Summary at Locations -->
+			<div class="reports-summary">
+				<h3>Berichte an Standorten</h3>
+				<div class="summary-stats">
+					<div class="stat-item">
+						<ion-icon :icon="locationOutline" color="primary"></ion-icon>
+						<span>{{ filteredLocations.length }} Standorte</span>
+					</div>
+					<div class="stat-item">
+						<ion-icon :icon="eyeOutline" color="success"></ion-icon>
+						<span>{{ totalFoundReports }} Fundberichte</span>
+					</div>
+					<div class="stat-item">
+						<ion-icon :icon="searchOutline" color="warning"></ion-icon>
+						<span>{{ totalLostReports }} Verlustberichte</span>
+					</div>
+					<div class="stat-item">
+						<ion-icon :icon="checkmarkCircleOutline" color="medium"></ion-icon>
+						<span>{{ totalClaimedReports }} Abgeschlossen</span>
+					</div>
+				</div>
 			</div>
 
 			<!-- Loading State -->
-			<div v-else-if="isLoading" class="loading-container">
+			<div v-if="isLoading" class="loading-container">
 				<ion-spinner name="crescent" color="primary"></ion-spinner>
 				<p>Lade Standorte...</p>
+			</div>
+
+			<!-- Error State -->
+			<div v-else-if="error" class="empty-state">
+				<ion-icon :icon="alertCircleOutline" class="empty-icon"></ion-icon>
+				<h2>Fehler beim Laden</h2>
+				<p>{{ error }}</p>
+				<ion-button @click="loadLocations">
+					<ion-icon :icon="refreshOutline" slot="start"></ion-icon>
+					Erneut versuchen
+				</ion-button>
 			</div>
 
 			<!-- Empty State -->
@@ -42,17 +62,12 @@
 				<ion-icon :icon="locationOutline" class="empty-icon"></ion-icon>
 				<h2>Keine Standorte gefunden</h2>
 				<p v-if="searchTerm">
-					Deine Suche nach "{{ searchTerm }}" ergab keine Ergebnisse.
+					Keine Standorte entsprechen dem Suchbegriff "{{ searchTerm }}".
 				</p>
 				<p v-else>
-					Noch keine Standorte vorhanden. Füge den ersten Standort hinzu!
+					Noch keine Standorte erstellt. Füge den ersten Standort hinzu!
 				</p>
-				<ion-button
-					v-if="!searchTerm"
-					fill="solid"
-					color="primary"
-					@click="$router.push('/locations/add')"
-					class="ion-margin-top">
+				<ion-button @click="navigateToAddLocation">
 					<ion-icon :icon="addOutline" slot="start"></ion-icon>
 					Ersten Standort hinzufügen
 				</ion-button>
@@ -65,75 +80,166 @@
 					:key="location.id"
 					class="location-card"
 					:style="{ '--animation-delay': `${index * 0.1}s` }"
-					@click="navigateToLocation(location.id)"
-					button>
-					<div class="card-header">
-						<ion-card-header>
-							<div class="header-content">
-								<ion-card-title class="location-name">
-									{{ location.name }}
-								</ion-card-title>
-								<ion-chip class="building-chip" color="primary" outline>
-									<ion-icon
-										:icon="businessOutline"
-										class="chip-icon"></ion-icon>
-									{{ location.building }}
-								</ion-chip>
+					@click="navigateToLocation(location.id)">
+					<ion-card-header class="card-header">
+						<div class="header-content">
+							<ion-card-title class="location-name">{{
+								location.name
+							}}</ion-card-title>
+							<ion-chip class="building-chip" color="primary">
+								<ion-icon :icon="businessOutline" class="chip-icon"></ion-icon>
+								{{ location.building }}
+							</ion-chip>
+						</div>
+						<div class="location-details">
+							<div class="detail-item">
+								<ion-icon :icon="layersOutline" class="detail-icon"></ion-icon>
+								Etage {{ location.floor }}
 							</div>
-							<ion-card-subtitle class="location-details">
-								<div class="detail-item">
-									<ion-icon
-										:icon="layersOutline"
-										class="detail-icon"></ion-icon>
-									<span>{{ location.floor }}. Etage</span>
-								</div>
-								<div class="detail-item">
-									<ion-icon
-										:icon="overviewOutline"
-										class="detail-icon"></ion-icon>
-									<span>Raum {{ location.room }}</span>
-								</div>
-							</ion-card-subtitle>
-						</ion-card-header>
-					</div>
+							<div class="detail-item">
+								<ion-icon
+									:icon="businessOutline"
+									class="detail-icon"></ion-icon>
+								Raum {{ location.room }}
+							</div>
+						</div>
+					</ion-card-header>
 
 					<ion-card-content class="card-content">
-						<p class="description">{{ location.description }}</p>
+						<!-- Reports at this Location -->
+						<div class="reports-at-location">
+							<h4>
+								<ion-icon :icon="flagOutline" class="section-icon"></ion-icon>
+								Berichte an diesem Standort
+							</h4>
 
+							<div
+								v-if="getReportsForLocation(location.name).length === 0"
+								class="no-reports">
+								<ion-icon
+									:icon="checkmarkCircleOutline"
+									class="no-reports-icon"></ion-icon>
+								<span>Keine aktiven Berichte</span>
+							</div>
+
+							<div v-else class="reports-stats">
+								<div
+									class="report-stat-item"
+									v-if="getFoundReportsCount(location.name) > 0">
+									<ion-chip color="success" class="report-chip">
+										<ion-icon :icon="eyeOutline" class="chip-icon"></ion-icon>
+										{{ getFoundReportsCount(location.name) }} Gefunden
+									</ion-chip>
+								</div>
+								<div
+									class="report-stat-item"
+									v-if="getLostReportsCount(location.name) > 0">
+									<ion-chip color="warning" class="report-chip">
+										<ion-icon
+											:icon="searchOutline"
+											class="chip-icon"></ion-icon>
+										{{ getLostReportsCount(location.name) }} Verloren
+									</ion-chip>
+								</div>
+								<div
+									class="report-stat-item"
+									v-if="getClaimedReportsCount(location.name) > 0">
+									<ion-chip color="medium" class="report-chip">
+										<ion-icon
+											:icon="checkmarkOutline"
+											class="chip-icon"></ion-icon>
+										{{ getClaimedReportsCount(location.name) }} Abgeholt
+									</ion-chip>
+								</div>
+							</div>
+
+							<!-- Recent Reports Preview -->
+							<div
+								v-if="getRecentReportsForLocation(location.name).length > 0"
+								class="recent-reports">
+								<div class="recent-reports-header">
+									<span>Neueste Berichte:</span>
+									<ion-button
+										fill="clear"
+										size="small"
+										@click.stop="viewAllReportsAtLocation(location.name)">
+										Alle ansehen
+									</ion-button>
+								</div>
+								<div class="recent-reports-list">
+									<div
+										v-for="report in getRecentReportsForLocation(
+											location.name
+										).slice(0, 2)"
+										:key="report.id"
+										class="recent-report-item"
+										@click.stop="navigateToReport(report.id)">
+										<div class="report-info">
+											<ion-icon
+												:icon="getStatusIcon(report.status)"
+												:color="getStatusColor(report.status)"
+												class="report-icon"></ion-icon>
+											<div class="report-text">
+												<span class="report-title">{{ report.title }}</span>
+												<span class="report-time">{{
+													getTimeAgo(report.dateCreated)
+												}}</span>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<!-- Location Description -->
+						<div v-if="location.description" class="description">
+							<h4>
+								<ion-icon
+									:icon="documentTextOutline"
+									class="section-icon"></ion-icon>
+								Beschreibung
+							</h4>
+							<p>{{ location.description }}</p>
+						</div>
+
+						<!-- Location Metadata -->
 						<div class="metadata">
 							<div class="metadata-item">
-								<ion-icon :icon="timeOutline" class="metadata-icon"></ion-icon>
-								<span class="metadata-text">
-									Erstellt: {{ formatDate(location.createdAt) }}
-								</span>
-							</div>
-							<div
-								class="metadata-item"
-								v-if="location.updatedAt !== location.createdAt">
 								<ion-icon
-									:icon="refreshOutline"
+									:icon="calendarOutline"
 									class="metadata-icon"></ion-icon>
-								<span class="metadata-text">
-									Aktualisiert: {{ formatDate(location.updatedAt) }}
-								</span>
+								<span class="metadata-text"
+									>Erstellt {{ formatDate(location.createdAt) }}</span
+								>
+							</div>
+							<div class="metadata-item">
+								<ion-icon :icon="timeOutline" class="metadata-icon"></ion-icon>
+								<span class="metadata-text"
+									>Aktualisiert {{ formatDate(location.updatedAt) }}</span
+								>
 							</div>
 						</div>
 					</ion-card-content>
 
-					<!-- Action Buttons -->
+					<!-- Card Actions -->
 					<div class="card-actions">
 						<ion-button
 							fill="clear"
 							size="small"
-							color="primary"
 							@click.stop="navigateToLocation(location.id)">
 							<ion-icon :icon="eyeOutline" slot="start"></ion-icon>
-							Details
+							Standort ansehen
 						</ion-button>
 						<ion-button
 							fill="clear"
 							size="small"
-							color="medium"
+							@click.stop="viewAllReportsAtLocation(location.name)">
+							<ion-icon :icon="flagOutline" slot="start"></ion-icon>
+							Berichte ({{ getReportsForLocation(location.name).length }})
+						</ion-button>
+						<ion-button
+							fill="clear"
+							size="small"
 							@click.stop="editLocation(location.id)">
 							<ion-icon :icon="createOutline" slot="start"></ion-icon>
 							Bearbeiten
@@ -153,13 +259,11 @@ import {
 	IonCard,
 	IonCardHeader,
 	IonCardTitle,
-	IonCardSubtitle,
 	IonCardContent,
 	IonButton,
 	IonIcon,
 	IonChip,
 	IonSpinner,
-	IonToolbar,
 } from '@ionic/vue';
 import {
 	locationOutline,
@@ -171,31 +275,83 @@ import {
 	eyeOutline,
 	createOutline,
 	alertCircleOutline,
+	documentTextOutline,
+	calendarOutline,
+	flagOutline,
+	checkmarkCircleOutline,
+	searchOutline,
+	checkmarkOutline,
 } from 'ionicons/icons';
 import { ref, computed, watch, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useLocationStore } from '@/stores/locationStore';
+import { useItemStore } from '@/stores/itemStore';
 import type { Location } from '@/models/location';
+import type { Item } from '@/models/item';
+
+// Virtual Report Interface (same as in ItemsOverviewPage)
+interface VirtualReport {
+	id: number;
+	title: string;
+	description: string;
+	status: string;
+	location: string;
+	dateCreated: string;
+	imageUrl?: string;
+	reporterName?: string;
+}
 
 const router = useRouter();
 const locationStore = useLocationStore();
+const itemStore = useItemStore();
 const activeTab = ref('locations');
 const searchTerm = ref('');
 
-// Replace mock data with store data
+// Get data from stores
 const locations = computed(() => locationStore.getLocations || []);
-const isLoading = computed(() => locationStore.isLoading);
+const items = computed(() => itemStore.getItems || []);
+const isLoading = computed(
+	() => locationStore.isLoading || itemStore.isLoading
+);
 const error = computed(() => locationStore.getError);
 
-// Load locations when component mounts
+// Convert items to virtual reports (same logic as ItemsOverviewPage)
+const reports = computed((): VirtualReport[] => {
+	return items.value.map((item: Item) => ({
+		id: item.id,
+		title: item.name,
+		description: item.description,
+		status: item.status || 'UNKNOWN',
+		location: item.location,
+		dateCreated: item.createdAt,
+		imageUrl: item.imageUrl,
+		reporterName: 'Unbekannt',
+	}));
+});
+
+// Load data when component mounts
 onMounted(async () => {
+	await loadLocations();
+	await loadReports();
+});
+
+const loadLocations = async () => {
 	try {
 		await locationStore.fetchLocations();
 	} catch (error) {
 		console.error('Error loading locations:', error);
 	}
-});
+};
 
+const loadReports = async () => {
+	try {
+		await itemStore.fetchItems();
+	} catch (error) {
+		console.error('Error loading reports:', error);
+	}
+};
+
+// Filter locations based on search
 const filteredLocations = computed(() => {
 	const locationsArray = locations.value;
 	if (!Array.isArray(locationsArray)) {
@@ -203,22 +359,129 @@ const filteredLocations = computed(() => {
 	}
 
 	return locationsArray.filter(
-		(loc) =>
-			loc.name.toLowerCase().includes(searchTerm.value.toLowerCase()) ||
-			loc.description.toLowerCase().includes(searchTerm.value.toLowerCase()) ||
-			loc.building.toLowerCase().includes(searchTerm.value.toLowerCase()) ||
-			loc.room.toLowerCase().includes(searchTerm.value.toLowerCase())
+		(location: Location) =>
+			location.name.toLowerCase().includes(searchTerm.value.toLowerCase()) ||
+			location.building
+				.toLowerCase()
+				.includes(searchTerm.value.toLowerCase()) ||
+			location.description
+				.toLowerCase()
+				.includes(searchTerm.value.toLowerCase())
 	);
 });
+
+// Report statistics for all locations
+const totalFoundReports = computed(() => {
+	return reports.value.filter(
+		(report) => report.status.toUpperCase() === 'FOUND'
+	).length;
+});
+
+const totalLostReports = computed(() => {
+	return reports.value.filter(
+		(report) => report.status.toUpperCase() === 'LOST'
+	).length;
+});
+
+const totalClaimedReports = computed(() => {
+	return reports.value.filter(
+		(report) => report.status.toUpperCase() === 'CLAIMED'
+	).length;
+});
+
+// Functions to get reports for specific locations
+const getReportsForLocation = (locationName: string): VirtualReport[] => {
+	return reports.value.filter(
+		(report) => report.location.toLowerCase() === locationName.toLowerCase()
+	);
+};
+
+const getFoundReportsCount = (locationName: string): number => {
+	return getReportsForLocation(locationName).filter(
+		(report) => report.status.toUpperCase() === 'FOUND'
+	).length;
+};
+
+const getLostReportsCount = (locationName: string): number => {
+	return getReportsForLocation(locationName).filter(
+		(report) => report.status.toUpperCase() === 'LOST'
+	).length;
+};
+
+const getClaimedReportsCount = (locationName: string): number => {
+	return getReportsForLocation(locationName).filter(
+		(report) => report.status.toUpperCase() === 'CLAIMED'
+	).length;
+};
+
+const getRecentReportsForLocation = (locationName: string): VirtualReport[] => {
+	return getReportsForLocation(locationName)
+		.sort(
+			(a, b) =>
+				new Date(b.dateCreated).getTime() - new Date(a.dateCreated).getTime()
+		)
+		.slice(0, 3);
+};
+
+// Status helpers (same as ItemsOverviewPage)
+const getStatusColor = (status: string) => {
+	switch (status.toUpperCase()) {
+		case 'FOUND':
+			return 'success';
+		case 'LOST':
+			return 'warning';
+		case 'CLAIMED':
+			return 'medium';
+		case 'RETURNED':
+			return 'success';
+		default:
+			return 'primary';
+	}
+};
+
+const getStatusIcon = (status: string) => {
+	switch (status.toUpperCase()) {
+		case 'FOUND':
+			return eyeOutline;
+		case 'LOST':
+			return searchOutline;
+		case 'CLAIMED':
+			return checkmarkOutline;
+		case 'RETURNED':
+			return checkmarkCircleOutline;
+		default:
+			return flagOutline;
+	}
+};
+
+// Time helpers
+const getTimeAgo = (dateString: string) => {
+	const date = new Date(dateString);
+	const now = new Date();
+	const diffInHours = Math.floor(
+		(now.getTime() - date.getTime()) / (1000 * 60 * 60)
+	);
+
+	if (diffInHours < 1) return 'Vor wenigen Minuten';
+	if (diffInHours < 24) return `Vor ${diffInHours} Stunden`;
+
+	const diffInDays = Math.floor(diffInHours / 24);
+	if (diffInDays < 7) return `Vor ${diffInDays} Tagen`;
+
+	return date.toLocaleDateString('de-DE');
+};
 
 const formatDate = (dateString: string) => {
 	return new Date(dateString).toLocaleDateString('de-DE', {
 		day: '2-digit',
 		month: '2-digit',
 		year: 'numeric',
+		hour: '2-digit',
+		minute: '2-digit',
 	});
 };
 
+// Navigation functions
 const navigateToLocation = (locationId: number) => {
 	router.push(`/locations/${locationId}`);
 };
@@ -227,6 +490,23 @@ const editLocation = (locationId: number) => {
 	router.push(`/locations/${locationId}/edit`);
 };
 
+const navigateToAddLocation = () => {
+	router.push('/locations/add');
+};
+
+const navigateToReport = (reportId: number) => {
+	router.push(`/items/${reportId}`);
+};
+
+const viewAllReportsAtLocation = (locationName: string) => {
+	// Navigate to items overview with location filter
+	router.push({
+		path: '/items/overview',
+		query: { location: locationName },
+	});
+};
+
+// Watch for tab changes
 watch(activeTab, (tab) => {
 	if (tab === 'items') {
 		router.push('/items/overview');
@@ -234,18 +514,70 @@ watch(activeTab, (tab) => {
 });
 </script>
 
-<!-- Keep your existing styles -->
 <style scoped>
 .locations-container {
 	padding: 16px;
 	min-height: 100vh;
 }
 
+.search-section {
+	margin-bottom: 20px;
+}
+
 .custom-searchbar {
 	--background: var(--ion-color-light);
 	--border-radius: 12px;
 	--box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-	margin: 8px 16px;
+}
+
+.reports-summary {
+	background: white;
+	border-radius: 12px;
+	padding: 16px;
+	margin-bottom: 20px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.reports-summary h3 {
+	color: var(--ion-color-dark);
+	margin: 0 0 16px 0;
+	font-size: 1.1em;
+	font-weight: 600;
+}
+
+.summary-stats {
+	display: flex;
+	justify-content: space-around;
+	flex-wrap: wrap;
+	gap: 12px;
+}
+
+.stat-item {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	font-size: 0.9em;
+	font-weight: 500;
+	background: var(--ion-color-light-tint);
+	padding: 8px 12px;
+	border-radius: 8px;
+	flex: 1;
+	min-width: 120px;
+	justify-content: center;
+}
+
+.loading-container {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	padding: 60px 20px;
+	text-align: center;
+}
+
+.loading-container p {
+	margin-top: 16px;
+	color: var(--ion-color-medium);
 }
 
 .empty-state {
@@ -278,8 +610,8 @@ watch(activeTab, (tab) => {
 
 .locations-grid {
 	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-	gap: 12px;
+	grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+	gap: 16px;
 	animation: fadeInUp 0.6s ease-out;
 }
 
@@ -303,8 +635,8 @@ watch(activeTab, (tab) => {
 .card-header {
 	background: linear-gradient(
 		135deg,
-		var(--ion-color-primary-tint),
-		var(--ion-color-primary)
+		var(--ion-color-primary),
+		var(--ion-color-primary-shade)
 	);
 	color: white;
 	position: relative;
@@ -345,12 +677,13 @@ watch(activeTab, (tab) => {
 	font-weight: 600;
 	margin: 0;
 	flex: 1;
+	margin-right: 12px;
 }
 
 .building-chip {
 	--background: rgba(255, 255, 255, 0.2);
 	--color: white;
-	margin-left: 12px;
+	margin: 0;
 }
 
 .chip-icon {
@@ -381,10 +714,134 @@ watch(activeTab, (tab) => {
 	padding: 16px;
 }
 
-.description {
+.reports-at-location {
+	margin-bottom: 16px;
+	padding-bottom: 16px;
+	border-bottom: 1px solid var(--ion-color-light-shade);
+}
+
+.reports-at-location h4 {
 	color: var(--ion-color-dark);
-	line-height: 1.4;
+	margin: 0 0 12px 0;
+	font-size: 1em;
+	font-weight: 600;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.section-icon {
+	font-size: 16px;
+	color: var(--ion-color-primary);
+}
+
+.no-reports {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	color: var(--ion-color-medium);
+	font-size: 0.9em;
+	padding: 8px 12px;
+	background: var(--ion-color-light-tint);
+	border-radius: 8px;
+}
+
+.no-reports-icon {
+	font-size: 16px;
+}
+
+.reports-stats {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
 	margin-bottom: 12px;
+}
+
+.report-chip {
+	--background: rgba(var(--ion-color-rgb), 0.1);
+	font-size: 0.8em;
+}
+
+.recent-reports {
+	margin-top: 12px;
+}
+
+.recent-reports-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 8px;
+	font-size: 0.9em;
+	color: var(--ion-color-medium);
+	font-weight: 500;
+}
+
+.recent-reports-list {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+.recent-report-item {
+	display: flex;
+	align-items: center;
+	padding: 8px;
+	background: var(--ion-color-light-tint);
+	border-radius: 6px;
+	cursor: pointer;
+	transition: background 0.2s ease;
+}
+
+.recent-report-item:hover {
+	background: var(--ion-color-light-shade);
+}
+
+.report-info {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	flex: 1;
+}
+
+.report-icon {
+	font-size: 14px;
+}
+
+.report-text {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+}
+
+.report-title {
+	font-size: 0.85em;
+	font-weight: 500;
+	color: var(--ion-color-dark);
+}
+
+.report-time {
+	font-size: 0.75em;
+	color: var(--ion-color-medium);
+}
+
+.description {
+	margin-bottom: 16px;
+}
+
+.description h4 {
+	color: var(--ion-color-dark);
+	margin: 0 0 8px 0;
+	font-size: 1em;
+	font-weight: 600;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.description p {
+	color: var(--ion-color-medium-shade);
+	line-height: 1.4;
+	margin: 0;
 	font-size: 0.9em;
 	display: -webkit-box;
 	-webkit-line-clamp: 2;
@@ -424,19 +881,7 @@ watch(activeTab, (tab) => {
 	padding: 8px 12px 12px;
 	border-top: 1px solid var(--ion-color-light-shade);
 	background: var(--ion-color-light-tint);
-}
-
-.loading-container {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	justify-content: center;
-	padding: 60px 20px;
-}
-
-.loading-container p {
-	margin-top: 16px;
-	color: var(--ion-color-medium);
+	gap: 8px;
 }
 
 @keyframes fadeInUp {
@@ -465,32 +910,38 @@ watch(activeTab, (tab) => {
 @media (max-width: 768px) {
 	.locations-grid {
 		grid-template-columns: 1fr;
-		gap: 12px;
 	}
 
 	.locations-container {
 		padding: 12px;
 	}
 
-	.header-content {
+	.summary-stats {
 		flex-direction: column;
-		align-items: flex-start;
-		gap: 8px;
 	}
 
-	.building-chip {
-		margin-left: 0;
+	.stat-item {
+		justify-content: flex-start;
 	}
 
 	.card-actions {
 		flex-direction: column;
 		gap: 8px;
 	}
+
+	.header-content {
+		flex-direction: column;
+		gap: 8px;
+	}
+
+	.building-chip {
+		align-self: flex-start;
+	}
 }
 
 @media (min-width: 1200px) {
 	.locations-grid {
-		grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+		grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
 	}
 }
 </style>

@@ -2,6 +2,9 @@
 FROM node:20.13.1-alpine AS build-stage
 WORKDIR /app
 
+ARG VITE_API_URL
+ARG BASE_URL
+
 # Kopiere package.json und package-lock.json
 COPY package*.json ./
 

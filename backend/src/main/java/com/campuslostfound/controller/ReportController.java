@@ -1,11 +1,9 @@
 package com.campuslostfound.controller;
 
+import com.campuslostfound.mapper.ReportMapper;
 import com.campuslostfound.model.Report;
-import com.campuslostfound.model.ReportStatus;
-import com.campuslostfound.model.ReportType;
-import com.campuslostfound.model.User;
 import com.campuslostfound.service.ReportService;
-import com.campuslostfound.service.UserService;
+import com.campuslostfound.dto.ReportDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,26 +19,19 @@ import java.util.Optional;
 public class ReportController {
 
     private final ReportService reportService;
-    private final UserService userService;
+    private final ReportMapper reportMapper;
 
     @GetMapping
-    public ResponseEntity<List<Report>> getAllReports(
-            @RequestParam(required = false) ReportStatus status,
-            @RequestParam(required = false) ReportType type) {
-        
-        if (status != null) {
-            return ResponseEntity.ok(reportService.getReportsByStatus(status));
-        } else if (type != null) {
-            return ResponseEntity.ok(reportService.getReportsByType(type));
-        } else {
-            return ResponseEntity.ok(reportService.getAllReports());
-        }
+    public ResponseEntity<List<ReportDTO>> getAllReports() {
+        List<Report> reports = reportService.getAllReports();
+        List<ReportDTO> reportDTOs = reportMapper.toDTOList(reports);
+        return ResponseEntity.ok(reportDTOs);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Report> getReportById(@PathVariable Long id) {
+    public ResponseEntity<ReportDTO> getReportById(@PathVariable Long id) {
         Optional<Report> report = reportService.getReportById(id);
-        return report.map(ResponseEntity::ok)
+        return report.map(r -> ResponseEntity.ok(reportMapper.toDTO(r)))
                 .orElse(ResponseEntity.notFound().build());
     }
 
@@ -48,7 +39,7 @@ public class ReportController {
     public ResponseEntity<Report> createReport(@RequestBody Report report) {
         // Setze Erstellungsdatum
         report.setDateCreated(LocalDateTime.now());
-        
+
         Report savedReport = reportService.saveReport(report);
         return ResponseEntity.status(HttpStatus.CREATED).body(savedReport);
     }

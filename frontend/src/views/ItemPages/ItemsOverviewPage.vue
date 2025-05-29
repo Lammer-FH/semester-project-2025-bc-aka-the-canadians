@@ -133,7 +133,7 @@
 								<ion-icon
 									:icon="locationOutline"
 									class="detail-icon"></ion-icon>
-								{{ report.location }}
+								{{ report.location.name }}
 							</div>
 							<div class="detail-item">
 								<ion-icon :icon="timeOutline" class="detail-icon"></ion-icon>

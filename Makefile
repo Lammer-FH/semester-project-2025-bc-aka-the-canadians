@@ -17,6 +17,7 @@ frontend:
 	@echo "Installing frontend dependencies and running application (locally):"
 	cd $(FRONTEND_PATH) && npm install && npm run dev
 
+
 frontend-docker:
 	@echo "Building and running frontend (with Docker):"
 	cd $(FRONTEND_PATH) && docker compose -f ../$(DOCKER_COMPOSE_PATH) up frontend --build

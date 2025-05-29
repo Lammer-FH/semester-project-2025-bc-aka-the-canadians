@@ -163,31 +163,31 @@ The following are the key wireframes representing the core user interface of the
 
 1. **Home (Items Tab)**
    Displays a searchable list of all found items. Users can search for items and select individual items to view more details.
-   ![Home Items](images/home_items.png)
+   ![Home Items](images/1/home_items.png)
 2. **Home (Locations Tab)**
    Lists all predefined campus locations where items were found or lost. Users can search for locations and select individual locations to view more details.
-   ![Home Locations](images/home_locations.png)
+   ![Home Locations](images/1/home_locations.png)
 3. **User Profile**
    Allows editing of User Data.
-   ![User Profile](images/user_profile.png)
+   ![User Profile](images/1/user_profile.png)
 4. **Report Item**
    Allows reporting of lost or found items.
-   ![Report Item](images/report_item.png)
+   ![Report Item](images/1/report_item.png)
 5. **Item Details**
    Displays item details and allows for deleting, editing and claiming the item.
-   ![Item Details](images/item_details.png)
+   ![Item Details](images/1/item_details.png)
 6. **Edit Item**
    Allows for editing previously reported items.
-   ![Edit Item](images/edit_item.png)
+   ![Edit Item](images/1/edit_item.png)
 7. **Add Location**
    Allows adding of new locations.
-   ![Add Location](images/add_location.png)
+   ![Add Location](images/1/add_location.png)
 8. **Location Details**
    Displays location details and allows for deleting and editing the location.
-   ![Location Details](images/location_details.png)
+   ![Location Details](images/1/location_details.png)
 9. **Edit Location**
    Allows for editing previously added locations.
-   ![Edit Location](images/edit_location.png)
+   ![Edit Location](images/1/edit_location.png)
 
 ---
 

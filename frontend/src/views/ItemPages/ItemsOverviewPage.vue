@@ -501,7 +501,7 @@ const editItem = (itemId: number) => {
 
 watch(activeTab, (tab) => {
 	if (tab === 'locations') {
-		router.push('/locations/home');
+		router.push('/locations/overview');
 	}
 });
 </script>

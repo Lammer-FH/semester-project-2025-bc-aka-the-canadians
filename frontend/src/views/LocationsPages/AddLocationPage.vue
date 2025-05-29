@@ -126,7 +126,7 @@
 								'item-filled': location.room,
 							}">
 							<ion-label position="stacked" class="custom-label">
-								<ion-icon :icon="homeOutline" class="label-icon"></ion-icon>
+								<ion-icon :icon="overviewOutline" class="label-icon"></ion-icon>
 								Raum *
 							</ion-label>
 							<ion-input
@@ -179,7 +179,6 @@ import {
 	documentTextOutline,
 	businessOutline,
 	layersOutline,
-	homeOutline,
 	alertCircleOutline,
 	informationCircleOutline,
 	checkmarkCircleOutline,

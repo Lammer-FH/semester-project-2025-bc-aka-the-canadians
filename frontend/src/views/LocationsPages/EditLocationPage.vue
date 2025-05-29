@@ -135,7 +135,7 @@
 								'item-filled': location.room,
 							}">
 							<ion-label position="stacked" class="custom-label">
-								<ion-icon :icon="homeOutline" class="label-icon"></ion-icon>
+								<ion-icon :icon="overviewOutline" class="label-icon"></ion-icon>
 								Raum *
 							</ion-label>
 							<ion-input
@@ -211,7 +211,6 @@ import {
 	documentTextOutline,
 	businessOutline,
 	layersOutline,
-	homeOutline,
 	alertCircleOutline,
 	informationCircleOutline,
 	checkmarkCircleOutline,
@@ -412,7 +411,7 @@ const confirmDelete = async () => {
 	try {
 		await locationStore.deleteLocation(location.value.id);
 		// Navigate back to locations list
-		router.push('/locations/home');
+		router.push('/locations/overview');
 	} catch (error) {
 		console.error('Error deleting location:', error);
 		// TODO: Show error toast

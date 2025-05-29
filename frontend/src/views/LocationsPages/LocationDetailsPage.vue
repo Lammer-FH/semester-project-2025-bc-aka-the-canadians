@@ -43,7 +43,9 @@
 									Etage {{ location.floor }}
 								</div>
 								<div class="info-item">
-									<ion-icon :icon="homeOutline" class="info-icon"></ion-icon>
+									<ion-icon
+										:icon="overviewOutline"
+										class="info-icon"></ion-icon>
 									Raum {{ location.room }}
 								</div>
 							</div>
@@ -83,7 +85,9 @@
 							</div>
 						</div>
 						<div class="metadata-item">
-							<ion-icon :icon="homeOutline" class="metadata-icon"></ion-icon>
+							<ion-icon
+								:icon="overviewOutline"
+								class="metadata-icon"></ion-icon>
 							<div class="metadata-content">
 								<span class="metadata-label">Raum</span>
 								<span class="metadata-value">{{ location.room }}</span>
@@ -206,7 +210,6 @@ import {
 	locationOutline,
 	businessOutline,
 	layersOutline,
-	homeOutline,
 	createOutline,
 	trashOutline,
 	timeOutline,
@@ -367,7 +370,7 @@ const confirmDelete = async () => {
 
 	try {
 		await locationStore.deleteLocation(location.value.id);
-		router.push('/locations/home');
+		router.push('/locations/overview');
 	} catch (error) {
 		console.error('Error deleting location:', error);
 		// TODO: Show error toast

@@ -88,7 +88,9 @@
 									<span>{{ location.floor }}. Etage</span>
 								</div>
 								<div class="detail-item">
-									<ion-icon :icon="homeOutline" class="detail-icon"></ion-icon>
+									<ion-icon
+										:icon="overviewOutline"
+										class="detail-icon"></ion-icon>
 									<span>Raum {{ location.room }}</span>
 								</div>
 							</ion-card-subtitle>
@@ -164,7 +166,6 @@ import {
 	addOutline,
 	businessOutline,
 	layersOutline,
-	homeOutline,
 	timeOutline,
 	refreshOutline,
 	eyeOutline,
@@ -228,7 +229,7 @@ const editLocation = (locationId: number) => {
 
 watch(activeTab, (tab) => {
 	if (tab === 'items') {
-		router.push('/items/home');
+		router.push('/items/overview');
 	}
 });
 </script>

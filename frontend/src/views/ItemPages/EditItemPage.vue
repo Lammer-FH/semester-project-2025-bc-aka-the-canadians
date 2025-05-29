@@ -447,7 +447,7 @@ const confirmDelete = async () => {
 	try {
 		await itemStore.deleteItem(item.value.id);
 		// Navigate back to items list
-		router.push('/items/home');
+		router.push('/items/overview');
 	} catch (error) {
 		console.error('Error deleting item:', error);
 		// TODO: Show error toast

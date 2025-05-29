@@ -19,17 +19,11 @@ public class OpenApiConfig {
                 .info(new Info()
                         .title("Campus Lost & Found API")
                         .description("API für das Campus Lost & Found System")
-                        .version("1.0.0")
-                        .contact(new Contact()
-                                .name("Campus Lost & Found Team")
-                                .email("support@campus-lost-found.de"))
-                        .license(new License()
-                                .name("MIT License")
-                                .url("https://opensource.org/licenses/MIT")))
+                        .version("1.0.0"))
                 .servers(List.of(
                         new Server()
                                 .url("http://localhost:8080/api")
-                                .description("Lokaler Entwicklungsserver")
+                                .description("Dev Server")
                 ));
     }
 } 

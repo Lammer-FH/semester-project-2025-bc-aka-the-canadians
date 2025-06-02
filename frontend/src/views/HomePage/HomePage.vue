@@ -6,8 +6,7 @@
 					<ion-icon :icon="searchOutline" class="hero-icon"></ion-icon>
 					<h1>Campus Lost & Found</h1>
 					<p class="hero-subtitle">
-						Hilf anderen dabei, ihre verlorenen Gegenstände wiederzufinden oder
-						melde einen Fund
+						Help others find their lost items or report a found item
 					</p>
 					<div class="hero-buttons">
 						<ion-button
@@ -16,7 +15,7 @@
 							@click="navigateToItems"
 							class="primary-button">
 							<ion-icon :icon="eyeOutline" slot="start"></ion-icon>
-							Verlorene Gegenstände durchsuchen
+							Browse Lost Items
 						</ion-button>
 						<ion-button
 							expand="block"
@@ -25,24 +24,24 @@
 							@click="navigateToReport"
 							class="secondary-button">
 							<ion-icon :icon="megaphoneOutline" slot="start"></ion-icon>
-							Gegenstand melden
+							Report Item
 						</ion-button>
 					</div>
 				</div>
 			</div>
 
 			<div class="features-section">
-				<h2>Wie funktioniert es?</h2>
+				<h2>How does it work?</h2>
 				<div class="features-grid">
 					<div class="feature-card">
 						<ion-icon
 							:icon="megaphoneOutline"
 							class="feature-icon"
 							color="primary"></ion-icon>
-						<h3>Melden</h3>
+						<h3>Report</h3>
 						<p>
-							Hast du einen Gegenstand gefunden oder verloren? Erstelle einfach
-							einen Bericht mit allen wichtigen Details.
+							Have you found or lost an item? Simply create a report with all
+							the important details.
 						</p>
 					</div>
 					<div class="feature-card">
@@ -50,10 +49,10 @@
 							:icon="searchOutline"
 							class="feature-icon"
 							color="success"></ion-icon>
-						<h3>Suchen</h3>
+						<h3>Search</h3>
 						<p>
-							Durchsuche alle gemeldeten Gegenstände nach Kategorie, Standort
-							oder mit der Suchfunktion.
+							Browse all reported items by category, location, or using the
+							search function.
 						</p>
 					</div>
 					<div class="feature-card">
@@ -61,77 +60,77 @@
 							:icon="handRightOutline"
 							class="feature-icon"
 							color="warning"></ion-icon>
-						<h3>Abholen</h3>
+						<h3>Pickup</h3>
 						<p>
-							Gefunden, was du suchst? Markiere den Gegenstand als abgeholt und
-							schließe den Fall ab.
+							Found what you're looking for? Mark the item as claimed and close
+							the case.
 						</p>
 					</div>
 				</div>
 			</div>
 
 			<div class="stats-section">
-				<h2>Erfolgsgeschichten</h2>
+				<h2>Success Stories</h2>
 				<div class="stats-grid">
 					<div class="stat-card">
 						<div class="stat-number">{{ stats.totalReports }}</div>
-						<div class="stat-label">Berichte erstellt</div>
+						<div class="stat-label">Reports Created</div>
 					</div>
 					<div class="stat-card">
 						<div class="stat-number">{{ stats.itemsReturned }}</div>
-						<div class="stat-label">Gegenstände zurückgegeben</div>
+						<div class="stat-label">Items Returned</div>
 					</div>
 					<div class="stat-card">
 						<div class="stat-number">{{ stats.activeUsers }}</div>
-						<div class="stat-label">Aktive Nutzer</div>
+						<div class="stat-label">Active Users</div>
 					</div>
 					<div class="stat-card">
 						<div class="stat-number">{{ stats.locations }}</div>
-						<div class="stat-label">Campus-Standorte</div>
+						<div class="stat-label">Campus Locations</div>
 					</div>
 				</div>
 			</div>
 
 			<div class="how-it-works-section">
-				<h2>So einfach geht's</h2>
+				<h2>It's that simple</h2>
 				<div class="steps-container">
 					<div class="step">
 						<div class="step-number">1</div>
 						<div class="step-content">
-							<h3>Gegenstand gefunden oder verloren?</h3>
+							<h3>Found or lost an item?</h3>
 							<p>
-								Klicke auf "Gegenstand melden" und fülle das Formular mit allen
-								wichtigen Details aus.
+								Click on "Report Item" and fill out the form with all the
+								important details.
 							</p>
 						</div>
 					</div>
 					<div class="step">
 						<div class="step-number">2</div>
 						<div class="step-content">
-							<h3>Bericht wird veröffentlicht</h3>
+							<h3>Report gets published</h3>
 							<p>
-								Dein Bericht erscheint sofort in der App und ist für alle Nutzer
-								sichtbar.
+								Your report appears immediately in the app and is visible to all
+								users.
 							</p>
 						</div>
 					</div>
 					<div class="step">
 						<div class="step-number">3</div>
 						<div class="step-content">
-							<h3>Andere können suchen und finden</h3>
+							<h3>Others can search and find</h3>
 							<p>
-								Nutzer können nach verlorenen Gegenständen suchen und bei
-								Übereinstimmung Kontakt aufnehmen.
+								Users can search for lost items and make contact when there's a
+								match.
 							</p>
 						</div>
 					</div>
 					<div class="step">
 						<div class="step-number">4</div>
 						<div class="step-content">
-							<h3>Erfolgreiche Rückgabe</h3>
+							<h3>Successful return</h3>
 							<p>
-								Wenn ein Gegenstand abgeholt wurde, wird der Bericht als
-								erfolgreich abgeschlossen markiert.
+								When an item is picked up, the report is marked as successfully
+								completed.
 							</p>
 						</div>
 					</div>
@@ -139,53 +138,51 @@
 			</div>
 
 			<div class="benefits-section">
-				<h2>Warum Campus Lost & Found nutzen?</h2>
+				<h2>Why use Campus Lost & Found?</h2>
 				<div class="benefits-grid">
 					<div class="benefit-item">
 						<ion-icon :icon="flashOutline" color="primary"></ion-icon>
 						<div>
-							<h4>Schnell & Effizient</h4>
+							<h4>Fast & Efficient</h4>
 							<p>
-								Berichte werden sofort veröffentlicht und sind für alle sichtbar
+								Reports are published immediately and are visible to everyone
 							</p>
 						</div>
 					</div>
 					<div class="benefit-item">
 						<ion-icon :icon="locationOutline" color="success"></ion-icon>
 						<div>
-							<h4>Standort-basiert</h4>
-							<p>
-								Suche gezielt nach Gegenständen an bestimmten Campus-Standorten
-							</p>
+							<h4>Location-based</h4>
+							<p>Search specifically for items at certain campus locations</p>
 						</div>
 					</div>
 					<div class="benefit-item">
 						<ion-icon :icon="peopleOutline" color="warning"></ion-icon>
 						<div>
-							<h4>Community-getrieben</h4>
-							<p>Hilf anderen und lass dir von der Campus-Community helfen</p>
+							<h4>Community-driven</h4>
+							<p>Help others and get help from the campus community</p>
 						</div>
 					</div>
 					<div class="benefit-item">
 						<ion-icon :icon="shieldCheckmarkOutline" color="danger"></ion-icon>
 						<div>
-							<h4>Sicher & Vertrauenswürdig</h4>
-							<p>Alle Berichte werden moderiert und sind nachvollziehbar</p>
+							<h4>Safe & Trustworthy</h4>
+							<p>All reports are moderated and traceable</p>
 						</div>
 					</div>
 				</div>
 			</div>
 
 			<div class="cta-section">
-				<h2>Bereit loszulegen?</h2>
+				<h2>Ready to get started?</h2>
 				<p>
-					Werde Teil der Campus Lost & Found Community und hilf dabei, verlorene
-					Gegenstände zu ihren Besitzern zurückzubringen.
+					Become part of the Campus Lost & Found community and help return lost
+					items to their owners.
 				</p>
 				<div class="cta-buttons">
 					<ion-button expand="block" size="large" @click="navigateToReport">
 						<ion-icon :icon="addOutline" slot="start"></ion-icon>
-						Ersten Bericht erstellen
+						Create First Report
 					</ion-button>
 					<ion-button
 						expand="block"
@@ -193,7 +190,7 @@
 						fill="outline"
 						@click="navigateToItems">
 						<ion-icon :icon="listOutline" slot="start"></ion-icon>
-						Alle Berichte durchsuchen
+						Browse All Reports
 					</ion-button>
 				</div>
 			</div>

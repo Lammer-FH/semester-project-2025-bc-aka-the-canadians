@@ -1,6 +1,6 @@
 <template>
 	<template-page
-		:headline="'Gegenstand melden'"
+		:headline="'Report Item'"
 		:leftFooterButton="leftFooterButton"
 		:rightFooterButton="rightFooterButton"
 		@leftFooterButtonClicked="handleCancel"
@@ -12,25 +12,22 @@
 						class="progress-fill"
 						:style="{ width: `${completionPercentage}%` }"></div>
 				</div>
-				<p class="progress-text">{{ completionPercentage }}% ausgefüllt</p>
+				<p class="progress-text">{{ completionPercentage }}% completed</p>
 			</div>
 
 			<div class="form-header">
 				<ion-icon :icon="megaphoneOutline" class="header-icon"></ion-icon>
-				<h2>Neuen Bericht erstellen</h2>
-				<p>
-					Hilf anderen dabei, verlorene Gegenstände wiederzufinden oder melde
-					einen Fund
-				</p>
+				<h2>Create New Report</h2>
+				<p>Help others find lost items or report a found item</p>
 			</div>
 
 			<div class="form-content">
 				<div class="input-group">
 					<ion-select
 						v-model="reportData.type"
-						label="Art des Berichts *"
+						label="Report Type *"
 						label-placement="stacked"
-						placeholder="Wähle eine Option"
+						placeholder="Choose an option"
 						interface="popover"
 						class="modern-select"
 						:class="{
@@ -42,8 +39,8 @@
 							<div class="select-option">
 								<ion-icon :icon="searchOutline" class="option-icon"></ion-icon>
 								<div>
-									<strong>Verlustbericht</strong>
-									<p>Ich habe einen Gegenstand verloren</p>
+									<strong>Lost Report</strong>
+									<p>I have lost an item</p>
 								</div>
 							</div>
 						</ion-select-option>
@@ -51,8 +48,8 @@
 							<div class="select-option">
 								<ion-icon :icon="eyeOutline" class="option-icon"></ion-icon>
 								<div>
-									<strong>Fundbericht</strong>
-									<p>Ich habe einen Gegenstand gefunden</p>
+									<strong>Found Report</strong>
+									<p>I have found an item</p>
 								</div>
 							</div>
 						</ion-select-option>
@@ -66,9 +63,9 @@
 				<div class="input-group">
 					<ion-input
 						v-model="reportData.itemName"
-						label="Name des Gegenstands *"
+						label="Item Name *"
 						label-placement="stacked"
-						placeholder="z.B. iPhone 14, Schlüsselbund, Rucksack..."
+						placeholder="e.g. iPhone 14, Key Chain, Backpack..."
 						class="modern-input"
 						:class="{
 							'input-filled': reportData.itemName,
@@ -84,9 +81,9 @@
 				<div class="input-group">
 					<ion-textarea
 						v-model="reportData.description"
-						label="Beschreibung"
+						label="Description"
 						label-placement="stacked"
-						placeholder="Beschreibe den Gegenstand detailliert: Farbe, Größe, besondere Merkmale, wo du ihn verloren/gefunden hast..."
+						placeholder="Describe the item in detail: color, size, special features, where you lost/found it..."
 						class="modern-textarea"
 						:class="{
 							'textarea-filled': reportData.description,
@@ -97,9 +94,9 @@
 				<div class="input-group">
 					<ion-select
 						v-model="reportData.location"
-						label="Standort *"
+						label="Location *"
 						label-placement="stacked"
-						placeholder="Wähle einen Standort"
+						placeholder="Choose a location"
 						interface="popover"
 						class="modern-select"
 						:class="{
@@ -111,11 +108,11 @@
 							v-for="location in availableLocations"
 							:key="location.id"
 							:value="location.name">
-							{{ location.name }} - {{ location.building }}, Etage
+							{{ location.name }} - {{ location.building }}, Floor
 							{{ location.floor }}
 						</ion-select-option>
 						<ion-select-option value="other">
-							<strong>Anderer Standort (bitte in Beschreibung angeben)</strong>
+							<strong>Other Location (please specify in description)</strong>
 						</ion-select-option>
 					</ion-select>
 					<div v-if="errors.location" class="error-message">
@@ -127,18 +124,17 @@
 				<div class="input-group">
 					<h3 class="section-title">
 						<ion-icon :icon="personOutline" class="section-icon"></ion-icon>
-						Deine Kontaktinformationen
+						Your Contact Information
 					</h3>
 					<p class="section-description">
-						Damit andere dich kontaktieren können, wenn sie deinen Gegenstand
-						gefunden haben.
+						So others can contact you if they have found your item.
 					</p>
 
 					<ion-input
 						v-model="reportData.reporterName"
-						label="Dein Name *"
+						label="Your Name *"
 						label-placement="stacked"
-						placeholder="Vor- und Nachname"
+						placeholder="First and Last Name"
 						class="modern-input"
 						:class="{
 							'input-filled': reportData.reporterName,
@@ -152,9 +148,9 @@
 
 					<ion-input
 						v-model="reportData.contactInfo"
-						label="Kontakt (optional)"
+						label="Contact (optional)"
 						label-placement="stacked"
-						placeholder="E-Mail oder Telefon"
+						placeholder="Email or Phone"
 						class="modern-input"
 						:class="{
 							'input-filled': reportData.contactInfo,
@@ -165,14 +161,14 @@
 					<div class="image-upload-section">
 						<h3 class="upload-title">
 							<ion-icon :icon="cameraOutline" class="title-icon"></ion-icon>
-							Foto hinzufügen (optional)
+							Add Photo (optional)
 						</h3>
 						<p class="upload-description">
-							Ein Foto hilft anderen, den Gegenstand zu identifizieren
+							A photo helps others identify the item
 						</p>
 
 						<div v-if="imagePreview" class="image-preview-container">
-							<img :src="imagePreview" alt="Vorschau" class="image-preview" />
+							<img :src="imagePreview" alt="Preview" class="image-preview" />
 							<ion-button
 								fill="clear"
 								color="danger"
@@ -189,7 +185,7 @@
 								class="upload-btn"
 								@click="takePhoto">
 								<ion-icon :icon="cameraOutline" slot="start"></ion-icon>
-								Foto aufnehmen
+								Take Photo
 							</ion-button>
 							<ion-button
 								expand="block"
@@ -197,7 +193,7 @@
 								class="upload-btn"
 								@click="triggerFileInput">
 								<ion-icon :icon="cloudUploadOutline" slot="start"></ion-icon>
-								Foto hochladen
+								Upload Photo
 							</ion-button>
 						</div>
 
@@ -213,7 +209,7 @@
 				<div class="tips-section">
 					<h3 class="tips-title">
 						<ion-icon :icon="bulbOutline" class="title-icon"></ion-icon>
-						Tipps für einen guten Bericht
+						Tips for a Good Report
 					</h3>
 					<div class="tips-list">
 						<div class="tip-item">
@@ -222,8 +218,8 @@
 								color="success"></ion-icon>
 							<div class="tip-text">
 								<p>
-									<strong>Sei detailliert:</strong> Je mehr Details, desto
-									besser können andere helfen
+									<strong>Be detailed:</strong> The more details, the better
+									others can help
 								</p>
 							</div>
 						</div>
@@ -233,8 +229,8 @@
 								color="success"></ion-icon>
 							<div class="tip-text">
 								<p>
-									<strong>Füge ein Foto hinzu:</strong> Bilder helfen enorm bei
-									der Identifikation
+									<strong>Add a photo:</strong> Images help enormously with
+									identification
 								</p>
 							</div>
 						</div>
@@ -244,8 +240,8 @@
 								color="success"></ion-icon>
 							<div class="tip-text">
 								<p>
-									<strong>Wähle den richtigen Standort:</strong> Wo hast du den
-									Gegenstand zuletzt gesehen?
+									<strong>Choose the right location:</strong> Where did you last
+									see the item?
 								</p>
 							</div>
 						</div>
@@ -255,8 +251,8 @@
 								color="success"></ion-icon>
 							<div class="tip-text">
 								<p>
-									<strong>Bleib erreichbar:</strong> Gib korrekte Kontaktdaten
-									an
+									<strong>Stay reachable:</strong> Provide correct contact
+									information
 								</p>
 							</div>
 						</div>
@@ -330,17 +326,17 @@ const fileInput = ref<HTMLInputElement>();
 const availableLocations = computed(() => locationStore.getLocations || []);
 
 const leftFooterButton = computed(() => ({
-	name: 'Abbrechen',
+	name: 'Cancel',
 	color: 'medium',
 	icon: closeCircleOutline,
 }));
 
 const rightFooterButton = computed(() => ({
 	name: isSubmitting.value
-		? 'Bericht wird gesendet...'
+		? 'Submitting Report...'
 		: isValid.value
-		? 'Bericht einreichen'
-		: 'Felder ausfüllen',
+		? 'Submit Report'
+		: 'Fill Required Fields',
 	color: isValid.value ? 'primary' : 'medium',
 	icon: checkmarkCircleOutline,
 	disabled: !isValid.value || isSubmitting.value,
@@ -391,25 +387,25 @@ const validateField = (fieldName: keyof typeof errors.value) => {
 
 	switch (fieldName) {
 		case 'type':
-			errors.value.type = !value ? 'Bitte wähle die Art des Berichts aus' : '';
+			errors.value.type = !value ? 'Please select the report type' : '';
 			break;
 		case 'itemName':
 			if (!value) {
-				errors.value.itemName = 'Name des Gegenstands ist erforderlich';
+				errors.value.itemName = 'Item name is required';
 			} else if (value.length < 2) {
-				errors.value.itemName = 'Name muss mindestens 2 Zeichen lang sein';
+				errors.value.itemName = 'Name must be at least 2 characters long';
 			} else {
 				errors.value.itemName = '';
 			}
 			break;
 		case 'location':
-			errors.value.location = !value ? 'Bitte wähle einen Standort aus' : '';
+			errors.value.location = !value ? 'Please select a location' : '';
 			break;
 		case 'reporterName':
 			if (!value) {
-				errors.value.reporterName = 'Dein Name ist erforderlich';
+				errors.value.reporterName = 'Your name is required';
 			} else if (value.length < 2) {
-				errors.value.reporterName = 'Name muss mindestens 2 Zeichen lang sein';
+				errors.value.reporterName = 'Name must be at least 2 characters long';
 			} else {
 				errors.value.reporterName = '';
 			}
@@ -438,15 +434,15 @@ const handleSubmit = async () => {
 		const enhancedDescription = [
 			reportData.value.description,
 			'',
-			`--- Berichtinformationen ---`,
-			`Berichtstyp: ${
-				reportData.value.type === 'LOST' ? 'Verlustbericht' : 'Fundbericht'
+			`--- Report Information ---`,
+			`Report Type: ${
+				reportData.value.type === 'LOST' ? 'Lost Report' : 'Found Report'
 			}`,
-			`Gemeldet von: ${reportData.value.reporterName}`,
+			`Reported by: ${reportData.value.reporterName}`,
 			reportData.value.contactInfo
-				? `Kontakt: ${reportData.value.contactInfo}`
+				? `Contact: ${reportData.value.contactInfo}`
 				: '',
-			`Berichtsdatum: ${new Date().toLocaleDateString('de-DE')}`,
+			`Report Date: ${new Date().toLocaleDateString('en-US')}`,
 		]
 			.filter(Boolean)
 			.join('\n');
@@ -463,7 +459,6 @@ const handleSubmit = async () => {
 
 		if (newItem) {
 			console.log('Report submitted successfully:', newItem);
-
 			router.push(`/items/${newItem.id}`);
 		}
 	} catch (error) {

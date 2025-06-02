@@ -1,6 +1,6 @@
 <template>
 	<template-page
-		:headline="location?.name || 'Standort-Details'"
+		:headline="location?.name || 'Location Details'"
 		:leftFooterButton="leftFooterButton"
 		:rightFooterButton="rightFooterButton"
 		@leftFooterButtonClicked="handleDelete"
@@ -8,16 +8,16 @@
 		<div class="details-container">
 			<div v-if="isLoading" class="loading-container">
 				<ion-spinner name="crescent" color="primary"></ion-spinner>
-				<p>Lade Standort...</p>
+				<p>Loading location...</p>
 			</div>
 
 			<div v-else-if="error && !location" class="empty-state">
 				<ion-icon :icon="alertCircleOutline" class="empty-icon"></ion-icon>
-				<h2>Fehler beim Laden</h2>
+				<h2>Error Loading</h2>
 				<p>{{ error }}</p>
 				<ion-button @click="loadLocation">
 					<ion-icon :icon="refreshOutline" slot="start"></ion-icon>
-					Erneut versuchen
+					Try Again
 				</ion-button>
 			</div>
 
@@ -36,11 +36,11 @@
 								</div>
 								<div class="info-item">
 									<ion-icon :icon="layersOutline" class="info-icon"></ion-icon>
-									Etage {{ location.floor }}
+									Floor {{ location.floor }}
 								</div>
 								<div class="info-item">
 									<ion-icon :icon="homeOutline" class="info-icon"></ion-icon>
-									Raum {{ location.room }}
+									Room {{ location.room }}
 								</div>
 							</div>
 						</div>
@@ -53,40 +53,40 @@
 				</div>
 
 				<div v-if="location.description" class="description-section">
-					<h3>Beschreibung</h3>
+					<h3>Description</h3>
 					<p>{{ location.description }}</p>
 				</div>
 
 				<div class="metadata-section">
-					<h3>Standort-Details</h3>
+					<h3>Location Details</h3>
 					<div class="metadata-grid">
 						<div class="metadata-item">
 							<ion-icon
 								:icon="businessOutline"
 								class="metadata-icon"></ion-icon>
 							<div class="metadata-content">
-								<span class="metadata-label">Gebäude</span>
+								<span class="metadata-label">Building</span>
 								<span class="metadata-value">{{ location.building }}</span>
 							</div>
 						</div>
 						<div class="metadata-item">
 							<ion-icon :icon="layersOutline" class="metadata-icon"></ion-icon>
 							<div class="metadata-content">
-								<span class="metadata-label">Etage</span>
+								<span class="metadata-label">Floor</span>
 								<span class="metadata-value">{{ location.floor }}</span>
 							</div>
 						</div>
 						<div class="metadata-item">
 							<ion-icon :icon="homeOutline" class="metadata-icon"></ion-icon>
 							<div class="metadata-content">
-								<span class="metadata-label">Raum</span>
+								<span class="metadata-label">Room</span>
 								<span class="metadata-value">{{ location.room }}</span>
 							</div>
 						</div>
 						<div class="metadata-item">
 							<ion-icon :icon="timeOutline" class="metadata-icon"></ion-icon>
 							<div class="metadata-content">
-								<span class="metadata-label">Erstellt am</span>
+								<span class="metadata-label">Created on</span>
 								<span class="metadata-value">{{
 									formatDate(location.createdAt)
 								}}</span>
@@ -97,7 +97,7 @@
 
 				<div class="items-section">
 					<div class="section-header">
-						<h3>Gegenstände an diesem Standort</h3>
+						<h3>Items at this Location</h3>
 						<ion-chip color="primary">
 							<ion-icon :icon="bagOutline" class="chip-icon"></ion-icon>
 							{{ itemsAtLocation.length }}
@@ -106,16 +106,16 @@
 
 					<div v-if="itemsLoading" class="loading-container">
 						<ion-spinner name="crescent" color="primary"></ion-spinner>
-						<p>Lade Gegenstände...</p>
+						<p>Loading items...</p>
 					</div>
 
 					<div v-else-if="itemsAtLocation.length === 0" class="empty-state">
 						<ion-icon :icon="bagOutline" class="empty-icon"></ion-icon>
-						<h4>Keine Gegenstände gefunden</h4>
-						<p>An diesem Standort wurden noch keine Gegenstände gemeldet.</p>
+						<h4>No Items Found</h4>
+						<p>No items have been reported at this location yet.</p>
 						<ion-button fill="outline" @click="navigateToReportItem">
 							<ion-icon :icon="addOutline" slot="start"></ion-icon>
-							Gegenstand melden
+							Report Item
 						</ion-button>
 					</div>
 
@@ -171,8 +171,8 @@
 
 		<ion-alert
 			:is-open="showDeleteAlert"
-			header="Standort löschen"
-			message="Bist du sicher, dass du diesen Standort löschen möchtest? Diese Aktion kann nicht rückgängig gemacht werden."
+			header="Delete Location"
+			message="Are you sure you want to delete this location? This action cannot be undone."
 			:buttons="alertButtons"
 			@didDismiss="showDeleteAlert = false"></ion-alert>
 	</template-page>
@@ -227,25 +227,25 @@ const isLoading = computed(() => locationStore.isLoading && !location.value);
 const error = computed(() => locationStore.getError);
 
 const leftFooterButton = computed(() => ({
-	name: 'Löschen',
+	name: 'Delete',
 	color: 'danger',
 	icon: trashOutline,
 }));
 
 const rightFooterButton = computed(() => ({
-	name: 'Bearbeiten',
+	name: 'Edit',
 	color: 'primary',
 	icon: createOutline,
 }));
 
 const alertButtons = [
 	{
-		text: 'Abbrechen',
+		text: 'Cancel',
 		role: 'cancel',
 		cssClass: 'alert-button-cancel',
 	},
 	{
-		text: 'Löschen',
+		text: 'Delete',
 		role: 'destructive',
 		cssClass: 'alert-button-confirm',
 		handler: () => confirmDelete(),
@@ -253,7 +253,7 @@ const alertButtons = [
 ];
 
 const formatDate = (dateString: string) => {
-	return new Date(dateString).toLocaleDateString('de-DE', {
+	return new Date(dateString).toLocaleDateString('en-US', {
 		day: '2-digit',
 		month: '2-digit',
 		year: 'numeric',
@@ -291,11 +291,11 @@ const getStatusIcon = (status: string) => {
 const getStatusText = (status: string) => {
 	switch (status.toUpperCase()) {
 		case 'FOUND':
-			return 'Gefunden';
+			return 'Found';
 		case 'CLAIMED':
-			return 'Abgeholt';
+			return 'Picked Up';
 		case 'LOST':
-			return 'Verloren';
+			return 'Lost';
 		default:
 			return status;
 	}

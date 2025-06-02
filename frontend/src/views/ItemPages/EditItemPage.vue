@@ -1,6 +1,6 @@
 <template>
 	<template-page
-		:headline="'Gegenstand bearbeiten'"
+		:headline="'Edit Item'"
 		:leftFooterButton="leftFooterButton"
 		:rightFooterButton="rightFooterButton"
 		@leftFooterButtonClicked="handleCancel"
@@ -8,36 +8,36 @@
 		<div class="form-container">
 			<div v-if="isLoading" class="loading-container">
 				<ion-spinner name="crescent" color="primary"></ion-spinner>
-				<p>Lade Gegenstand...</p>
+				<p>Loading item...</p>
 			</div>
 
 			<div v-else-if="error && !item.name" class="empty-state">
 				<ion-icon :icon="alertCircleOutline" class="empty-icon"></ion-icon>
-				<h2>Fehler beim Laden</h2>
+				<h2>Error Loading</h2>
 				<p>{{ error }}</p>
 				<ion-button @click="loadItem">
 					<ion-icon :icon="refreshOutline" slot="start"></ion-icon>
-					Erneut versuchen
+					Try Again
 				</ion-button>
 			</div>
 
 			<div v-else class="form-content">
 				<div class="form-header">
 					<ion-icon :icon="createOutline" class="header-icon"></ion-icon>
-					<h2>Gegenstand bearbeiten</h2>
-					<p>Aktualisiere die Details für diesen Gegenstand</p>
+					<h2>Edit Item</h2>
+					<p>Update the details for this item</p>
 					<div v-if="item.updatedAt" class="last-modified">
 						<ion-icon :icon="timeOutline" class="time-icon"></ion-icon>
-						Zuletzt bearbeitet: {{ formatDate(item.updatedAt) }}
+						Last modified: {{ formatDate(item.updatedAt) }}
 					</div>
 				</div>
 
 				<div class="input-group">
 					<ion-input
 						v-model="item.name"
-						label="Name des Gegenstands *"
+						label="Item Name *"
 						label-placement="stacked"
-						placeholder="z.B. Schwarzer Rucksack"
+						placeholder="e.g. Black Backpack"
 						class="modern-input"
 						:class="{
 							'input-filled': item.name,
@@ -58,9 +58,9 @@
 				<div class="input-group">
 					<ion-textarea
 						v-model="item.description"
-						label="Beschreibung"
+						label="Description"
 						label-placement="stacked"
-						placeholder="Detaillierte Beschreibung des Gegenstands..."
+						placeholder="Detailed description of the item..."
 						class="modern-textarea"
 						:class="{
 							'textarea-filled': item.description,
@@ -77,9 +77,9 @@
 				<div class="input-group">
 					<ion-input
 						v-model="item.location"
-						label="Fundort/Verlustort *"
+						label="Found/Lost Location *"
 						label-placement="stacked"
-						placeholder="z.B. Bibliothek, Hörsaal A1, Mensa"
+						placeholder="e.g. Library, Lecture Hall A1, Cafeteria"
 						class="modern-input"
 						:class="{
 							'input-filled': item.location,
@@ -102,7 +102,7 @@
 						v-model="item.status"
 						label="Status *"
 						label-placement="stacked"
-						placeholder="Wähle den Status"
+						placeholder="Choose the status"
 						interface="popover"
 						class="modern-select"
 						:class="{
@@ -117,13 +117,13 @@
 						<ion-select-option value="LOST">
 							<div class="select-option">
 								<ion-icon :icon="searchOutline" class="option-icon"></ion-icon>
-								<span>Verloren</span>
+								<span>Lost</span>
 							</div>
 						</ion-select-option>
 						<ion-select-option value="FOUND">
 							<div class="select-option">
 								<ion-icon :icon="eyeOutline" class="option-icon"></ion-icon>
-								<span>Gefunden</span>
+								<span>Found</span>
 							</div>
 						</ion-select-option>
 						<ion-select-option value="CLAIMED">
@@ -131,7 +131,7 @@
 								<ion-icon
 									:icon="checkmarkCircleOutline"
 									class="option-icon"></ion-icon>
-								<span>Abgeholt</span>
+								<span>Claimed</span>
 							</div>
 						</ion-select-option>
 					</ion-select>
@@ -145,11 +145,10 @@
 					<div class="image-upload-section">
 						<h4 class="upload-title">
 							<ion-icon :icon="cameraOutline" class="title-icon"></ion-icon>
-							Bild (optional)
+							Image (optional)
 						</h4>
 						<p class="upload-description">
-							Füge ein Bild hinzu, um den Gegenstand besser identifizieren zu
-							können.
+							Add an image to help identify the item better.
 						</p>
 
 						<div
@@ -171,14 +170,14 @@
 						<div class="upload-buttons">
 							<ion-button fill="outline" class="upload-btn" @click="takePhoto">
 								<ion-icon :icon="cameraOutline" slot="start"></ion-icon>
-								Foto aufnehmen
+								Take Photo
 							</ion-button>
 							<ion-button
 								fill="outline"
 								class="upload-btn"
 								@click="triggerFileInput">
 								<ion-icon :icon="cloudUploadOutline" slot="start"></ion-icon>
-								Datei hochladen
+								Upload File
 							</ion-button>
 						</div>
 
@@ -199,7 +198,7 @@
 						class="delete-button"
 						@click="handleDelete">
 						<ion-icon :icon="trashOutline" slot="start"></ion-icon>
-						Gegenstand löschen
+						Delete Item
 					</ion-button>
 				</div>
 
@@ -211,10 +210,10 @@
 							class="info-icon"></ion-icon>
 						<div class="info-text">
 							<p>
-								Alle Änderungen werden automatisch gespeichert, wenn du auf
-								"Änderungen speichern" klickst.
+								All changes will be automatically saved when you click "Save
+								Changes".
 							</p>
-							<p>Mit * markierte Felder sind Pflichtfelder.</p>
+							<p>Fields marked with * are required.</p>
 						</div>
 					</div>
 				</div>
@@ -223,8 +222,8 @@
 
 		<ion-alert
 			:is-open="showDeleteAlert"
-			header="Gegenstand löschen"
-			message="Bist du sicher, dass du diesen Gegenstand löschen möchtest? Diese Aktion kann nicht rückgängig gemacht werden."
+			header="Delete Item"
+			message="Are you sure you want to delete this item? This action cannot be undone."
 			:buttons="alertButtons"
 			@didDismiss="showDeleteAlert = false"></ion-alert>
 	</template-page>
@@ -296,17 +295,17 @@ const fileInput = ref<HTMLInputElement>();
 
 // Use local loading state instead of store loading state
 const leftFooterButton = computed(() => ({
-	name: 'Abbrechen',
+	name: 'Cancel',
 	color: 'medium',
 	icon: closeCircleOutline,
 }));
 
 const rightFooterButton = computed(() => ({
 	name: isSaving.value
-		? 'Speichere...'
+		? 'Saving...'
 		: isValid.value
-		? 'Änderungen speichern'
-		: 'Felder ausfüllen',
+		? 'Save Changes'
+		: 'Fill Required Fields',
 	color: isValid.value ? 'primary' : 'medium',
 	icon: checkmarkCircleOutline,
 	disabled: !isValid.value || isSaving.value || isLoading.value,
@@ -323,12 +322,12 @@ const isValid = computed(() => {
 
 const alertButtons = [
 	{
-		text: 'Abbrechen',
+		text: 'Cancel',
 		role: 'cancel',
 		cssClass: 'alert-button-cancel',
 	},
 	{
-		text: 'Löschen',
+		text: 'Delete',
 		role: 'destructive',
 		cssClass: 'alert-button-confirm',
 		handler: () => confirmDelete(),
@@ -337,7 +336,7 @@ const alertButtons = [
 
 const formatDate = (dateString: string) => {
 	try {
-		return new Date(dateString).toLocaleDateString('de-DE', {
+		return new Date(dateString).toLocaleDateString('en-US', {
 			day: '2-digit',
 			month: '2-digit',
 			year: 'numeric',
@@ -346,7 +345,7 @@ const formatDate = (dateString: string) => {
 		});
 	} catch (error) {
 		console.error('Error formatting date:', error);
-		return 'Ungültiges Datum';
+		return 'Invalid Date';
 	}
 };
 
@@ -359,23 +358,23 @@ const validateField = (fieldName: keyof typeof errors.value) => {
 		switch (fieldName) {
 			case 'name':
 				if (!value) {
-					errors.value.name = 'Name ist erforderlich';
+					errors.value.name = 'Name is required';
 				} else if (value.length < 2) {
-					errors.value.name = 'Name muss mindestens 2 Zeichen haben';
+					errors.value.name = 'Name must be at least 2 characters long';
 				} else {
 					errors.value.name = '';
 				}
 				break;
 			case 'location':
 				if (!value) {
-					errors.value.location = 'Standort ist erforderlich';
+					errors.value.location = 'Location is required';
 				} else {
 					errors.value.location = '';
 				}
 				break;
 			case 'status':
 				if (!value) {
-					errors.value.status = 'Status ist erforderlich';
+					errors.value.status = 'Status is required';
 				} else {
 					errors.value.status = '';
 				}

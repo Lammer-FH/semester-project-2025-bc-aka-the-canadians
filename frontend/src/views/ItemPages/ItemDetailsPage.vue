@@ -1,5 +1,6 @@
 <template>
 	<template-page
+		:headline="item?.name || 'Item Details'"
 		:leftFooterButton="leftFooterButton"
 		:rightFooterButton="rightFooterButton"
 		@leftFooterButtonClicked="handleBack"
@@ -7,16 +8,16 @@
 		<div class="details-container">
 			<div v-if="isLoading" class="loading-container">
 				<ion-spinner name="crescent" color="primary"></ion-spinner>
-				<p>Lade Bericht...</p>
+				<p>Loading report...</p>
 			</div>
 
 			<div v-else-if="error && !item" class="empty-state">
 				<ion-icon :icon="alertCircleOutline" class="empty-icon"></ion-icon>
-				<h2>Fehler beim Laden</h2>
+				<h2>Error Loading</h2>
 				<p>{{ error }}</p>
 				<ion-button @click="loadItem">
 					<ion-icon :icon="refreshOutline" slot="start"></ion-icon>
-					Erneut versuchen
+					Try Again
 				</ion-button>
 			</div>
 
@@ -33,7 +34,7 @@
 								{{ getStatusText(item.status || '') }}
 							</ion-chip>
 							<div class="report-meta">
-								<span class="report-id">Bericht #{{ item.id }}</span>
+								<span class="report-id">Report #{{ item.id }}</span>
 								<span class="report-date">{{
 									formatDate(item.createdAt || '')
 								}}</span>
@@ -42,11 +43,11 @@
 						<div class="header-right">
 							<div class="view-count">
 								<ion-icon :icon="eyeOutline" class="view-icon"></ion-icon>
-								<span>{{ viewCount }} Aufrufe</span>
+								<span>{{ viewCount }} Views</span>
 							</div>
 							<div class="days-since">
 								<ion-icon :icon="timeOutline" class="time-icon"></ion-icon>
-								<span>Vor {{ daysSinceReported }} Tagen</span>
+								<span>{{ daysSinceReported }} Days Ago</span>
 							</div>
 						</div>
 					</div>
@@ -56,7 +57,7 @@
 					<div class="image-container">
 						<img
 							:src="item.imageUrl"
-							:alt="item.name || 'Bild'"
+							:alt="item.name || 'Image'"
 							class="item-image"
 							@click="openImageModal" />
 						<ion-button
@@ -68,7 +69,7 @@
 						<div class="image-overlay">
 							<ion-chip color="dark" class="image-chip">
 								<ion-icon :icon="cameraOutline" class="chip-icon"></ion-icon>
-								Zum Vergrößern tippen
+								Tap to Enlarge
 							</ion-chip>
 						</div>
 					</div>
@@ -77,7 +78,7 @@
 				<div class="info-card main-info">
 					<div class="card-header">
 						<h1 class="item-title">
-							{{ item.name || 'Unbekannter Gegenstand' }}
+							{{ item.name || 'Unknown Item' }}
 						</h1>
 						<div class="title-actions">
 							<ion-button fill="clear" size="small" @click="shareItem">
@@ -94,10 +95,9 @@
 								<div class="banner-content">
 									<ion-icon :icon="eyeOutline" class="banner-icon"></ion-icon>
 									<div class="banner-text">
-										<h3>Gefundener Gegenstand</h3>
+										<h3>Found Item</h3>
 										<p>
-											Ist das dein verlorener Gegenstand? Du kannst ihn zur
-											Abholung anfordern.
+											Is this your lost item? You can request to pick it up.
 										</p>
 									</div>
 								</div>
@@ -108,7 +108,7 @@
 									class="claim-button"
 									@click="showClaimDialog">
 									<ion-icon :icon="handRightOutline" slot="start"></ion-icon>
-									Gegenstand abholen
+									Claim Item
 								</ion-button>
 							</div>
 						</div>
@@ -122,10 +122,8 @@
 										:icon="searchOutline"
 										class="banner-icon"></ion-icon>
 									<div class="banner-text">
-										<h3>Verlorener Gegenstand</h3>
-										<p>
-											Jemand sucht nach diesem Gegenstand. Hast du ihn gefunden?
-										</p>
+										<h3>Lost Item</h3>
+										<p>Someone is looking for this item. Have you found it?</p>
 									</div>
 								</div>
 								<ion-button
@@ -134,7 +132,7 @@
 									color="warning"
 									@click="reportFound">
 									<ion-icon :icon="megaphoneOutline" slot="start"></ion-icon>
-									Fund melden
+									Report as Found
 								</ion-button>
 							</div>
 						</div>
@@ -148,10 +146,8 @@
 										:icon="checkmarkCircleOutline"
 										class="banner-icon"></ion-icon>
 									<div class="banner-text">
-										<h3>Zur Abholung angefordert</h3>
-										<p>
-											Dieser Gegenstand wurde bereits zur Abholung angefordert.
-										</p>
+										<h3>Pickup Requested</h3>
+										<p>This item has already been requested for pickup.</p>
 									</div>
 								</div>
 							</div>
@@ -168,10 +164,9 @@
 										:icon="checkmarkCircleOutline"
 										class="banner-icon"></ion-icon>
 									<div class="banner-text">
-										<h3>Erfolgreich zurückgegeben</h3>
+										<h3>Successfully Returned</h3>
 										<p>
-											Dieser Gegenstand wurde erfolgreich an den Besitzer
-											zurückgegeben.
+											This item has been successfully returned to the owner.
 										</p>
 									</div>
 								</div>
@@ -184,7 +179,7 @@
 							<ion-icon
 								:icon="documentTextOutline"
 								class="section-icon"></ion-icon>
-							Beschreibung
+							Description
 						</h3>
 						<div class="description-content">
 							<p class="description-text">
@@ -196,7 +191,7 @@
 								class="reporter-info">
 								<h4>
 									<ion-icon :icon="personOutline" class="info-icon"></ion-icon>
-									Bericht-Details
+									Report Details
 								</h4>
 								<div class="reporter-details">
 									<div
@@ -215,7 +210,7 @@
 				<div class="info-card location-info">
 					<h3>
 						<ion-icon :icon="locationOutline" class="section-icon"></ion-icon>
-						Standort
+						Location
 					</h3>
 					<div class="location-details">
 						<div class="location-primary">
@@ -226,7 +221,7 @@
 						</div>
 						<ion-button fill="clear" size="small" @click="viewLocationReports">
 							<ion-icon :icon="flagOutline" slot="start"></ion-icon>
-							Weitere Berichte an diesem Standort
+							More Reports at this Location
 						</ion-button>
 					</div>
 				</div>
@@ -234,13 +229,13 @@
 				<div class="info-card timeline-info">
 					<h3>
 						<ion-icon :icon="timeOutline" class="section-icon"></ion-icon>
-						Bericht-Verlauf
+						Report History
 					</h3>
 					<div class="timeline">
 						<div class="timeline-item">
 							<div class="timeline-marker created"></div>
 							<div class="timeline-content">
-								<h4>Bericht erstellt</h4>
+								<h4>Report Created</h4>
 								<p>{{ formatDetailedDate(item.createdAt || '') }}</p>
 								<span class="timeline-type">{{
 									getReportType(item.status || '')
@@ -252,7 +247,7 @@
 							class="timeline-item">
 							<div class="timeline-marker updated"></div>
 							<div class="timeline-content">
-								<h4>Status aktualisiert</h4>
+								<h4>Status Updated</h4>
 								<p>{{ formatDetailedDate(item.updatedAt) }}</p>
 								<span class="timeline-status">{{
 									getStatusText(item.status || '')
@@ -264,8 +259,8 @@
 							class="timeline-item">
 							<div class="timeline-marker claimed"></div>
 							<div class="timeline-content">
-								<h4>Abholung angefordert</h4>
-								<p>Warten auf Bestätigung</p>
+								<h4>Pickup Requested</h4>
+								<p>Waiting for confirmation</p>
 							</div>
 						</div>
 					</div>
@@ -274,20 +269,20 @@
 				<div v-if="showStatistics" class="info-card stats-info">
 					<h3>
 						<ion-icon :icon="statsChartOutline" class="section-icon"></ion-icon>
-						Statistiken
+						Statistics
 					</h3>
 					<div class="stats-grid">
 						<div class="stat-item">
 							<div class="stat-number">{{ viewCount }}</div>
-							<div class="stat-label">Aufrufe</div>
+							<div class="stat-label">Views</div>
 						</div>
 						<div class="stat-item">
 							<div class="stat-number">{{ daysSinceReported }}</div>
-							<div class="stat-label">Tage alt</div>
+							<div class="stat-label">Days Old</div>
 						</div>
 						<div class="stat-item">
 							<div class="stat-number">{{ getLocationReportsCount() }}</div>
-							<div class="stat-label">Berichte am Standort</div>
+							<div class="stat-label">Reports at Location</div>
 						</div>
 					</div>
 				</div>
@@ -295,7 +290,7 @@
 				<div v-if="relatedReports.length > 0" class="info-card related-reports">
 					<h3>
 						<ion-icon :icon="layersOutline" class="section-icon"></ion-icon>
-						Ähnliche Berichte
+						Similar Reports
 					</h3>
 					<div class="related-list">
 						<div
@@ -312,9 +307,9 @@
 										class="chip-icon"></ion-icon>
 									{{ getStatusText(related.status || '') }}
 								</ion-chip>
-								<h4>{{ related.name || 'Unbekannter Gegenstand' }}</h4>
+								<h4>{{ related.name || 'Unknown Item' }}</h4>
 								<p>
-									{{ related.location || 'Unbekannter Standort' }} •
+									{{ related.location || 'Unknown Location' }} •
 									{{ getTimeAgo(related.createdAt || '') }}
 								</p>
 							</div>
@@ -333,7 +328,7 @@
 						color="success"
 						@click="showClaimDialog">
 						<ion-icon :icon="handRightOutline" slot="start"></ion-icon>
-						Gegenstand abholen
+						Claim Item
 					</ion-button>
 
 					<ion-button
@@ -344,13 +339,13 @@
 						color="warning"
 						@click="reportFound">
 						<ion-icon :icon="megaphoneOutline" slot="start"></ion-icon>
-						Fund melden
+						Report as Found
 					</ion-button>
 
 					<div class="secondary-actions">
 						<ion-button expand="block" fill="outline" @click="shareItem">
 							<ion-icon :icon="shareOutline" slot="start"></ion-icon>
-							Bericht teilen
+							Share Report
 						</ion-button>
 
 						<ion-button
@@ -359,11 +354,7 @@
 							color="medium"
 							@click="toggleStatistics">
 							<ion-icon :icon="statsChartOutline" slot="start"></ion-icon>
-							{{
-								showStatistics
-									? 'Statistiken ausblenden'
-									: 'Statistiken anzeigen'
-							}}
+							{{ showStatistics ? 'Hide Statistics' : 'Show Statistics' }}
 						</ion-button>
 
 						<ion-button
@@ -372,7 +363,7 @@
 							color="danger"
 							@click="showDeleteConfirmation">
 							<ion-icon :icon="trashOutline" slot="start"></ion-icon>
-							Bericht löschen
+							Delete Report
 						</ion-button>
 					</div>
 				</div>
@@ -382,7 +373,7 @@
 		<ion-modal :is-open="showImageModal" @did-dismiss="closeImageModal">
 			<ion-header>
 				<ion-toolbar>
-					<ion-title>Bericht-Foto</ion-title>
+					<ion-title>Report Photo</ion-title>
 					<ion-buttons slot="end">
 						<ion-button @click="closeImageModal">
 							<ion-icon :icon="closeOutline"></ion-icon>
@@ -395,7 +386,7 @@
 					<img
 						v-if="item?.imageUrl"
 						:src="item.imageUrl"
-						:alt="item.name || 'Bild'"
+						:alt="item.name || 'Image'"
 						class="modal-image" />
 				</div>
 			</ion-content>
@@ -403,15 +394,15 @@
 
 		<ion-alert
 			:is-open="showClaimAlert"
-			header="Gegenstand abholen"
+			header="Claim Item"
 			:message="claimAlertMessage"
 			:buttons="claimAlertButtons"
 			@didDismiss="showClaimAlert = false"></ion-alert>
 
 		<ion-alert
 			:is-open="showDeleteAlert"
-			header="Bericht löschen"
-			message="Möchtest du diesen Bericht wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden."
+			header="Delete Report"
+			message="Do you really want to delete this report? This action cannot be undone."
 			:buttons="deleteAlertButtons"
 			@didDismiss="showDeleteAlert = false"></ion-alert>
 	</template-page>
@@ -491,25 +482,25 @@ const daysSinceReported = computed(() => {
 });
 
 const leftFooterButton = computed(() => ({
-	name: 'Zurück',
+	name: 'Back',
 	color: 'medium',
 	icon: arrowBackOutline,
 }));
 
 const rightFooterButton = computed(() => ({
-	name: 'Bearbeiten',
+	name: 'Edit',
 	color: 'primary',
 	icon: createOutline,
 }));
 
 const deleteAlertButtons = [
 	{
-		text: 'Abbrechen',
+		text: 'Cancel',
 		role: 'cancel',
 		cssClass: 'alert-button-cancel',
 	},
 	{
-		text: 'Löschen',
+		text: 'Delete',
 		cssClass: 'alert-button-confirm',
 		handler: () => confirmDelete(),
 	},
@@ -517,38 +508,36 @@ const deleteAlertButtons = [
 
 const claimAlertMessage = computed(() => {
 	try {
-		if (!item.value) return 'Laden...';
+		if (!item.value) return 'Loading...';
 
 		return `
             <div style="text-align: left; padding: 8px;">
-                <p><strong>Gegenstand:</strong> ${
-									item.value.name || 'Unbekannt'
-								}</p>
-                <p><strong>Standort:</strong> ${
-									item.value.location || 'Unbekannt'
+                <p><strong>Item:</strong> ${item.value.name || 'Unknown'}</p>
+                <p><strong>Location:</strong> ${
+									item.value.location || 'Unknown'
 								}</p>
                 <br>
-                <p>Möchtest du diesen Gegenstand zur Abholung anfordern?</p>
+                <p>Do you want to request this item for pickup?</p>
                 <p style="color: #666; font-size: 0.9em;">
-                    Der Finder wird benachrichtigt und kann dich kontaktieren, 
-                    um die Abholung zu koordinieren.
+                    The finder will be notified and can contact you 
+                    to coordinate the pickup.
                 </p>
             </div>
         `;
 	} catch (error) {
 		console.error('Error generating claim alert message:', error);
-		return 'Fehler beim Laden der Nachricht.';
+		return 'Error loading message.';
 	}
 });
 
 const claimAlertButtons = [
 	{
-		text: 'Abbrechen',
+		text: 'Cancel',
 		role: 'cancel',
 		cssClass: 'alert-button-cancel',
 	},
 	{
-		text: 'Ja, abholen',
+		text: 'Yes, Claim',
 		cssClass: 'alert-button-confirm',
 		handler: () => processClaim(),
 	},
@@ -662,40 +651,40 @@ const getStatusIcon = (status: string): string => {
 
 const getStatusText = (status: string): string => {
 	try {
-		if (!status) return 'Unbekannt';
+		if (!status) return 'Unknown';
 
 		switch (status.toUpperCase()) {
 			case 'FOUND':
-				return 'Gefunden';
+				return 'Found';
 			case 'LOST':
-				return 'Verloren';
+				return 'Lost';
 			case 'CLAIMED':
-				return 'Abgeholt';
+				return 'Claimed';
 			case 'RETURNED':
-				return 'Zurückgegeben';
+				return 'Returned';
 			default:
 				return status;
 		}
 	} catch (error) {
 		console.error('Error getting status text:', error);
-		return 'Unbekannt';
+		return 'Unknown';
 	}
 };
 
 const getReportType = (status: string): string => {
 	try {
-		if (!status) return 'Bericht';
-		return status.toUpperCase() === 'LOST' ? 'Verlustbericht' : 'Fundbericht';
+		if (!status) return 'Report';
+		return status.toUpperCase() === 'LOST' ? 'Lost Report' : 'Found Report';
 	} catch (error) {
 		console.error('Error getting report type:', error);
-		return 'Bericht';
+		return 'Report';
 	}
 };
 
 const formatDate = (dateString: string) => {
 	try {
-		if (!dateString) return 'Unbekanntes Datum';
-		return new Date(dateString).toLocaleDateString('de-DE', {
+		if (!dateString) return 'Unknown Date';
+		return new Date(dateString).toLocaleDateString('en-US', {
 			day: '2-digit',
 			month: '2-digit',
 			year: 'numeric',
@@ -704,14 +693,14 @@ const formatDate = (dateString: string) => {
 		});
 	} catch (error) {
 		console.error('Error formatting date:', error);
-		return 'Ungültiges Datum';
+		return 'Invalid Date';
 	}
 };
 
 const formatDetailedDate = (dateString: string) => {
 	try {
-		if (!dateString) return 'Unbekanntes Datum';
-		return new Date(dateString).toLocaleDateString('de-DE', {
+		if (!dateString) return 'Unknown Date';
+		return new Date(dateString).toLocaleDateString('en-US', {
 			weekday: 'long',
 			day: '2-digit',
 			month: 'long',
@@ -721,13 +710,13 @@ const formatDetailedDate = (dateString: string) => {
 		});
 	} catch (error) {
 		console.error('Error formatting detailed date:', error);
-		return 'Ungültiges Datum';
+		return 'Invalid Date';
 	}
 };
 
 const getTimeAgo = (dateString: string) => {
 	try {
-		if (!dateString) return 'Unbekannt';
+		if (!dateString) return 'Unknown';
 
 		const date = new Date(dateString);
 		const now = new Date();
@@ -735,27 +724,27 @@ const getTimeAgo = (dateString: string) => {
 			(now.getTime() - date.getTime()) / (1000 * 60 * 60)
 		);
 
-		if (diffInHours < 1) return 'Vor wenigen Minuten';
-		if (diffInHours < 24) return `Vor ${diffInHours} Stunden`;
+		if (diffInHours < 1) return 'A few minutes ago';
+		if (diffInHours < 24) return `${diffInHours} hours ago`;
 
 		const diffInDays = Math.floor(diffInHours / 24);
-		if (diffInDays < 7) return `Vor ${diffInDays} Tagen`;
+		if (diffInDays < 7) return `${diffInDays} days ago`;
 
-		return date.toLocaleDateString('de-DE');
+		return date.toLocaleDateString('en-US');
 	} catch (error) {
 		console.error('Error getting time ago:', error);
-		return 'Unbekannt';
+		return 'Unknown';
 	}
 };
 
 const getCleanDescription = (description: string): string => {
 	try {
-		if (!description) return 'Keine Beschreibung verfügbar.';
-		const parts = description.split('--- Berichtinformationen ---');
-		return parts[0]?.trim() || 'Keine Beschreibung verfügbar.';
+		if (!description) return 'No description available.';
+		const parts = description.split('--- Report Information ---');
+		return parts[0]?.trim() || 'No description available.';
 	} catch (error) {
 		console.error('Error getting clean description:', error);
-		return 'Keine Beschreibung verfügbar.';
+		return 'No description available.';
 	}
 };
 
@@ -766,7 +755,7 @@ const getReporterInfo = (
 		if (!description) return null;
 
 		const metadataMatch = description.match(
-			/--- Berichtinformationen ---([\s\S]*?)(?:--- |$)/
+			/--- Report Information ---([\s\S]*?)(?:--- |$)/
 		);
 		if (!metadataMatch) return null;
 
@@ -873,13 +862,13 @@ const processClaim = async () => {
 	if (!item.value?.id) return;
 
 	try {
-		const currentDate = new Date().toLocaleDateString('de-DE');
+		const currentDate = new Date().toLocaleDateString('en-US');
 		const claimDescription = [
-			'--- ABHOLUNG ANGEFORDERT ---',
-			`Angefordert am: ${currentDate}`,
-			'Status: Warten auf Bestätigung des Finders',
+			'--- PICKUP REQUESTED ---',
+			`Requested on: ${currentDate}`,
+			'Status: Waiting for finder confirmation',
 			'',
-			'--- ORIGINAL BESCHREIBUNG ---',
+			'--- ORIGINAL DESCRIPTION ---',
 			item.value.description || '',
 		].join('\n');
 

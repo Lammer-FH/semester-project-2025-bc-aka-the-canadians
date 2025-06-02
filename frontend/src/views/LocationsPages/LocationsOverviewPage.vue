@@ -1,8 +1,8 @@
 <template>
 	<template-page
-		:headline="'Standorte durchsuchen'"
+		:headline="'Browse Locations'"
 		addButtonPath="/locations/add"
-		addButtonText="Neuen Standort hinzufügen">
+		addButtonText="Add New Location">
 		<template #header>
 			<NavigationTabs v-model="activeTab" />
 		</template>
@@ -11,60 +11,58 @@
 			<div class="search-section">
 				<ion-searchbar
 					v-model="searchTerm"
-					placeholder="Nach Standorten suchen..."
+					placeholder="Search for locations..."
 					debounce="300"
 					class="custom-searchbar"></ion-searchbar>
 			</div>
 
 			<div class="reports-summary">
-				<h3>Berichte an Standorten</h3>
+				<h3>Reports at Locations</h3>
 				<div class="summary-stats">
 					<div class="stat-item">
 						<ion-icon :icon="locationOutline" color="primary"></ion-icon>
-						<span>{{ filteredLocations.length }} Standorte</span>
+						<span>{{ filteredLocations.length }} Locations</span>
 					</div>
 					<div class="stat-item">
 						<ion-icon :icon="eyeOutline" color="success"></ion-icon>
-						<span>{{ totalFoundReports }} Fundberichte</span>
+						<span>{{ totalFoundReports }} Found Reports</span>
 					</div>
 					<div class="stat-item">
 						<ion-icon :icon="searchOutline" color="warning"></ion-icon>
-						<span>{{ totalLostReports }} Verlustberichte</span>
+						<span>{{ totalLostReports }} Lost Reports</span>
 					</div>
 					<div class="stat-item">
 						<ion-icon :icon="checkmarkCircleOutline" color="medium"></ion-icon>
-						<span>{{ totalClaimedReports }} Abgeschlossen</span>
+						<span>{{ totalClaimedReports }} Completed</span>
 					</div>
 				</div>
 			</div>
 
 			<div v-if="isLoading" class="loading-container">
 				<ion-spinner name="crescent" color="primary"></ion-spinner>
-				<p>Lade Standorte...</p>
+				<p>Loading locations...</p>
 			</div>
 
 			<div v-else-if="error" class="empty-state">
 				<ion-icon :icon="alertCircleOutline" class="empty-icon"></ion-icon>
-				<h2>Fehler beim Laden</h2>
+				<h2>Error Loading</h2>
 				<p>{{ error }}</p>
 				<ion-button @click="loadLocations">
 					<ion-icon :icon="refreshOutline" slot="start"></ion-icon>
-					Erneut versuchen
+					Try Again
 				</ion-button>
 			</div>
 
 			<div v-else-if="filteredLocations.length === 0" class="empty-state">
 				<ion-icon :icon="locationOutline" class="empty-icon"></ion-icon>
-				<h2>Keine Standorte gefunden</h2>
+				<h2>No Locations Found</h2>
 				<p v-if="searchTerm">
-					Keine Standorte entsprechen dem Suchbegriff "{{ searchTerm }}".
+					No locations match the search term "{{ searchTerm }}".
 				</p>
-				<p v-else>
-					Noch keine Standorte erstellt. Füge den ersten Standort hinzu!
-				</p>
+				<p v-else>No locations created yet. Add the first location!</p>
 				<ion-button @click="navigateToAddLocation">
 					<ion-icon :icon="addOutline" slot="start"></ion-icon>
-					Ersten Standort hinzufügen
+					Add First Location
 				</ion-button>
 			</div>
 
@@ -88,13 +86,13 @@
 						<div class="location-details">
 							<div class="detail-item">
 								<ion-icon :icon="layersOutline" class="detail-icon"></ion-icon>
-								Etage {{ location.floor }}
+								Floor {{ location.floor }}
 							</div>
 							<div class="detail-item">
 								<ion-icon
 									:icon="businessOutline"
 									class="detail-icon"></ion-icon>
-								Raum {{ location.room }}
+								Room {{ location.room }}
 							</div>
 						</div>
 					</ion-card-header>
@@ -103,7 +101,7 @@
 						<div class="reports-at-location">
 							<h4>
 								<ion-icon :icon="flagOutline" class="section-icon"></ion-icon>
-								Berichte an diesem Standort
+								Reports at this Location
 							</h4>
 
 							<div
@@ -112,7 +110,7 @@
 								<ion-icon
 									:icon="checkmarkCircleOutline"
 									class="no-reports-icon"></ion-icon>
-								<span>Keine aktiven Berichte</span>
+								<span>No active reports</span>
 							</div>
 
 							<div v-else class="reports-stats">
@@ -121,7 +119,7 @@
 									v-if="getFoundReportsCount(location.name) > 0">
 									<ion-chip color="success" class="report-chip">
 										<ion-icon :icon="eyeOutline" class="chip-icon"></ion-icon>
-										{{ getFoundReportsCount(location.name) }} Gefunden
+										{{ getFoundReportsCount(location.name) }} Found
 									</ion-chip>
 								</div>
 								<div
@@ -131,7 +129,7 @@
 										<ion-icon
 											:icon="searchOutline"
 											class="chip-icon"></ion-icon>
-										{{ getLostReportsCount(location.name) }} Verloren
+										{{ getLostReportsCount(location.name) }} Lost
 									</ion-chip>
 								</div>
 								<div
@@ -141,7 +139,7 @@
 										<ion-icon
 											:icon="checkmarkOutline"
 											class="chip-icon"></ion-icon>
-										{{ getClaimedReportsCount(location.name) }} Abgeholt
+										{{ getClaimedReportsCount(location.name) }} Picked Up
 									</ion-chip>
 								</div>
 							</div>
@@ -150,12 +148,12 @@
 								v-if="getRecentReportsForLocation(location.name).length > 0"
 								class="recent-reports">
 								<div class="recent-reports-header">
-									<span>Neueste Berichte:</span>
+									<span>Latest Reports:</span>
 									<ion-button
 										fill="clear"
 										size="small"
 										@click.stop="viewAllReportsAtLocation(location.name)">
-										Alle ansehen
+										View All
 									</ion-button>
 								</div>
 								<div class="recent-reports-list">
@@ -188,7 +186,7 @@
 								<ion-icon
 									:icon="documentTextOutline"
 									class="section-icon"></ion-icon>
-								Beschreibung
+								Description
 							</h4>
 							<p>{{ location.description }}</p>
 						</div>
@@ -199,13 +197,13 @@
 									:icon="calendarOutline"
 									class="metadata-icon"></ion-icon>
 								<span class="metadata-text"
-									>Erstellt {{ formatDate(location.createdAt) }}</span
+									>Created {{ formatDate(location.createdAt) }}</span
 								>
 							</div>
 							<div class="metadata-item">
 								<ion-icon :icon="timeOutline" class="metadata-icon"></ion-icon>
 								<span class="metadata-text"
-									>Aktualisiert {{ formatDate(location.updatedAt) }}</span
+									>Updated {{ formatDate(location.updatedAt) }}</span
 								>
 							</div>
 						</div>
@@ -217,21 +215,21 @@
 							size="small"
 							@click.stop="navigateToLocation(location.id)">
 							<ion-icon :icon="eyeOutline" slot="start"></ion-icon>
-							Standort ansehen
+							View Location
 						</ion-button>
 						<ion-button
 							fill="clear"
 							size="small"
 							@click.stop="viewAllReportsAtLocation(location.name)">
 							<ion-icon :icon="flagOutline" slot="start"></ion-icon>
-							Berichte ({{ getReportsForLocation(location.name).length }})
+							Reports ({{ getReportsForLocation(location.name).length }})
 						</ion-button>
 						<ion-button
 							fill="clear"
 							size="small"
 							@click.stop="editLocation(location.id)">
 							<ion-icon :icon="createOutline" slot="start"></ion-icon>
-							Bearbeiten
+							Edit
 						</ion-button>
 					</div>
 				</ion-card>
@@ -442,17 +440,17 @@ const getTimeAgo = (dateString: string) => {
 		(now.getTime() - date.getTime()) / (1000 * 60 * 60)
 	);
 
-	if (diffInHours < 1) return 'Vor wenigen Minuten';
-	if (diffInHours < 24) return `Vor ${diffInHours} Stunden`;
+	if (diffInHours < 1) return 'A few minutes ago';
+	if (diffInHours < 24) return `${diffInHours} hours ago`;
 
 	const diffInDays = Math.floor(diffInHours / 24);
-	if (diffInDays < 7) return `Vor ${diffInDays} Tagen`;
+	if (diffInDays < 7) return `${diffInDays} days ago`;
 
-	return date.toLocaleDateString('de-DE');
+	return date.toLocaleDateString('en-US');
 };
 
 const formatDate = (dateString: string) => {
-	return new Date(dateString).toLocaleDateString('de-DE', {
+	return new Date(dateString).toLocaleDateString('en-US', {
 		day: '2-digit',
 		month: '2-digit',
 		year: 'numeric',

@@ -9,19 +9,16 @@ import {
 import { Item } from '@/models/item';
 
 export const useLocationStore = defineStore('location', () => {
-	// State - Initialize as empty array to prevent filter errors
 	const locations = ref<Location[]>([]);
 	const currentLocation = ref<Location | null>(null);
 	const loading = ref<boolean>(false);
 	const error = ref<string | null>(null);
 
-	// Getters
 	const getLocations = computed(() => locations.value || []);
 	const getCurrentLocation = computed(() => currentLocation.value);
 	const isLoading = computed(() => loading.value);
 	const getError = computed(() => error.value);
 
-	// Actions
 	const fetchLocations = async (building?: string) => {
 		try {
 			loading.value = true;
@@ -45,7 +42,6 @@ export const useLocationStore = defineStore('location', () => {
 			const location = await locationService.getLocationById(id);
 			currentLocation.value = location;
 
-			// Update the location in the store if it exists
 			const index = locations.value.findIndex((loc) => loc.id === id);
 			if (index >= 0) {
 				locations.value[index] = location;
@@ -156,17 +152,14 @@ export const useLocationStore = defineStore('location', () => {
 	};
 
 	return {
-		// State
 		locations,
 		currentLocation,
 		loading,
 		error,
-		// Getters
 		getLocations,
 		getCurrentLocation,
 		isLoading,
 		getError,
-		// Actions
 		fetchLocations,
 		fetchLocationById,
 		fetchItemsByLocation,

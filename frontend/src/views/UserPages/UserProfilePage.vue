@@ -3,22 +3,22 @@
 		:showProfileButton="false"
 		:leftFooterButton="leftFooterButton"
 		:rightFooterButton="rightFooterButton"
-		:headline="'Mein Profil'"
+		:headline="'My Profile'"
 		@leftFooterButtonClicked="handleCancel"
 		@rightFooterButtonClicked="handleSave">
 		<div class="profile-container">
 			<div v-if="isLoading" class="loading-container">
 				<ion-spinner name="crescent" color="primary"></ion-spinner>
-				<p>Lade Profil...</p>
+				<p>Loading Profile...</p>
 			</div>
 
 			<div v-else-if="error && !user" class="empty-state">
 				<ion-icon :icon="alertCircleOutline" class="empty-icon"></ion-icon>
-				<h2>Fehler beim Laden</h2>
+				<h2>Loading Error</h2>
 				<p>{{ error }}</p>
 				<ion-button @click="loadUserProfile">
 					<ion-icon :icon="refreshOutline" slot="start"></ion-icon>
-					Erneut versuchen
+					Try Again
 				</ion-button>
 			</div>
 
@@ -47,14 +47,14 @@
 							<p>{{ user.email }}</p>
 							<ion-chip color="primary" outline>
 								<ion-icon :icon="timeOutline" class="chip-icon"></ion-icon>
-								Mitglied seit {{ formatDate(user.createdAt) }}
+								Member since {{ formatDate(user.createdAt) }}
 							</ion-chip>
 						</div>
 					</div>
 				</div>
 
 				<div class="profile-form">
-					<h3>Persönliche Informationen</h3>
+					<h3>Personal Information</h3>
 
 					<div class="form-group">
 						<ion-item
@@ -66,12 +66,12 @@
 							}">
 							<ion-label position="stacked" class="custom-label">
 								<ion-icon :icon="personOutline" class="label-icon"></ion-icon>
-								Vorname *
+								First Name *
 							</ion-label>
 							<ion-input
 								v-if="editingField === 'firstName'"
 								v-model="editData.firstName"
-								placeholder="Gib deinen Vornamen ein"
+								placeholder="Enter your first name"
 								@ionBlur="validateField('firstName')"
 								:class="{ 'input-error': errors.firstName }"
 								autofocus></ion-input>
@@ -107,12 +107,12 @@
 							}">
 							<ion-label position="stacked" class="custom-label">
 								<ion-icon :icon="personOutline" class="label-icon"></ion-icon>
-								Nachname *
+								Last Name *
 							</ion-label>
 							<ion-input
 								v-if="editingField === 'lastName'"
 								v-model="editData.lastName"
-								placeholder="Gib deinen Nachnamen ein"
+								placeholder="Enter your last name"
 								@ionBlur="validateField('lastName')"
 								:class="{ 'input-error': errors.lastName }"
 								autofocus></ion-input>
@@ -148,13 +148,13 @@
 							}">
 							<ion-label position="stacked" class="custom-label">
 								<ion-icon :icon="mailOutline" class="label-icon"></ion-icon>
-								E-Mail-Adresse *
+								Email Address *
 							</ion-label>
 							<ion-input
 								v-if="editingField === 'email'"
 								v-model="editData.email"
 								type="email"
-								placeholder="deine.email@example.com"
+								placeholder="your.email@example.com"
 								@ionBlur="validateField('email')"
 								:class="{ 'input-error': errors.email }"
 								autofocus></ion-input>
@@ -182,16 +182,16 @@
 						<ion-item class="modern-item item-filled">
 							<ion-label position="stacked" class="custom-label">
 								<ion-icon :icon="personOutline" class="label-icon"></ion-icon>
-								Benutzername
+								Username
 							</ion-label>
 							<div class="display-value">{{ user.username }}</div>
-							<ion-note slot="end" color="medium">Nicht änderbar</ion-note>
+							<ion-note slot="end" color="medium">Not changeable</ion-note>
 						</ion-item>
 					</div>
 				</div>
 
 				<div class="account-actions">
-					<h3>Konto-Einstellungen</h3>
+					<h3>Account Settings</h3>
 
 					<ion-list class="action-list">
 						<ion-item button @click="changePassword" class="action-item">
@@ -200,8 +200,8 @@
 								slot="start"
 								color="primary"></ion-icon>
 							<ion-label>
-								<h4>Passwort ändern</h4>
-								<p>Dein Passwort für mehr Sicherheit aktualisieren</p>
+								<h4>Change Password</h4>
+								<p>Update your password for better security</p>
 							</ion-label>
 							<ion-icon
 								:icon="chevronForwardOutline"
@@ -215,8 +215,8 @@
 								slot="start"
 								color="primary"></ion-icon>
 							<ion-label>
-								<h4>Benachrichtigungen</h4>
-								<p>E-Mail- und Push-Benachrichtigungen verwalten</p>
+								<h4>Notifications</h4>
+								<p>Manage email and push notifications</p>
 							</ion-label>
 							<ion-icon
 								:icon="chevronForwardOutline"
@@ -230,8 +230,8 @@
 								slot="start"
 								color="primary"></ion-icon>
 							<ion-label>
-								<h4>Datenschutz</h4>
-								<p>Deine Privatsphäre-Einstellungen verwalten</p>
+								<h4>Privacy</h4>
+								<p>Manage your privacy settings</p>
 							</ion-label>
 							<ion-icon
 								:icon="chevronForwardOutline"
@@ -242,13 +242,13 @@
 				</div>
 
 				<div class="statistics-section">
-					<h3>Deine Aktivität</h3>
+					<h3>Your Activity</h3>
 					<div class="stats-grid">
 						<div class="stat-card">
 							<ion-icon :icon="bagOutline" class="stat-icon"></ion-icon>
 							<div class="stat-content">
 								<div class="stat-number">{{ userStats.itemsReported }}</div>
-								<div class="stat-label">Gemeldete Gegenstände</div>
+								<div class="stat-label">Items Reported</div>
 							</div>
 						</div>
 						<div class="stat-card">
@@ -257,21 +257,21 @@
 								class="stat-icon"></ion-icon>
 							<div class="stat-content">
 								<div class="stat-number">{{ userStats.itemsClaimed }}</div>
-								<div class="stat-label">Abgeholte Gegenstände</div>
+								<div class="stat-label">Items Collected</div>
 							</div>
 						</div>
 						<div class="stat-card">
 							<ion-icon :icon="trophyOutline" class="stat-icon"></ion-icon>
 							<div class="stat-content">
 								<div class="stat-number">{{ userStats.helpfulReports }}</div>
-								<div class="stat-label">Hilfreiche Meldungen</div>
+								<div class="stat-label">Helpful Reports</div>
 							</div>
 						</div>
 					</div>
 				</div>
 
 				<div class="danger-zone">
-					<h3>Gefährlicher Bereich</h3>
+					<h3>Danger Zone</h3>
 					<ion-button
 						fill="outline"
 						color="danger"
@@ -279,7 +279,7 @@
 						class="delete-button"
 						@click="deleteAccount">
 						<ion-icon :icon="trashOutline" slot="start"></ion-icon>
-						Konto löschen
+						Delete Account
 					</ion-button>
 				</div>
 			</div>
@@ -287,8 +287,8 @@
 
 		<ion-alert
 			:is-open="showDeleteAlert"
-			header="Konto löschen"
-			message="Bist du sicher, dass du dein Konto löschen möchtest? Diese Aktion kann nicht rückgängig gemacht werden und alle deine Daten werden dauerhaft gelöscht."
+			header="Delete Account"
+			message="Are you sure you want to delete your account? This action cannot be undone and all your data will be permanently deleted."
 			:buttons="deleteAlertButtons"
 			@didDismiss="showDeleteAlert = false"></ion-alert>
 	</template-page>
@@ -366,13 +366,13 @@ const hasChanges = ref(false);
 const showDeleteAlert = ref(false);
 
 const leftFooterButton = computed(() => ({
-	name: 'Zurück',
+	name: 'Back',
 	color: 'medium',
 	icon: closeOutline,
 }));
 
 const rightFooterButton = computed(() => ({
-	name: hasChanges.value ? 'Änderungen speichern' : 'Gespeichert',
+	name: hasChanges.value ? 'Save Changes' : 'Saved',
 	color: hasChanges.value ? 'primary' : 'medium',
 	icon: saveOutline,
 	disabled: !hasChanges.value,
@@ -380,12 +380,12 @@ const rightFooterButton = computed(() => ({
 
 const deleteAlertButtons = [
 	{
-		text: 'Abbrechen',
+		text: 'Cancel',
 		role: 'cancel',
 		cssClass: 'alert-button-cancel',
 	},
 	{
-		text: 'Konto löschen',
+		text: 'Delete Account',
 		role: 'destructive',
 		cssClass: 'alert-button-confirm',
 		handler: () => confirmDeleteAccount(),
@@ -418,7 +418,7 @@ const getFullName = (user: User): string => {
 };
 
 const formatDate = (dateString: string) => {
-	return new Date(dateString).toLocaleDateString('de-DE', {
+	return new Date(dateString).toLocaleDateString('en-US', {
 		month: 'long',
 		year: 'numeric',
 	});
@@ -430,18 +430,19 @@ const validateField = (fieldName: keyof typeof errors.value) => {
 	switch (fieldName) {
 		case 'firstName':
 			if (!value) {
-				errors.value.firstName = 'Vorname ist erforderlich';
+				errors.value.firstName = 'First name is required';
 			} else if (value.length < 2) {
-				errors.value.firstName = 'Vorname muss mindestens 2 Zeichen lang sein';
+				errors.value.firstName =
+					'First name must be at least 2 characters long';
 			} else {
 				errors.value.firstName = '';
 			}
 			break;
 		case 'lastName':
 			if (!value) {
-				errors.value.lastName = 'Nachname ist erforderlich';
+				errors.value.lastName = 'Last name is required';
 			} else if (value.length < 2) {
-				errors.value.lastName = 'Nachname muss mindestens 2 Zeichen lang sein';
+				errors.value.lastName = 'Last name must be at least 2 characters long';
 			} else {
 				errors.value.lastName = '';
 			}
@@ -449,9 +450,9 @@ const validateField = (fieldName: keyof typeof errors.value) => {
 		case 'email':
 			const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 			if (!value) {
-				errors.value.email = 'E-Mail-Adresse ist erforderlich';
+				errors.value.email = 'Email address is required';
 			} else if (!emailRegex.test(value)) {
-				errors.value.email = 'Bitte gib eine gültige E-Mail-Adresse ein';
+				errors.value.email = 'Please enter a valid email address';
 			} else {
 				errors.value.email = '';
 			}

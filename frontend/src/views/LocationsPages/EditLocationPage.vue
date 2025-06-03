@@ -1,6 +1,6 @@
 <template>
 	<template-page
-		:headline="'Standort bearbeiten'"
+		:headline="'Edit Location'"
 		:leftFooterButton="leftFooterButton"
 		:rightFooterButton="rightFooterButton"
 		@leftFooterButtonClicked="handleCancel"
@@ -8,36 +8,36 @@
 		<div class="form-container">
 			<div v-if="isLoading" class="loading-container">
 				<ion-spinner name="crescent" color="primary"></ion-spinner>
-				<p>Lade Standort...</p>
+				<p>Loading location...</p>
 			</div>
 
 			<div v-else-if="error && !location.name" class="empty-state">
 				<ion-icon :icon="alertCircleOutline" class="empty-icon"></ion-icon>
-				<h2>Fehler beim Laden</h2>
+				<h2>Error Loading</h2>
 				<p>{{ error }}</p>
 				<ion-button @click="loadLocation">
 					<ion-icon :icon="refreshOutline" slot="start"></ion-icon>
-					Erneut versuchen
+					Try Again
 				</ion-button>
 			</div>
 
 			<div v-else class="form-content">
 				<div class="form-header">
 					<ion-icon :icon="createOutline" class="header-icon"></ion-icon>
-					<h2>Standort bearbeiten</h2>
-					<p>Aktualisiere die Details für diesen Standort</p>
+					<h2>Edit Location</h2>
+					<p>Update the details for this location</p>
 					<div v-if="location.updatedAt" class="last-modified">
 						<ion-icon :icon="timeOutline" class="time-icon"></ion-icon>
-						Zuletzt bearbeitet: {{ formatDate(location.updatedAt) }}
+						Last modified: {{ formatDate(location.updatedAt) }}
 					</div>
 				</div>
 
 				<div class="input-group">
 					<ion-input
 						v-model="location.name"
-						label="Name des Standorts *"
+						label="Location Name *"
 						label-placement="stacked"
-						placeholder="z.B. Hauptbibliothek, Mensa Nord, Hörsaal A"
+						placeholder="e.g. Main Library, North Cafeteria, Lecture Hall A"
 						class="modern-input"
 						:class="{
 							'input-filled': location.name,
@@ -58,9 +58,9 @@
 				<div class="input-group">
 					<ion-textarea
 						v-model="location.description"
-						label="Beschreibung"
+						label="Description"
 						label-placement="stacked"
-						placeholder="Detaillierte Beschreibung des Standorts und seiner Besonderheiten..."
+						placeholder="Detailed description of the location and its features..."
 						class="modern-textarea"
 						:class="{
 							'textarea-filled': location.description,
@@ -77,9 +77,9 @@
 				<div class="input-group">
 					<ion-input
 						v-model="location.building"
-						label="Gebäude *"
+						label="Building *"
 						label-placement="stacked"
-						placeholder="z.B. Hauptgebäude, Neubau, Labor"
+						placeholder="e.g. Main Building, New Building, Laboratory"
 						class="modern-input"
 						:class="{
 							'input-filled': location.building,
@@ -101,9 +101,9 @@
 					<div class="input-group half-width">
 						<ion-input
 							v-model="location.floor"
-							label="Etage *"
+							label="Floor *"
 							label-placement="stacked"
-							placeholder="z.B. EG, 1, 2, UG"
+							placeholder="e.g. GF, 1, 2, B1"
 							class="modern-input"
 							:class="{
 								'input-filled': location.floor,
@@ -124,9 +124,9 @@
 					<div class="input-group half-width">
 						<ion-input
 							v-model="location.room"
-							label="Raum *"
+							label="Room *"
 							label-placement="stacked"
-							placeholder="z.B. 101, A-15, Foyer"
+							placeholder="e.g. 101, A-15, Foyer"
 							class="modern-input"
 							:class="{
 								'input-filled': location.room,
@@ -153,7 +153,7 @@
 						class="delete-button"
 						@click="handleDelete">
 						<ion-icon :icon="trashOutline" slot="start"></ion-icon>
-						Standort löschen
+						Delete Location
 					</ion-button>
 				</div>
 
@@ -165,10 +165,10 @@
 							class="info-icon"></ion-icon>
 						<div class="info-text">
 							<p>
-								Alle Änderungen werden automatisch gespeichert, wenn du auf
-								"Änderungen speichern" klickst.
+								All changes will be automatically saved when you click "Save
+								Changes".
 							</p>
-							<p>Mit * markierte Felder sind Pflichtfelder.</p>
+							<p>Fields marked with * are required.</p>
 						</div>
 					</div>
 				</div>
@@ -177,8 +177,8 @@
 
 		<ion-alert
 			:is-open="showDeleteAlert"
-			header="Standort löschen"
-			message="Bist du sicher, dass du diesen Standort löschen möchtest? Diese Aktion kann nicht rückgängig gemacht werden."
+			header="Delete Location"
+			message="Are you sure you want to delete this location? This action cannot be undone."
 			:buttons="alertButtons"
 			@didDismiss="showDeleteAlert = false"></ion-alert>
 	</template-page>
@@ -242,17 +242,17 @@ const isSaving = ref(false);
 const showDeleteAlert = ref(false);
 
 const leftFooterButton = computed(() => ({
-	name: 'Abbrechen',
+	name: 'Cancel',
 	color: 'medium',
 	icon: closeCircleOutline,
 }));
 
 const rightFooterButton = computed(() => ({
 	name: isSaving.value
-		? 'Speichere...'
+		? 'Saving...'
 		: isValid.value
-		? 'Änderungen speichern'
-		: 'Felder ausfüllen',
+		? 'Save Changes'
+		: 'Fill Required Fields',
 	color: isValid.value ? 'primary' : 'medium',
 	icon: checkmarkCircleOutline,
 	disabled: !isValid.value || isSaving.value || isLoading.value,
@@ -275,12 +275,12 @@ const isValid = computed(() => {
 
 const alertButtons = [
 	{
-		text: 'Abbrechen',
+		text: 'Cancel',
 		role: 'cancel',
 		cssClass: 'alert-button-cancel',
 	},
 	{
-		text: 'Löschen',
+		text: 'Delete',
 		role: 'destructive',
 		cssClass: 'alert-button-confirm',
 		handler: () => confirmDelete(),
@@ -289,7 +289,7 @@ const alertButtons = [
 
 const formatDate = (dateString: string) => {
 	try {
-		return new Date(dateString).toLocaleDateString('de-DE', {
+		return new Date(dateString).toLocaleDateString('en-US', {
 			day: '2-digit',
 			month: '2-digit',
 			year: 'numeric',
@@ -298,7 +298,7 @@ const formatDate = (dateString: string) => {
 		});
 	} catch (error) {
 		console.error('Error formatting date:', error);
-		return 'Ungültiges Datum';
+		return 'Invalid Date';
 	}
 };
 
@@ -311,30 +311,30 @@ const validateField = (fieldName: keyof typeof errors.value) => {
 		switch (fieldName) {
 			case 'name':
 				if (!value) {
-					errors.value.name = 'Name ist erforderlich';
+					errors.value.name = 'Name is required';
 				} else if (value.length < 2) {
-					errors.value.name = 'Name muss mindestens 2 Zeichen haben';
+					errors.value.name = 'Name must be at least 2 characters long';
 				} else {
 					errors.value.name = '';
 				}
 				break;
 			case 'building':
 				if (!value) {
-					errors.value.building = 'Gebäude ist erforderlich';
+					errors.value.building = 'Building is required';
 				} else {
 					errors.value.building = '';
 				}
 				break;
 			case 'floor':
 				if (!value) {
-					errors.value.floor = 'Etage ist erforderlich';
+					errors.value.floor = 'Floor is required';
 				} else {
 					errors.value.floor = '';
 				}
 				break;
 			case 'room':
 				if (!value) {
-					errors.value.room = 'Raum ist erforderlich';
+					errors.value.room = 'Room is required';
 				} else {
 					errors.value.room = '';
 				}

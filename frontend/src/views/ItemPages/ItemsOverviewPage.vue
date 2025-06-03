@@ -1,8 +1,8 @@
 <template>
 	<template-page
-		:headline="'Berichte durchsuchen'"
+		:headline="'Browse Reports'"
 		addButtonPath="/items/report"
-		addButtonText="Neuen Bericht erstellen">
+		addButtonText="Create New Report">
 		<template #header>
 			<NavigationTabs v-model="activeTab" />
 		</template>
@@ -11,7 +11,7 @@
 			<div class="search-and-filter">
 				<ion-searchbar
 					v-model="searchTerm"
-					placeholder="Nach Berichten suchen..."
+					placeholder="Search for reports..."
 					debounce="300"
 					class="custom-searchbar"></ion-searchbar>
 
@@ -50,59 +50,58 @@
 					size="small"
 					class="clear-all-button"
 					@click="clearAllFilters">
-					Alle Filter löschen
+					Clear All Filters
 				</ion-button>
 			</div>
 
 			<div class="stats-summary">
 				<div class="stat-item">
 					<ion-icon :icon="eyeOutline" color="success"></ion-icon>
-					<span>{{ foundReportsCount }} Fundberichte</span>
+					<span>{{ foundReportsCount }} Found Reports</span>
 				</div>
 				<div class="stat-item">
 					<ion-icon :icon="searchOutline" color="warning"></ion-icon>
-					<span>{{ lostReportsCount }} Verlustberichte</span>
+					<span>{{ lostReportsCount }} Lost Reports</span>
 				</div>
 				<div class="stat-item">
 					<ion-icon :icon="checkmarkCircleOutline" color="medium"></ion-icon>
-					<span>{{ claimedReportsCount }} Abgeschlossen</span>
+					<span>{{ claimedReportsCount }} Completed</span>
 				</div>
 			</div>
 
 			<div v-if="isLoading" class="loading-container">
 				<ion-spinner name="crescent" color="primary"></ion-spinner>
-				<p>Lade Berichte...</p>
+				<p>Loading reports...</p>
 			</div>
 
 			<div v-else-if="error" class="empty-state">
 				<ion-icon :icon="alertCircleOutline" class="empty-icon"></ion-icon>
-				<h2>Fehler beim Laden</h2>
+				<h2>Error Loading</h2>
 				<p>{{ error }}</p>
 				<ion-button @click="loadReports">
 					<ion-icon :icon="refreshOutline" slot="start"></ion-icon>
-					Erneut versuchen
+					Try Again
 				</ion-button>
 			</div>
 
 			<div v-else-if="filteredReports.length === 0" class="empty-state">
 				<ion-icon :icon="bagOutline" class="empty-icon"></ion-icon>
-				<h2>Keine Berichte gefunden</h2>
+				<h2>No Reports Found</h2>
 				<p v-if="activeFiltersCount > 0">
-					Keine Berichte entsprechen den aktuellen Filterkriterien.
+					No reports match the current filter criteria.
 				</p>
 				<p v-else>
-					Noch keine Berichte erstellt. Sei der Erste und melde einen gefundenen
-					oder verlorenen Gegenstand!
+					No reports created yet. Be the first and report a found or lost item!
 				</p>
 				<ion-button
 					v-if="activeFiltersCount === 0"
 					fill="outline"
-					@click="navigateToReport">
+					@click="navigateToReportCreation">
 					<ion-icon :icon="addOutline" slot="start"></ion-icon>
-					Ersten Bericht erstellen
+					Create First Report
 				</ion-button>
 				<ion-button v-else fill="outline" @click="clearAllFilters">
-					Filter löschen
+					Clear Filters
 				</ion-button>
 			</div>
 
@@ -133,7 +132,7 @@
 								<ion-icon
 									:icon="locationOutline"
 									class="detail-icon"></ion-icon>
-								{{ report.location.name }}
+								{{ report.location }}
 							</div>
 							<div class="detail-item">
 								<ion-icon :icon="timeOutline" class="detail-icon"></ion-icon>
@@ -152,7 +151,7 @@
 						</div>
 						<div v-else class="no-image-placeholder">
 							<ion-icon :icon="imageOutline" class="no-image-icon"></ion-icon>
-							<span>Kein Bild verfügbar</span>
+							<span>No image available</span>
 						</div>
 
 						<p v-if="report.description" class="description">
@@ -164,7 +163,7 @@
 								<ion-icon
 									:icon="fingerPrintOutline"
 									class="metadata-icon"></ion-icon>
-								<span class="metadata-text">Bericht #{{ report.id }}</span>
+								<span class="metadata-text">Report #{{ report.id }}</span>
 							</div>
 							<div class="metadata-item">
 								<ion-icon
@@ -179,7 +178,7 @@
 									:icon="personOutline"
 									class="metadata-icon"></ion-icon>
 								<span class="metadata-text"
-									>Gemeldet von {{ report.reporterName }}</span
+									>Reported by {{ report.reporterName }}</span
 								>
 							</div>
 						</div>
@@ -191,7 +190,7 @@
 							size="small"
 							@click.stop="navigateToReport(report.id)">
 							<ion-icon :icon="eyeOutline" slot="start"></ion-icon>
-							Bericht ansehen
+							View Report
 						</ion-button>
 
 						<ion-button
@@ -202,7 +201,7 @@
 							class="claim-button"
 							@click.stop="showClaimModal(report)">
 							<ion-icon :icon="handRightOutline" slot="start"></ion-icon>
-							Abholen
+							Claim Item
 						</ion-button>
 
 						<ion-button
@@ -212,7 +211,7 @@
 							color="medium"
 							disabled>
 							<ion-icon :icon="checkmarkCircleOutline" slot="start"></ion-icon>
-							Bereits abgeholt
+							Already Claimed
 						</ion-button>
 
 						<ion-button
@@ -220,7 +219,7 @@
 							size="small"
 							@click.stop="editReport(report.id)">
 							<ion-icon :icon="createOutline" slot="start"></ion-icon>
-							Bearbeiten
+							Edit
 						</ion-button>
 					</div>
 				</ion-card>
@@ -230,7 +229,7 @@
 		<ion-modal :is-open="showClaimModalOpen" @did-dismiss="closeClaimModal">
 			<ion-header>
 				<ion-toolbar>
-					<ion-title>Gegenstand abholen</ion-title>
+					<ion-title>Claim Item</ion-title>
 					<ion-buttons slot="end">
 						<ion-button @click="closeClaimModal">
 							<ion-icon :icon="closeOutline"></ion-icon>
@@ -255,7 +254,7 @@
 							<div class="detail-row">
 								<ion-icon :icon="timeOutline" class="detail-icon"></ion-icon>
 								<span
-									>Gemeldet
+									>Reported
 									{{ getTimeAgo(selectedItemToClaim.dateCreated) }}</span
 								>
 							</div>
@@ -263,10 +262,10 @@
 					</div>
 
 					<div class="claim-form-section">
-						<h3>Bestätigung der Abholung</h3>
+						<h3>Pickup Confirmation</h3>
 						<p class="form-description">
-							Bitte bestätige, dass du diesen Gegenstand abholen möchtest. Der
-							Finder wird benachrichtigt und kann Kontakt mit dir aufnehmen.
+							Please confirm that you want to claim this item. The finder will
+							be notified and can contact you.
 						</p>
 
 						<div class="input-group">
@@ -278,11 +277,11 @@
 								}">
 								<ion-label position="stacked" class="custom-label">
 									<ion-icon :icon="personOutline" class="label-icon"></ion-icon>
-									Dein Name *
+									Your Name *
 								</ion-label>
 								<ion-input
 									v-model="claimData.claimerName"
-									placeholder="Vor- und Nachname"
+									placeholder="First and Last Name"
 									class="custom-input"
 									@ionBlur="validateClaimField('claimerName')"></ion-input>
 							</ion-item>
@@ -301,11 +300,11 @@
 								}">
 								<ion-label position="stacked" class="custom-label">
 									<ion-icon :icon="mailOutline" class="label-icon"></ion-icon>
-									Kontaktinformationen *
+									Contact Information *
 								</ion-label>
 								<ion-input
 									v-model="claimData.contactInfo"
-									placeholder="E-Mail oder Telefonnummer"
+									placeholder="Email or phone number"
 									class="custom-input"
 									@ionBlur="validateClaimField('contactInfo')"></ion-input>
 							</ion-item>
@@ -321,34 +320,30 @@
 									<ion-icon
 										:icon="documentTextOutline"
 										class="label-icon"></ion-icon>
-									Zusätzliche Informationen (optional)
+									Additional Information (optional)
 								</ion-label>
 								<ion-textarea
 									v-model="claimData.additionalInfo"
-									placeholder="Warum glaubst du, dass dies dein Gegenstand ist? Beschreibe besondere Merkmale..."
+									placeholder="Why do you think this is your item? Describe special features..."
 									class="custom-textarea"
 									rows="3"></ion-textarea>
 							</ion-item>
 						</div>
 
 						<div class="verification-section">
-							<h4>Verifizierung</h4>
+							<h4>Verification</h4>
 							<div class="checklist">
 								<ion-item class="checklist-item">
 									<ion-checkbox
 										v-model="claimData.confirmOwnership"
 										slot="start"></ion-checkbox>
-									<ion-label>
-										Ich bestätige, dass dies mein verlorener Gegenstand ist
-									</ion-label>
+									<ion-label> I confirm that this is my lost item </ion-label>
 								</ion-item>
 								<ion-item class="checklist-item">
 									<ion-checkbox
 										v-model="claimData.confirmContact"
 										slot="start"></ion-checkbox>
-									<ion-label>
-										Ich bin bereit, vom Finder kontaktiert zu werden
-									</ion-label>
+									<ion-label> I agree to be contacted by the finder </ion-label>
 								</ion-item>
 							</div>
 						</div>
@@ -359,7 +354,7 @@
 								fill="outline"
 								@click="closeClaimModal"
 								:disabled="isSubmittingClaim">
-								Abbrechen
+								Cancel
 							</ion-button>
 							<ion-button
 								expand="block"
@@ -374,11 +369,7 @@
 									v-else
 									:icon="handRightOutline"
 									slot="start"></ion-icon>
-								{{
-									isSubmittingClaim
-										? 'Wird bearbeitet...'
-										: 'Abholung bestätigen'
-								}}
+								{{ isSubmittingClaim ? 'Processing...' : 'Confirm Claim' }}
 							</ion-button>
 						</div>
 					</div>
@@ -391,7 +382,7 @@
 			@did-dismiss="showFilterModal = false">
 			<ion-header>
 				<ion-toolbar>
-					<ion-title>Berichte filtern</ion-title>
+					<ion-title>Filter Reports</ion-title>
 					<ion-buttons slot="end">
 						<ion-button @click="showFilterModal = false">
 							<ion-icon :icon="closeOutline"></ion-icon>
@@ -405,7 +396,7 @@
 					<ion-radio-group v-model="selectedStatus">
 						<ion-item>
 							<ion-radio slot="start" value=""></ion-radio>
-							<ion-label>Alle Status</ion-label>
+							<ion-label>All Status</ion-label>
 						</ion-item>
 						<ion-item>
 							<ion-radio slot="start" value="FOUND"></ion-radio>
@@ -413,7 +404,7 @@
 								<ion-icon
 									:icon="eyeOutline"
 									style="margin-right: 8px"></ion-icon>
-								Gefunden
+								Found
 							</ion-label>
 						</ion-item>
 						<ion-item>
@@ -422,7 +413,7 @@
 								<ion-icon
 									:icon="searchOutline"
 									style="margin-right: 8px"></ion-icon>
-								Verloren
+								Lost
 							</ion-label>
 						</ion-item>
 						<ion-item>
@@ -431,18 +422,18 @@
 								<ion-icon
 									:icon="checkmarkOutline"
 									style="margin-right: 8px"></ion-icon>
-								Abgeholt
+								Claimed
 							</ion-label>
 						</ion-item>
 					</ion-radio-group>
 				</div>
 
 				<div class="filter-section">
-					<h3>Standort</h3>
+					<h3>Location</h3>
 					<ion-radio-group v-model="selectedLocation">
 						<ion-item>
 							<ion-radio slot="start" value=""></ion-radio>
-							<ion-label>Alle Standorte</ion-label>
+							<ion-label>All Locations</ion-label>
 						</ion-item>
 						<ion-item v-for="location in uniqueLocations" :key="location">
 							<ion-radio slot="start" :value="location"></ion-radio>
@@ -453,10 +444,10 @@
 
 				<div class="filter-actions">
 					<ion-button expand="block" fill="outline" @click="clearAllFilters">
-						Alle Filter löschen
+						Clear All Filters
 					</ion-button>
 					<ion-button expand="block" @click="applyFilters">
-						Filter anwenden
+						Apply Filters
 					</ion-button>
 				</div>
 			</ion-content>
@@ -631,13 +622,13 @@ const activeFiltersCount = computed(() => {
 const getStatusText = (status: string) => {
 	switch (status.toUpperCase()) {
 		case 'FOUND':
-			return 'Gefunden';
+			return 'Found';
 		case 'LOST':
-			return 'Verloren';
+			return 'Lost';
 		case 'CLAIMED':
-			return 'Abgeholt';
+			return 'Claimed';
 		case 'RETURNED':
-			return 'Zurückgegeben';
+			return 'Returned';
 		default:
 			return status;
 	}
@@ -684,17 +675,17 @@ const getTimeAgo = (dateString: string) => {
 		(now.getTime() - date.getTime()) / (1000 * 60 * 60)
 	);
 
-	if (diffInHours < 1) return 'Vor wenigen Minuten';
-	if (diffInHours < 24) return `Vor ${diffInHours} Stunden`;
+	if (diffInHours < 1) return 'A few minutes ago';
+	if (diffInHours < 24) return `${diffInHours} hours ago`;
 
 	const diffInDays = Math.floor(diffInHours / 24);
-	if (diffInDays < 7) return `Vor ${diffInDays} Tagen`;
+	if (diffInDays < 7) return `${diffInDays} days ago`;
 
-	return date.toLocaleDateString('de-DE');
+	return date.toLocaleDateString('en-US');
 };
 
 const formatDate = (dateString: string) => {
-	return new Date(dateString).toLocaleDateString('de-DE', {
+	return new Date(dateString).toLocaleDateString('en-US', {
 		day: '2-digit',
 		month: '2-digit',
 		year: 'numeric',
@@ -795,20 +786,19 @@ const validateClaimField = (fieldName: keyof typeof claimErrors.value) => {
 	switch (fieldName) {
 		case 'claimerName':
 			if (!value) {
-				claimErrors.value.claimerName = 'Name ist erforderlich';
+				claimErrors.value.claimerName = 'Name is required';
 			} else if (value.length < 2) {
 				claimErrors.value.claimerName =
-					'Name muss mindestens 2 Zeichen lang sein';
+					'Name must be at least 2 characters long';
 			} else {
 				claimErrors.value.claimerName = '';
 			}
 			break;
 		case 'contactInfo':
 			if (!value) {
-				claimErrors.value.contactInfo =
-					'Kontaktinformationen sind erforderlich';
+				claimErrors.value.contactInfo = 'Contact information is required';
 			} else if (value.length < 5) {
-				claimErrors.value.contactInfo = 'Gültige Kontaktinformationen eingeben';
+				claimErrors.value.contactInfo = 'Enter valid contact information';
 			} else {
 				claimErrors.value.contactInfo = '';
 			}
@@ -823,16 +813,16 @@ const submitClaim = async () => {
 		isSubmittingClaim.value = true;
 
 		const claimDescription = [
-			'--- ABHOLUNG ANGEFORDERT ---',
-			`Angefordert von: ${claimData.value.claimerName}`,
-			`Kontakt: ${claimData.value.contactInfo}`,
-			`Datum der Anfrage: ${new Date().toLocaleDateString('de-DE')}`,
+			'--- CLAIM REQUESTED ---',
+			`Requested by: ${claimData.value.claimerName}`,
+			`Contact: ${claimData.value.contactInfo}`,
+			`Request Date: ${new Date().toLocaleDateString('en-US')}`,
 			'',
 			claimData.value.additionalInfo
-				? `Zusätzliche Informationen: ${claimData.value.additionalInfo}`
+				? `Additional Information: ${claimData.value.additionalInfo}`
 				: '',
 			'',
-			'--- ORIGINAL BESCHREIBUNG ---',
+			'--- ORIGINAL DESCRIPTION ---',
 			selectedItemToClaim.value.description,
 		]
 			.filter(Boolean)

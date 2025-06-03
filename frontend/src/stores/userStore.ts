@@ -4,17 +4,14 @@ import { userService } from '@/services';
 import { User, UserCreateData, UserUpdateData } from '@/models/user';
 
 export const useUserStore = defineStore('user', () => {
-	// State
 	const currentUser = ref<User | null>(null);
 	const loading = ref<boolean>(false);
 	const error = ref<string | null>(null);
 
-	// Getters
 	const getCurrentUser = computed(() => currentUser.value);
 	const isLoading = computed(() => loading.value);
 	const getError = computed(() => error.value);
 
-	// Actions
 	const fetchUserById = async (id: number) => {
 		try {
 			loading.value = true;
@@ -68,15 +65,12 @@ export const useUserStore = defineStore('user', () => {
 	};
 
 	return {
-		// State
 		currentUser,
 		loading,
 		error,
-		// Getters
 		getCurrentUser,
 		isLoading,
 		getError,
-		// Actions
 		fetchUserById,
 		createUser,
 		updateUser,

@@ -1,6 +1,6 @@
 <template>
 	<template-page
-		:headline="'Neuen Standort hinzufügen'"
+		:headline="'Add New Location'"
 		:leftFooterButton="leftFooterButton"
 		:rightFooterButton="rightFooterButton"
 		@leftFooterButtonClicked="handleCancel"
@@ -12,23 +12,23 @@
 					color="primary"
 					class="progress-bar"></ion-progress-bar>
 				<p class="progress-text">
-					{{ Math.round(completionProgress * 100) }}% ausgefüllt
+					{{ Math.round(completionProgress * 100) }}% completed
 				</p>
 			</div>
 
 			<div class="form-header">
 				<ion-icon :icon="locationOutline" class="header-icon"></ion-icon>
-				<h2>Neuen Standort hinzufügen</h2>
-				<p>Erstelle einen neuen Standort für das Campus Lost & Found System</p>
+				<h2>Add New Location</h2>
+				<p>Create a new location for the Campus Lost & Found System</p>
 			</div>
 
 			<div class="form-content">
 				<div class="input-group">
 					<ion-input
 						v-model="location.name"
-						label="Name des Standorts *"
+						label="Location Name *"
 						label-placement="stacked"
-						placeholder="z.B. Hauptbibliothek, Mensa Nord, Hörsaal A"
+						placeholder="e.g. Main Library, North Cafeteria, Lecture Hall A"
 						class="modern-input"
 						:class="{
 							'input-filled': location.name,
@@ -49,9 +49,9 @@
 				<div class="input-group">
 					<ion-textarea
 						v-model="location.description"
-						label="Beschreibung"
+						label="Description"
 						label-placement="stacked"
-						placeholder="Detaillierte Beschreibung des Standorts und seiner Besonderheiten..."
+						placeholder="Detailed description of the location and its features..."
 						class="modern-textarea"
 						:class="{
 							'textarea-filled': location.description,
@@ -68,9 +68,9 @@
 				<div class="input-group">
 					<ion-input
 						v-model="location.building"
-						label="Gebäude *"
+						label="Building *"
 						label-placement="stacked"
-						placeholder="z.B. Hauptgebäude, Neubau, Labor"
+						placeholder="e.g. Main Building, New Building, Laboratory"
 						class="modern-input"
 						:class="{
 							'input-filled': location.building,
@@ -92,9 +92,9 @@
 					<div class="input-group half-width">
 						<ion-input
 							v-model="location.floor"
-							label="Etage *"
+							label="Floor *"
 							label-placement="stacked"
-							placeholder="z.B. EG, 1, 2, UG"
+							placeholder="e.g. GF, 1, 2, B1"
 							class="modern-input"
 							:class="{
 								'input-filled': location.floor,
@@ -115,9 +115,9 @@
 					<div class="input-group half-width">
 						<ion-input
 							v-model="location.room"
-							label="Raum *"
+							label="Room *"
 							label-placement="stacked"
-							placeholder="z.B. 101, A-15, Foyer"
+							placeholder="e.g. 101, A-15, Foyer"
 							class="modern-input"
 							:class="{
 								'input-filled': location.room,
@@ -143,11 +143,11 @@
 							color="primary"
 							class="info-icon"></ion-icon>
 						<div class="info-text">
-							<p>Der neue Standort wird sofort im System verfügbar sein.</p>
-							<p>Nutzer können dann Gegenstände an diesem Standort melden.</p>
-							<p class="required-note">
-								* Pflichtfelder müssen ausgefüllt werden.
+							<p>
+								The new location will be immediately available in the system.
 							</p>
+							<p>Users can then report items at this location.</p>
+							<p class="required-note">* Required fields must be filled out.</p>
 						</div>
 					</div>
 				</div>
@@ -197,17 +197,17 @@ const errors = ref({
 const isLoading = computed(() => locationStore.isLoading);
 
 const leftFooterButton = computed(() => ({
-	name: 'Abbrechen',
+	name: 'Cancel',
 	color: 'medium',
 	icon: closeCircleOutline,
 }));
 
 const rightFooterButton = computed(() => ({
 	name: isLoading.value
-		? 'Wird erstellt...'
+		? 'Creating...'
 		: isValid.value
-		? 'Standort hinzufügen'
-		: 'Felder ausfüllen',
+		? 'Add Location'
+		: 'Fill Required Fields',
 	color: isValid.value ? 'primary' : 'medium',
 	icon: checkmarkCircleOutline,
 	disabled: !isValid.value || isLoading.value,
@@ -238,30 +238,30 @@ const validateField = (fieldName: keyof typeof errors.value) => {
 	switch (fieldName) {
 		case 'name':
 			if (!value) {
-				errors.value.name = 'Name ist erforderlich';
+				errors.value.name = 'Name is required';
 			} else if (value.length < 2) {
-				errors.value.name = 'Name muss mindestens 2 Zeichen haben';
+				errors.value.name = 'Name must be at least 2 characters long';
 			} else {
 				errors.value.name = '';
 			}
 			break;
 		case 'building':
 			if (!value) {
-				errors.value.building = 'Gebäude ist erforderlich';
+				errors.value.building = 'Building is required';
 			} else {
 				errors.value.building = '';
 			}
 			break;
 		case 'floor':
 			if (!value) {
-				errors.value.floor = 'Etage ist erforderlich';
+				errors.value.floor = 'Floor is required';
 			} else {
 				errors.value.floor = '';
 			}
 			break;
 		case 'room':
 			if (!value) {
-				errors.value.room = 'Raum ist erforderlich';
+				errors.value.room = 'Room is required';
 			} else {
 				errors.value.room = '';
 			}

@@ -4,28 +4,25 @@ import { itemService } from '@/services';
 import { Item, ItemFilters } from '@/models/item';
 
 export const useItemStore = defineStore('item', () => {
-	// State - Initialize as empty array to prevent filter errors
 	const items = ref<Item[]>([]);
 	const currentItem = ref<Item | null>(null);
 	const loading = ref<boolean>(false);
 	const error = ref<string | null>(null);
 
-	// Getters
-	const getItems = computed(() => items.value || []); // Ensure it's always an array
+	const getItems = computed(() => items.value || []);
 	const getCurrentItem = computed(() => currentItem.value);
 	const getError = computed(() => error.value);
 	const isLoading = computed(() => loading.value);
 
-	// Actions
 	const fetchItems = async (filters: ItemFilters = {}) => {
 		try {
 			loading.value = true;
-			error.value = null; // Clear previous errors
+			error.value = null;
 			const response = await itemService.getAllItems(filters);
-			items.value = Array.isArray(response) ? response : []; // Ensure it's an array
+			items.value = Array.isArray(response) ? response : [];
 		} catch (err) {
 			error.value = err instanceof Error ? err.message : 'An error occurred';
-			items.value = []; // Set to empty array on error
+			items.value = [];
 			console.error('Error fetching items:', err);
 		} finally {
 			loading.value = false;
@@ -39,7 +36,6 @@ export const useItemStore = defineStore('item', () => {
 			const item = await itemService.getItemById(id);
 			currentItem.value = item;
 
-			// Update the item in the items array if it exists
 			const index = items.value.findIndex((i) => i.id === id);
 			if (index >= 0) {
 				items.value[index] = item;
@@ -64,8 +60,7 @@ export const useItemStore = defineStore('item', () => {
 			error.value = null;
 			const newItem = await itemService.createItem(itemData);
 
-			// Add the new item to the store
-			items.value.unshift(newItem); // Add to beginning of array
+			items.value.unshift(newItem);
 			currentItem.value = newItem;
 
 			return newItem;
@@ -88,12 +83,10 @@ export const useItemStore = defineStore('item', () => {
 			error.value = null;
 			const updatedItem = await itemService.updateItem(id, itemData);
 
-			// Update current item if it's the same
 			if (currentItem.value?.id === id) {
 				currentItem.value = updatedItem;
 			}
 
-			// Update the item in the items array
 			const index = items.value.findIndex((item) => item.id === id);
 			if (index !== -1) {
 				items.value[index] = updatedItem;
@@ -116,7 +109,6 @@ export const useItemStore = defineStore('item', () => {
 			await itemService.deleteItem(id);
 			items.value = items.value.filter((item) => item.id !== id);
 
-			// Clear current item if it's the deleted one
 			if (currentItem.value?.id === id) {
 				currentItem.value = null;
 			}
@@ -136,17 +128,14 @@ export const useItemStore = defineStore('item', () => {
 	};
 
 	return {
-		// State
 		items,
 		currentItem,
 		loading,
 		error,
-		// Getters
 		getItems,
 		getCurrentItem,
 		isLoading,
 		getError,
-		// Actions
 		fetchItems,
 		fetchItemById,
 		createItem,

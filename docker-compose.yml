@@ -11,8 +11,6 @@ services:
       - "3000:80"
     depends_on:
       - backend
-    networks:
-      - campus-network
 
   backend:
     build:
@@ -41,8 +39,6 @@ services:
     depends_on:
       - mysql
       - minio
-    networks:
-      - campus-network
 
   minio:
     image: minio/minio
@@ -56,8 +52,6 @@ services:
     volumes:
       - minio_data:/data
     command: server /data --console-address ":9001"
-    networks:
-      - campus-network
 
   mysql:
     image: mysql:8.0
@@ -69,8 +63,6 @@ services:
       - MYSQL_DATABASE=campus_lost_found
     volumes:
       - mysql_data:/var/lib/mysql
-    networks:
-      - campus-network
 
   # dashboard for mysql database management
   # connect with credentials set in the mysql service
@@ -82,13 +74,7 @@ services:
       - "8082:8080"
     depends_on:
       - mysql
-    networks:
-      - campus-network
 
 volumes:
   mysql_data:
   minio_data:
-
-networks:
-  campus-network:
-    external: true

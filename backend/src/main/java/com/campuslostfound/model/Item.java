@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.sql.Timestamp;
 
 @Entity
 @Table(name = "items")
@@ -20,29 +20,17 @@ public class Item {
     @Column(nullable = false)
     private String name;
 
+    @Column(columnDefinition = "TEXT")
     private String description;
 
-    @Column(nullable = false)
-    private String category;
-
-    private String imageUrl;
-
-    @Column(nullable = false)
-    private LocalDateTime dateReported;
-
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "location_id")
-    private Location location;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private ItemStatus status;
-
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "reported_by")
-    private User reportedBy;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "report_id", nullable = false)
+    private Report report;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "report_id")
-    private Report report;
+    @JoinColumn(name = "claimed_by_user_id")
+    private User claimedByUser;
+
+    @Column(name = "created_at", nullable = false, updatable = false, insertable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    private Timestamp createdAt;
 }

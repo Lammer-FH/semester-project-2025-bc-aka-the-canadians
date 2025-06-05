@@ -5,9 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.sql.Timestamp;
 import java.util.List;
-import java.util.ArrayList;
 
 @Entity
 @Table(name = "reports")
@@ -20,27 +19,20 @@ public class Report {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "location_id", nullable = false)
+    private Location location;
+
+    @Column(name = "reported_at", nullable = false, updatable = false, insertable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    private Timestamp reportedAt;
+
     @Column(nullable = false)
-    private String title;
-
-    @Column(nullable = false, length = 1000)
-    private String description;
-
-    @Column(nullable = false)
-    private LocalDateTime dateCreated;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private ReportType type;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private ReportStatus status;
-
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "reported_by")
-    private User reportedBy;
+    private Boolean status;
 
     @OneToMany(mappedBy = "report", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Item> items = new ArrayList<>();
+    private List<Item> items;
 }

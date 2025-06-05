@@ -3,7 +3,9 @@ package com.campuslostfound.service;
 import com.campuslostfound.model.Item;
 import com.campuslostfound.model.Location;
 import com.campuslostfound.repository.ItemRepository;
+
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -24,7 +26,7 @@ public class ItemService {
     }
 
     public List<Item> getItemsByLocation(Location location) {
-        return itemRepository.findByLocation(location);
+        return itemRepository.findByLocationId(location.getId());
     }
 
     public Item saveItem(Item item) {

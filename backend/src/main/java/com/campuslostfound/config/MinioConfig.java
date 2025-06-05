@@ -1,16 +1,19 @@
 package com.campuslostfound.config;
 
-import io.minio.MinioClient;
 import io.minio.BucketExistsArgs;
 import io.minio.MakeBucketArgs;
-import jakarta.annotation.PostConstruct;
+import io.minio.MinioClient;
+
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 
 @Slf4j
 @Configuration
+@Profile("!dev")
 public class MinioConfig {
 
     @Value("${minio.endpoint}")
@@ -27,10 +30,7 @@ public class MinioConfig {
 
     @Bean
     public MinioClient minioClient() {
-        return MinioClient.builder()
-                .endpoint(endpoint)
-                .credentials(accessKey, secretKey)
-                .build();
+        return MinioClient.builder().endpoint(endpoint).credentials(accessKey, secretKey).build();
     }
 
     @Bean
@@ -41,14 +41,11 @@ public class MinioConfig {
     @Bean
     public Boolean initMinioClient(MinioClient minioClient) {
         try {
-            boolean bucketExists = minioClient.bucketExists(BucketExistsArgs.builder()
-                    .bucket(bucketName)
-                    .build());
-            
+            boolean bucketExists =
+                    minioClient.bucketExists(BucketExistsArgs.builder().bucket(bucketName).build());
+
             if (!bucketExists) {
-                minioClient.makeBucket(MakeBucketArgs.builder()
-                        .bucket(bucketName)
-                        .build());
+                minioClient.makeBucket(MakeBucketArgs.builder().bucket(bucketName).build());
                 log.info("Created MinIO bucket: {}", bucketName);
             } else {
                 log.info("MinIO bucket already exists: {}", bucketName);
@@ -59,4 +56,4 @@ public class MinioConfig {
             throw new RuntimeException("Could not initialize MinIO bucket", e);
         }
     }
-} 
+}

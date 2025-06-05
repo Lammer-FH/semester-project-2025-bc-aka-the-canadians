@@ -4,7 +4,9 @@ import com.campuslostfound.model.Report;
 import com.campuslostfound.model.ReportStatus;
 import com.campuslostfound.model.User;
 import com.campuslostfound.repository.ReportRepository;
+
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -29,7 +31,7 @@ public class ReportService {
     }
 
     public List<Report> getReportsByUser(User user) {
-        return reportRepository.findByReportedBy(user);
+        return reportRepository.findByUser(user);
     }
 
     public Report saveReport(Report report) {

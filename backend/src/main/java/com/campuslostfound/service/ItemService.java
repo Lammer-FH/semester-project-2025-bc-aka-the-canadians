@@ -1,7 +1,6 @@
 package com.campuslostfound.service;
 
 import com.campuslostfound.model.Item;
-import com.campuslostfound.model.ItemStatus;
 import com.campuslostfound.model.Location;
 import com.campuslostfound.repository.ItemRepository;
 import lombok.RequiredArgsConstructor;

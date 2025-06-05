@@ -45,7 +45,7 @@ public class ItemController {
 
     @PutMapping("/{id}")
     public ResponseEntity<ItemDTO> updateItem(@PathVariable Long id, @RequestBody ItemDTO itemDTO) {
-        if (!itemService.getItemById(id).isPresent()) {
+        if (itemService.getItemById(id).isEmpty()) {
             return ResponseEntity.notFound().build();
         }
 
@@ -59,7 +59,7 @@ public class ItemController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteItem(@PathVariable Long id) {
-        if (!itemService.getItemById(id).isPresent()) {
+        if (itemService.getItemById(id).isEmpty()) {
             return ResponseEntity.notFound().build();
         }
         itemService.deleteItem(id);

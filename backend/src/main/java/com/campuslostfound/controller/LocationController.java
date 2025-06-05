@@ -64,7 +64,7 @@ public class LocationController {
     @PutMapping("/{id}")
     public ResponseEntity<LocationDTO> updateLocation(
             @PathVariable Long id, @RequestBody LocationDTO locationDTO) {
-        if (!locationService.getLocationById(id).isPresent()) {
+        if (locationService.getLocationById(id).isEmpty()) {
             return ResponseEntity.notFound().build();
         }
 
@@ -77,7 +77,7 @@ public class LocationController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteLocation(@PathVariable Long id) {
-        if (!locationService.getLocationById(id).isPresent()) {
+        if (locationService.getLocationById(id).isEmpty()) {
             return ResponseEntity.notFound().build();
         }
 

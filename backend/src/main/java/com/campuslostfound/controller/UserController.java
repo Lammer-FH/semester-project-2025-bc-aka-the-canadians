@@ -44,7 +44,7 @@ public class UserController {
 
     @PutMapping("/{id}")
     public ResponseEntity<UserDTO> updateUser(@PathVariable Long id, @RequestBody UserDTO userDTO) {
-        if (!userService.getUserById(id).isPresent()) {
+        if (userService.getUserById(id).isEmpty()) {
             return ResponseEntity.notFound().build();
         }
 

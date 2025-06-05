@@ -2,7 +2,6 @@ package com.campuslostfound.repository;
 
 import com.campuslostfound.model.Report;
 import com.campuslostfound.model.ReportStatus;
-import com.campuslostfound.model.ReportType;
 import com.campuslostfound.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

@@ -1,7 +1,6 @@
 package com.campuslostfound.repository;
 
 import com.campuslostfound.model.Item;
-import com.campuslostfound.model.ItemStatus;
 import com.campuslostfound.model.Location;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

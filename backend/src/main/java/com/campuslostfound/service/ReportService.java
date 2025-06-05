@@ -2,7 +2,6 @@ package com.campuslostfound.service;
 
 import com.campuslostfound.model.Report;
 import com.campuslostfound.model.ReportStatus;
-import com.campuslostfound.model.ReportType;
 import com.campuslostfound.model.User;
 import com.campuslostfound.repository.ReportRepository;
 import lombok.RequiredArgsConstructor;

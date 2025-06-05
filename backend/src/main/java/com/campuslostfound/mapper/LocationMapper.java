@@ -1,24 +1,29 @@
 package com.campuslostfound.mapper;
 
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-
 import com.campuslostfound.dto.LocationDTO;
 import com.campuslostfound.model.Location;
+import com.campuslostfound.model.Report;
+
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.Named;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Mapper(componentModel = "spring")
-public interface LocationMapper extends GenericMapper<Location, LocationDTO> {
-    @Mapping(target = "reportIds", expression = "java(location.getReports() != null ? location.getReports().stream().map(r -> r.getId()).collect(Collectors.toList()) : null)")
-    @Mapping(target = "id", source = "id")
-    @Mapping(target = "name", source = "name")
-    @Mapping(target = "description", source = "description")
-    @Mapping(target = "createdAt", source = "createdAt")
-    LocationDTO toDto(Location location);
+public interface LocationMapper {
+    @Mapping(target = "reportIds", source = "reports", qualifiedByName = "reportListToIdList")
+    LocationDTO toDTO(Location location);
 
     @Mapping(target = "reports", ignore = true)
-    @Mapping(target = "id", source = "id")
-    @Mapping(target = "name", source = "name")
-    @Mapping(target = "description", source = "description")
-    @Mapping(target = "createdAt", source = "createdAt")
     Location toEntity(LocationDTO dto);
+
+    @Named("reportListToIdList")
+    public static List<Long> reportListToIdList(List<Report> reports) {
+        if (reports == null) return null;
+        return reports.stream().map(Report::getId).collect(Collectors.toList());
+    }
+
+    List<LocationDTO> toDTOList(List<Location> allLocations);
 }

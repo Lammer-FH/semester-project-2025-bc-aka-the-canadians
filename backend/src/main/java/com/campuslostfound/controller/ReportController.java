@@ -49,7 +49,7 @@ public class ReportController {
     @PutMapping("/{id}")
     public ResponseEntity<ReportDTO> updateReport(
             @PathVariable Long id, @RequestBody ReportDTO reportDTO) {
-        if (!reportService.getReportById(id).isPresent()) {
+        if (reportService.getReportById(id).isEmpty()) {
             return ResponseEntity.notFound().build();
         }
         reportDTO.setId(id);
@@ -60,7 +60,7 @@ public class ReportController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteReport(@PathVariable Long id) {
-        if (!reportService.getReportById(id).isPresent()) {
+        if (reportService.getReportById(id).isEmpty()) {
             return ResponseEntity.notFound().build();
         }
         reportService.deleteReport(id);

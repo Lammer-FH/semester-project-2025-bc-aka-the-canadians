@@ -10,7 +10,7 @@ import LocationDetailsPage from '@/views/LocationsPages/LocationDetailsPage.vue'
 import EditLocationPage from '@/views/LocationsPages/EditLocationPage.vue';
 import UserProfilePage from '@/views/UserPages/UserProfilePage.vue';
 
-const routes: Array<RouteRecordRaw> = [
+const routes: RouteRecordRaw[] = [
 	{
 		path: '/',
 		name: 'home',

@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
  * MapStruct-Mapper für User-Entities und DTOs.
  */
 @Mapper(componentModel = "spring")
-public interface UserMapper {
+public interface UserMapper extends GenericMapper<User, UserDTO> {
     @Mapping(target = "reportIds", expression = "java(user.getReports() != null ? user.getReports().stream().map(r -> r.getId()).collect(Collectors.toList()) : null)")
     @Mapping(target = "claimedItemIds", expression = "java(user.getClaimedItems() != null ? user.getClaimedItems().stream().map(i -> i.getId()).collect(Collectors.toList()) : null)")
     @Mapping(target = "id", source = "id")

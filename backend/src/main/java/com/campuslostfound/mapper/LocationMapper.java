@@ -7,7 +7,7 @@ import com.campuslostfound.dto.LocationDTO;
 import com.campuslostfound.model.Location;
 
 @Mapper(componentModel = "spring")
-public interface LocationMapper {
+public interface LocationMapper extends GenericMapper<Location, LocationDTO> {
     @Mapping(target = "reportIds", expression = "java(location.getReports() != null ? location.getReports().stream().map(r -> r.getId()).collect(Collectors.toList()) : null)")
     @Mapping(target = "id", source = "id")
     @Mapping(target = "name", source = "name")

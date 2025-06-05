@@ -5,8 +5,7 @@ import com.campuslostfound.model.Item;
 import org.mapstruct.*;
 
 @Mapper(componentModel = "spring")
-public interface ItemMapper {
-
+public interface ItemMapper extends GenericMapper<Item, ItemDTO>  {
     @Mapping(target = "reportId", source = "report.id")
     @Mapping(target = "claimedByUserId", source = "claimedByUser.id")
     @Mapping(target = "createdAt", source = "createdAt")

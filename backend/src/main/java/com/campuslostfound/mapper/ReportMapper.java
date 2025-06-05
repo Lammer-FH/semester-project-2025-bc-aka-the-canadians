@@ -7,7 +7,7 @@ import com.campuslostfound.dto.ReportDTO;
 import com.campuslostfound.model.Report;
 
 @Mapper(componentModel = "spring")
-public interface ReportMapper {
+public interface ReportMapper extends GenericMapper<Report, ReportDTO>  {
     @Mapping(target = "userId", source = "user.id")
     @Mapping(target = "locationId", source = "location.id")
     @Mapping(target = "createdAt", source = "createdAt")

@@ -24,22 +24,10 @@ public class ItemService {
         return itemRepository.findById(id);
     }
 
-    public List<Item> getItemsByStatus(ItemStatus status) {
-        return itemRepository.findByStatus(status);
-    }
-
     public List<Item> getItemsByLocation(Location location) {
         return itemRepository.findByLocation(location);
     }
 
-    public List<Item> getItemsByCategory(String category) {
-        return itemRepository.findByCategory(category);
-    }
-
-    public List<Item> getItemsByStatusAndCategory(ItemStatus status, String category) {
-        return itemRepository.findByStatusAndCategory(status, category);
-    }
-    
     public Item saveItem(Item item) {
         return itemRepository.save(item);
     }
@@ -47,4 +35,4 @@ public class ItemService {
     public void deleteItem(Long id) {
         itemRepository.deleteById(id);
     }
-} 
+}

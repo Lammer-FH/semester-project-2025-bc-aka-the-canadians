@@ -29,10 +29,6 @@ public class ReportService {
         return reportRepository.findByStatus(status);
     }
 
-    public List<Report> getReportsByType(ReportType type) {
-        return reportRepository.findByType(type);
-    }
-
     public List<Report> getReportsByUser(User user) {
         return reportRepository.findByReportedBy(user);
     }
@@ -44,4 +40,4 @@ public class ReportService {
     public void deleteReport(Long id) {
         reportRepository.deleteById(id);
     }
-} 
+}

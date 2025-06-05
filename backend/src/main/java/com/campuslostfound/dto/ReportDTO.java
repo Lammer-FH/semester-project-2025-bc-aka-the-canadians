@@ -1,24 +1,19 @@
 package com.campuslostfound.dto;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.time.LocalDateTime;
+import java.sql.Timestamp;
 import java.util.List;
 
 @Data
-@Builder
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 public class ReportDTO {
     private Long id;
-    private String title;
-    private String description;
-    private LocalDateTime dateCreated;
-    private String type;
-    private String status;
-    private UserDTO reportedBy;
-    private List<ItemDTO> items;
+    private Long userId;
+    private Long locationId;
+    private Timestamp reportedAt;
+    private Boolean status;
+    private List<Long> itemIds;
 }

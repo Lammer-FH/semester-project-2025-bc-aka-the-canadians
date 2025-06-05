@@ -1,13 +1,24 @@
 package com.campuslostfound.mapper;
 
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+
 import com.campuslostfound.dto.LocationDTO;
 import com.campuslostfound.model.Location;
-import org.mapstruct.Mapper;
 
-/**
- * MapStruct-Mapper für Location-Entities und DTOs.
- */
 @Mapper(componentModel = "spring")
-public interface LocationMapper extends GenericMapper<Location, LocationDTO> {
-    // Standardimplementierungen aus GenericMapper werden verwendet
-} 
+public interface LocationMapper {
+    @Mapping(target = "reportIds", expression = "java(location.getReports() != null ? location.getReports().stream().map(r -> r.getId()).collect(Collectors.toList()) : null)")
+    @Mapping(target = "id", source = "id")
+    @Mapping(target = "name", source = "name")
+    @Mapping(target = "description", source = "description")
+    @Mapping(target = "createdAt", source = "createdAt")
+    LocationDTO toDto(Location location);
+
+    @Mapping(target = "reports", ignore = true)
+    @Mapping(target = "id", source = "id")
+    @Mapping(target = "name", source = "name")
+    @Mapping(target = "description", source = "description")
+    @Mapping(target = "createdAt", source = "createdAt")
+    Location toEntity(LocationDTO dto);
+}

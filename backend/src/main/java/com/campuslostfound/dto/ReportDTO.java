@@ -13,7 +13,7 @@ public class ReportDTO {
     private Long id;
     private Long userId;
     private Long locationId;
-    private Timestamp reportedAt;
+    private Timestamp createdAt;
     private Boolean status;
     private List<Long> itemIds;
 }

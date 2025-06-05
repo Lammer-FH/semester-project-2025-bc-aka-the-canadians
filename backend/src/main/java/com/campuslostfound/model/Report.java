@@ -27,8 +27,8 @@ public class Report {
     @JoinColumn(name = "location_id", nullable = false)
     private Location location;
 
-    @Column(name = "reported_at", nullable = false, updatable = false, insertable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-    private Timestamp reportedAt;
+    @Column(name = "created_at", nullable = false, updatable = false, insertable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    private Timestamp createdAt;
 
     @Column(nullable = false)
     private Boolean status;

@@ -1,13 +1,13 @@
 export enum ReportStatus {
-    OPEN = 'OPEN',
-    IN_PROGRESS = 'IN_PROGRESS',
-    RESOLVED = 'RESOLVED',
-    CLOSED = 'CLOSED'
+    OPEN = "OPEN",
+    IN_PROGRESS = "IN_PROGRESS",
+    RESOLVED = "RESOLVED",
+    CLOSED = "CLOSED",
 }
 
 export enum ReportType {
-    LOST = 'LOST',
-    FOUND = 'FOUND'
+    LOST = "LOST",
+    FOUND = "FOUND",
 }
 
 export interface Report {
@@ -21,5 +21,5 @@ export interface Report {
     itemId?: number;
 }
 
-export type ReportCreateData = Omit<Report, 'id' | 'dateCreated'>;
-export type ReportUpdateData = Partial<ReportCreateData>; 
+export type ReportCreateData = Omit<Report, "id" | "dateCreated">;
+export type ReportUpdateData = Partial<ReportCreateData>;

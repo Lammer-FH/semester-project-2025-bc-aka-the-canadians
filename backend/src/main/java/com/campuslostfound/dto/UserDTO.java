@@ -1,17 +1,19 @@
 package com.campuslostfound.dto;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import java.sql.Timestamp;
+import java.util.List;
 
 @Data
-@Builder
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 public class UserDTO {
     private Long id;
     private String name;
     private String email;
-    private String phone;
-} 
+    private Timestamp createdAt;
+    private List<Long> reportIds;
+    private List<Long> claimedItemIds;
+}

@@ -1,7 +1,10 @@
 package com.campuslostfound.controller;
 
 import com.campuslostfound.service.MinioService;
+
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +16,7 @@ import java.io.InputStream;
 @RestController
 @RequestMapping("/api/files")
 @RequiredArgsConstructor
+@Profile("!dev")
 public class FileController {
 
     private final MinioService minioService;
@@ -36,4 +40,4 @@ public class FileController {
         minioService.deleteFile(fileName);
         return ResponseEntity.ok().build();
     }
-} 
+}

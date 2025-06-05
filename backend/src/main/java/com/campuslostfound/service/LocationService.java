@@ -22,10 +22,6 @@ public class LocationService {
         return locationRepository.findById(id);
     }
 
-    public List<Location> getLocationsByBuilding(String building) {
-        return locationRepository.findByBuilding(building);
-    }
-
     public Location saveLocation(Location location) {
         return locationRepository.save(location);
     }
@@ -33,4 +29,4 @@ public class LocationService {
     public void deleteLocation(Long id) {
         locationRepository.deleteById(id);
     }
-} 
+}

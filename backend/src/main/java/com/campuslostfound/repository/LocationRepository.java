@@ -8,6 +8,5 @@ import java.util.List;
 
 @Repository
 public interface LocationRepository extends JpaRepository<Location, Long> {
-    List<Location> findByBuilding(String building);
-    Location findByNameAndBuilding(String name, String building);
-} 
+    List<Location> findByName(String name);
+}

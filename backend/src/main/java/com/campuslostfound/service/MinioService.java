@@ -1,16 +1,18 @@
 package com.campuslostfound.service;
 
 import io.minio.*;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
 import java.util.UUID;
 
 @Service
+@Profile("!dev")
 public class MinioService {
 
     private final MinioClient minioClient;
@@ -18,8 +20,10 @@ public class MinioService {
     private final Boolean initializedMinio;
 
     @Autowired
-    public MinioService(MinioClient minioClient, String bucketName, 
-                        @Qualifier("initMinioClient") Boolean initializedMinio) {
+    public MinioService(
+            MinioClient minioClient,
+            String bucketName,
+            @Qualifier("initMinioClient") Boolean initializedMinio) {
         this.minioClient = minioClient;
         this.bucketName = bucketName;
         this.initializedMinio = initializedMinio;
@@ -28,12 +32,11 @@ public class MinioService {
     public String uploadFile(MultipartFile file) {
         try {
             String fileName = generateUniqueFileName(file.getOriginalFilename());
-            minioClient.putObject(PutObjectArgs.builder()
-                    .bucket(bucketName)
-                    .object(fileName)
-                    .stream(file.getInputStream(), file.getSize(), -1)
-                    .contentType(file.getContentType())
-                    .build());
+            minioClient.putObject(
+                    PutObjectArgs.builder().bucket(bucketName).object(fileName).stream(
+                                    file.getInputStream(), file.getSize(), -1)
+                            .contentType(file.getContentType())
+                            .build());
             return fileName;
         } catch (Exception e) {
             throw new RuntimeException("Error uploading file to MinIO", e);
@@ -42,10 +45,8 @@ public class MinioService {
 
     public InputStream getFile(String fileName) {
         try {
-            return minioClient.getObject(GetObjectArgs.builder()
-                    .bucket(bucketName)
-                    .object(fileName)
-                    .build());
+            return minioClient.getObject(
+                    GetObjectArgs.builder().bucket(bucketName).object(fileName).build());
         } catch (Exception e) {
             throw new RuntimeException("Error getting file from MinIO", e);
         }
@@ -53,10 +54,8 @@ public class MinioService {
 
     public void deleteFile(String fileName) {
         try {
-            minioClient.removeObject(RemoveObjectArgs.builder()
-                    .bucket(bucketName)
-                    .object(fileName)
-                    .build());
+            minioClient.removeObject(
+                    RemoveObjectArgs.builder().bucket(bucketName).object(fileName).build());
         } catch (Exception e) {
             throw new RuntimeException("Error deleting file from MinIO", e);
         }
@@ -66,4 +65,4 @@ public class MinioService {
         String extension = originalFileName.substring(originalFileName.lastIndexOf("."));
         return UUID.randomUUID().toString() + extension;
     }
-} 
+}

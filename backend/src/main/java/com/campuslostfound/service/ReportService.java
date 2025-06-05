@@ -2,10 +2,11 @@ package com.campuslostfound.service;
 
 import com.campuslostfound.model.Report;
 import com.campuslostfound.model.ReportStatus;
-import com.campuslostfound.model.ReportType;
 import com.campuslostfound.model.User;
 import com.campuslostfound.repository.ReportRepository;
+
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -29,12 +30,8 @@ public class ReportService {
         return reportRepository.findByStatus(status);
     }
 
-    public List<Report> getReportsByType(ReportType type) {
-        return reportRepository.findByType(type);
-    }
-
     public List<Report> getReportsByUser(User user) {
-        return reportRepository.findByReportedBy(user);
+        return reportRepository.findByUser(user);
     }
 
     public Report saveReport(Report report) {
@@ -44,4 +41,4 @@ public class ReportService {
     public void deleteReport(Long id) {
         reportRepository.deleteById(id);
     }
-} 
+}

@@ -1,18 +1,26 @@
 package com.campuslostfound.mapper;
 
-import com.campuslostfound.dto.ReportDTO;
-import com.campuslostfound.model.Report;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-import java.util.List;
+import com.campuslostfound.dto.ReportDTO;
+import com.campuslostfound.model.Report;
 
-@Mapper(componentModel = "spring", uses = {ItemMapper.class, UserMapper.class, LocationMapper.class})
+@Mapper(componentModel = "spring")
 public interface ReportMapper {
+    @Mapping(target = "userId", source = "user.id")
+    @Mapping(target = "locationId", source = "location.id")
+    @Mapping(target = "createdAt", source = "createdAt")
+    @Mapping(target = "status", source = "status")
+    @Mapping(target = "itemIds", expression = "java(report.getItems() != null ? report.getItems().stream().map(i -> i.getId()).collect(Collectors.toList()) : null)")
+    @Mapping(target = "id", source = "id")
+    ReportDTO toDto(Report report);
 
-    @Mapping(target = "type", expression = "java(report.getType().name())")
-    @Mapping(target = "status", expression = "java(report.getStatus().name())")
-    ReportDTO toDTO(Report report);
-
-    List<ReportDTO> toDTOList(List<Report> reports);
+    @Mapping(target = "user", ignore = true)
+    @Mapping(target = "location", ignore = true)
+    @Mapping(target = "items", ignore = true)
+    @Mapping(target = "createdAt", source = "createdAt")
+    @Mapping(target = "status", source = "status")
+    @Mapping(target = "id", source = "id")
+    Report toEntity(ReportDTO dto);
 }

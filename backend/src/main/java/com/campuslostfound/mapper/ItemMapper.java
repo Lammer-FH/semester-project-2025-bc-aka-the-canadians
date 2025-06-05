@@ -2,35 +2,21 @@ package com.campuslostfound.mapper;
 
 import com.campuslostfound.dto.ItemDTO;
 import com.campuslostfound.model.Item;
-import com.campuslostfound.model.ItemStatus;
 import org.mapstruct.*;
 
 /**
  * MapStruct-Mapper für Item-Entities und DTOs.
  */
-@Mapper(componentModel = "spring", 
-        uses = {LocationMapper.class, UserMapper.class})
-public interface ItemMapper extends GenericMapper<Item, ItemDTO> {
+@Mapper(componentModel = "spring")
+public interface ItemMapper {
 
-    @Mapping(target = "status", expression = "java(entity.getStatus() != null ? entity.getStatus().name() : null)")
-    @Override
-    ItemDTO toDTO(Item entity);
+    @Mapping(target = "reportId", source = "report.id")
+    @Mapping(target = "claimedByUserId", source = "claimedByUser.id")
+    @Mapping(target = "createdAt", source = "createdAt")
+    ItemDTO toDto(Item item);
 
-    @Mapping(target = "status", expression = "java(mapStatus(dto.getStatus()))")
-    @Override
+    @Mapping(target = "report", ignore = true)
+    @Mapping(target = "claimedByUser", ignore = true)
+    @Mapping(target = "createdAt", source = "createdAt")
     Item toEntity(ItemDTO dto);
-
-    /**
-     * Konvertiert einen Status-String in ein ItemStatus-Enum.
-     */
-    default ItemStatus mapStatus(String status) {
-        if (status == null) {
-            return null;
-        }
-        try {
-            return ItemStatus.valueOf(status);
-        } catch (IllegalArgumentException e) {
-            return ItemStatus.LOST; // Default-Wert
-        }
-    }
-} 
+}

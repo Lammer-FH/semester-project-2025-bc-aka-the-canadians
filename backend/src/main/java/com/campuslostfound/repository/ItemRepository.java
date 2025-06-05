@@ -10,11 +10,5 @@ import java.util.List;
 
 @Repository
 public interface ItemRepository extends JpaRepository<Item, Long> {
-    List<Item> findByStatus(ItemStatus status);
-
     List<Item> findByLocation(Location location);
-
-    List<Item> findByCategory(String category);
-
-    List<Item> findByStatusAndCategory(ItemStatus status, String category);
-} 
+}

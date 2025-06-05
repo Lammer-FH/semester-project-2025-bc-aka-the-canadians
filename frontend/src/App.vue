@@ -5,7 +5,7 @@
 </template>
 
 <script setup>
-import { IonApp } from '@ionic/vue'
+import { IonApp } from "@ionic/vue";
 </script>
 
 <style>
@@ -19,4 +19,4 @@ import { IonApp } from '@ionic/vue'
   --ion-color-medium: #92949c;
   --ion-color-light: #f4f5f8;
 }
-</style> 
+</style>

@@ -17,6 +17,10 @@ frontend:
 	@echo "Installing frontend dependencies and running application (locally):"
 	cd $(FRONTEND_PATH) && npm install && npm run dev
 
+lint-frontend:
+	@echo "Linting frontend code:"
+	cd $(FRONTEND_PATH) && npm run lint
+
 
 frontend-docker:
 	@echo "Building and running frontend (with Docker):"

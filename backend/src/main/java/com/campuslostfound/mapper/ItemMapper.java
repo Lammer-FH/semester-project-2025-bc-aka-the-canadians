@@ -4,9 +4,6 @@ import com.campuslostfound.dto.ItemDTO;
 import com.campuslostfound.model.Item;
 import org.mapstruct.*;
 
-/**
- * MapStruct-Mapper für Item-Entities und DTOs.
- */
 @Mapper(componentModel = "spring")
 public interface ItemMapper {
 

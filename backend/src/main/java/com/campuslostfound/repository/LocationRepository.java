@@ -9,4 +9,7 @@ import java.util.List;
 @Repository
 public interface LocationRepository extends JpaRepository<Location, Long> {
     List<Location> findByName(String name);
+    List<Location> findByBuildingIgnoreCase(String building);
+    List<Location> findByFloorIgnoreCase(String floor);
+    List<Location> findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCase(String name, String description);
 }

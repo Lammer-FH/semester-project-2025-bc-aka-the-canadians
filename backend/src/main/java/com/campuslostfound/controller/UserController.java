@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Optional;
 
 @RequiredArgsConstructor
@@ -21,6 +22,12 @@ public class UserController {
     private final UserService userService;
     private final UserMapper userMapper;
 
+    @GetMapping
+    public ResponseEntity<List<UserDTO>> getAllUsers() {
+        List<User> users = userService.getAllUsers();
+        return ResponseEntity.ok(userMapper.toDTOList(users));
+    }
+
     @PostMapping
     public ResponseEntity<?> createUser(@RequestBody UserDTO userDTO) {
         if (userService.existsByEmail(userDTO.getEmail())) {
@@ -29,7 +36,7 @@ public class UserController {
         }
 
         User user = userMapper.toEntity(userDTO);
-        User savedUser = userService.saveUser(user);
+        User savedUser = userService.createUser(user);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(userMapper.toDTO(savedUser));
     }
@@ -54,8 +61,23 @@ public class UserController {
         }
 
         userDTO.setId(id);
-        User updatedUser = userService.saveUser(userMapper.toEntity(userDTO));
+        User updatedUser = userService.updateUser(id, userMapper.toEntity(userDTO));
 
         return ResponseEntity.ok(userMapper.toDTO(updatedUser));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
+        if (userService.getUserById(id).isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        userService.deleteUser(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<UserDTO>> searchUsers(@RequestParam String query) {
+        List<User> users = userService.searchUsers(query);
+        return ResponseEntity.ok(userMapper.toDTOList(users));
     }
 }

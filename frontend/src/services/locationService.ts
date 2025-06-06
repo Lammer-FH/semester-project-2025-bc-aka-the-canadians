@@ -9,11 +9,9 @@ import { Item } from "@/models/item";
 const API_URL = `${import.meta.env.VITE_API_URL}/api/v1/locations`;
 
 export const locationService = {
-    async getAllLocations(building?: string): Promise<Location[]> {
+    async getAllLocations(): Promise<Location[]> {
         try {
-            const response = await axios.get<Location[]>(API_URL, {
-                params: { building },
-            });
+            const response = await axios.get<Location[]>(API_URL);
             return response.data;
         } catch (error) {
             console.error("Error fetching locations:", error);
@@ -27,6 +25,26 @@ export const locationService = {
             return response.data;
         } catch (error) {
             console.error("Error fetching location:", error);
+            throw error;
+        }
+    },
+
+    async getLocationsByBuilding(building: string): Promise<Location[]> {
+        try {
+            const response = await axios.get<Location[]>(`${API_URL}/building/${building}`);
+            return response.data;
+        } catch (error) {
+            console.error("Error fetching locations by building:", error);
+            throw error;
+        }
+    },
+
+    async getLocationsByFloor(floor: string): Promise<Location[]> {
+        try {
+            const response = await axios.get<Location[]>(`${API_URL}/floor/${floor}`);
+            return response.data;
+        } catch (error) {
+            console.error("Error fetching locations by floor:", error);
             throw error;
         }
     },
@@ -53,15 +71,9 @@ export const locationService = {
         }
     },
 
-    async updateLocation(
-        id: number,
-        locationData: LocationUpdateData,
-    ): Promise<Location> {
+    async updateLocation(id: number, locationData: LocationUpdateData): Promise<Location> {
         try {
-            const response = await axios.put<Location>(
-                `${API_URL}/${id}`,
-                locationData,
-            );
+            const response = await axios.put<Location>(`${API_URL}/${id}`, locationData);
             return response.data;
         } catch (error) {
             console.error("Error updating location:", error);
@@ -77,4 +89,28 @@ export const locationService = {
             throw error;
         }
     },
+
+    async searchLocations(query: string): Promise<Location[]> {
+        try {
+            const response = await axios.get<Location[]>(`${API_URL}/search`, {
+                params: { query }
+            });
+            return response.data;
+        } catch (error) {
+            console.error("Error searching locations:", error);
+            throw error;
+        }
+    },
+
+    async findNearbyLocations(latitude: number, longitude: number, radiusInKm: number): Promise<Location[]> {
+        try {
+            const response = await axios.get<Location[]>(`${API_URL}/nearby`, {
+                params: { latitude, longitude, radiusInKm }
+            });
+            return response.data;
+        } catch (error) {
+            console.error("Error finding nearby locations:", error);
+            throw error;
+        }
+    }
 };

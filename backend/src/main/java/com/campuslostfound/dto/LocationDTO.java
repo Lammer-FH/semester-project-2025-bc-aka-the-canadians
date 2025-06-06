@@ -13,6 +13,11 @@ public class LocationDTO {
     private Long id;
     private String name;
     private String description;
+    private String building;
+    private String floor;
+    private String roomNumber;
+    private Double latitude;
+    private Double longitude;
     private Timestamp createdAt;
     private List<Long> reportIds;
 }

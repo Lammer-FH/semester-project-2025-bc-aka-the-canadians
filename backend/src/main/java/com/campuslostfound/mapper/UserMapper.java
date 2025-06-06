@@ -5,12 +5,16 @@ import com.campuslostfound.model.User;
 
 import org.mapstruct.*;
 
+import java.util.List;
+
 @Mapper(componentModel = "spring")
-public interface UserMapper {
+public interface UserMapper extends GenericMapper<User, UserDTO> {
+    @Override
     @Mapping(target = "reportIds", source = "reports", qualifiedByName = "reportListToIdList")
     @Mapping(target = "claimedItemIds", source = "claimedItems", qualifiedByName = "itemListToIdList")
     UserDTO toDTO(User user);
 
+    @Override
     @Mapping(target = "reports", ignore = true)
     @Mapping(target = "claimedItems", ignore = true)
     User toEntity(UserDTO dto);

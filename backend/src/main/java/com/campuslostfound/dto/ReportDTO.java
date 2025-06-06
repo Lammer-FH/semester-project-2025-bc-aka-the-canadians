@@ -11,9 +11,11 @@ import java.util.List;
 @NoArgsConstructor
 public class ReportDTO {
     private Long id;
+    private String title;
+    private String description;
     private Long userId;
     private Long locationId;
     private Timestamp createdAt;
-    private Boolean status;
+    private String status;
     private List<Long> itemIds;
 }

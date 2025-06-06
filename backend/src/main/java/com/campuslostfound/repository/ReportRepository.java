@@ -14,4 +14,6 @@ public interface ReportRepository extends JpaRepository<Report, Long> {
     List<Report> findByStatus(ReportStatus status);
 
     List<Report> findByUser(User user);
+
+    List<Report> findByDescriptionContainingIgnoreCase(String description);
 }

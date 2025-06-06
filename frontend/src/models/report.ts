@@ -1,3 +1,7 @@
+import type { User } from './user';
+import type { Location } from './location';
+import type { Item } from './item';
+
 export enum ReportStatus {
     OPEN = "OPEN",
     IN_PROGRESS = "IN_PROGRESS",
@@ -19,7 +23,18 @@ export interface Report {
     dateCreated: string;
     userId: number;
     itemId?: number;
+    user: User;
+    location: Location;
+    items?: Item[];
 }
 
-export type ReportCreateData = Omit<Report, "id" | "dateCreated">;
-export type ReportUpdateData = Partial<ReportCreateData>;
+export interface ReportCreateData {
+    userId: number;
+    locationId: number;
+    status?: ReportStatus;
+}
+
+export interface ReportUpdateData {
+    status?: ReportStatus;
+    locationId?: number;
+}

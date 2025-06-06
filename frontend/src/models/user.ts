@@ -1,24 +1,22 @@
+// Import types that are used in User interface
+import type { Report } from './report';
+import type { Item } from './item';
+
 export interface User {
     id: number;
-    username: string;
+    name: string;
     email: string;
-    firstName: string;
-    lastName: string;
-    avatar?: string;
     createdAt: string;
-    updatedAt: string;
+    reports?: Report[];
+    claimedItems?: Item[];
 }
 
 export interface UserCreateData {
-    username: string;
+    name: string;
     email: string;
-    password: string;
-    firstName: string;
-    lastName: string;
 }
 
 export interface UserUpdateData {
+    name?: string;
     email?: string;
-    firstName?: string;
-    lastName?: string;
 }

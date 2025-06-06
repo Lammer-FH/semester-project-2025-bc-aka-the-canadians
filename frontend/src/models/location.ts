@@ -1,22 +1,26 @@
+import type { Report } from './report';
+
 export interface Location {
     id: number;
     name: string;
-    description: string;
-    building: string;
-    floor: string;
-    roomNumber: string;
+    description?: string;
+    building?: string;
+    floor?: string;
+    roomNumber?: string;
     latitude?: number;
     longitude?: number;
     createdAt: string;
-    updatedAt: string;
+    reports?: Report[];
 }
 
 export interface LocationCreateData {
     name: string;
-    description: string;
-    building: string;
-    floor: string;
-    room: string;
+    description?: string;
+    building?: string;
+    floor?: string;
+    roomNumber?: string;
+    latitude?: number;
+    longitude?: number;
 }
 
 export interface LocationUpdateData {
@@ -24,5 +28,7 @@ export interface LocationUpdateData {
     description?: string;
     building?: string;
     floor?: string;
-    room?: string;
+    roomNumber?: string;
+    latitude?: number;
+    longitude?: number;
 }

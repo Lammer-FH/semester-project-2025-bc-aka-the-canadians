@@ -3,6 +3,7 @@ package com.campuslostfound.controller;
 import com.campuslostfound.dto.ReportDTO;
 import com.campuslostfound.mapper.ReportMapper;
 import com.campuslostfound.model.Report;
+import com.campuslostfound.model.ReportStatus;
 import com.campuslostfound.service.ReportService;
 
 import lombok.RequiredArgsConstructor;
@@ -15,7 +16,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/reports")
+@RequestMapping("/api/v1/reports")
 @RequiredArgsConstructor
 public class ReportController {
 
@@ -23,11 +24,12 @@ public class ReportController {
     private final ReportMapper reportMapper;
 
     @GetMapping
-    public ResponseEntity<List<ReportDTO>> getAllReports() {
-        List<Report> reports = reportService.getAllReports();
-        List<ReportDTO> reportDTOs = reportMapper.toDTOList(reports);
-
-        return ResponseEntity.ok(reportDTOs);
+    public ResponseEntity<List<ReportDTO>> getAllReports(
+            @RequestParam(required = false) ReportStatus status) {
+        List<Report> reports = status != null 
+            ? reportService.getReportsByStatus(status)
+            : reportService.getAllReports();
+        return ResponseEntity.ok(reportMapper.toDTOList(reports));
     }
 
     @GetMapping("/{id}")
@@ -38,10 +40,28 @@ public class ReportController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @GetMapping("/status/{status}")
+    public ResponseEntity<List<ReportDTO>> getReportsByStatus(@PathVariable ReportStatus status) {
+        List<Report> reports = reportService.getReportsByStatus(status);
+        return ResponseEntity.ok(reportMapper.toDTOList(reports));
+    }
+
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<ReportDTO>> getReportsByUser(@PathVariable Long userId) {
+        List<Report> reports = reportService.getReportsByUserId(userId);
+        return ResponseEntity.ok(reportMapper.toDTOList(reports));
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<ReportDTO>> searchReports(@RequestParam String query) {
+        List<Report> reports = reportService.searchReports(query);
+        return ResponseEntity.ok(reportMapper.toDTOList(reports));
+    }
+
     @PostMapping
     public ResponseEntity<ReportDTO> createReport(@RequestBody ReportDTO reportDTO) {
         Report report = reportMapper.toEntity(reportDTO);
-        Report savedReport = reportService.saveReport(report);
+        Report savedReport = reportService.createReport(report);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(reportMapper.toDTO(savedReport));
     }
@@ -53,8 +73,18 @@ public class ReportController {
             return ResponseEntity.notFound().build();
         }
         reportDTO.setId(id);
-        Report updatedReport = reportService.saveReport(reportMapper.toEntity(reportDTO));
+        Report updatedReport = reportService.updateReport(reportMapper.toEntity(reportDTO));
 
+        return ResponseEntity.ok(reportMapper.toDTO(updatedReport));
+    }
+
+    @PutMapping("/{id}/status")
+    public ResponseEntity<ReportDTO> updateReportStatus(
+            @PathVariable Long id, @RequestParam ReportStatus status) {
+        if (reportService.getReportById(id).isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        Report updatedReport = reportService.updateReportStatus(id, status);
         return ResponseEntity.ok(reportMapper.toDTO(updatedReport));
     }
 

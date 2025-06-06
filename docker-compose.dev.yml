@@ -1,0 +1,103 @@
+# Development Docker Compose
+# Diese Konfiguration ist speziell für die Entwicklung mit automatischem Schema-Reset
+# Verwendung: docker-compose -f docker-compose.dev.yml up --build
+
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: /api
+        BASE_URL: /api
+    container_name: frontend-dev
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: backend-dev
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=development
+      - MYSQL_HOST=mysql
+      - MYSQL_PORT=3306
+      - MYSQL_DATABASE=campus_lost_found
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=root
+      - SERVER_PORT=8080
+      # Verwende 'update' statt 'create-drop' für bessere Kompatibilität
+      - HIBERNATE_DDL_AUTO=update
+      - SHOW_SQL=true
+      - FORMAT_SQL=true
+      - LOG_LEVEL=DEBUG
+      - SECURITY_LOG_LEVEL=DEBUG
+      - APP_LOG_LEVEL=DEBUG
+      - MINIO_ENDPOINT=http://minio:9000
+      - MINIO_ACCESS_KEY=minioadmin
+      - MINIO_SECRET_KEY=minioadmin
+      - MINIO_BUCKET_NAME=campus-lost-found
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    volumes:
+      # Hot-reload für Development (falls gewünscht)
+      - ./backend/src:/app/src:ro
+
+  minio:
+    image: minio/minio
+    container_name: minio-dev
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      - MINIO_ROOT_USER=minioadmin
+      - MINIO_ROOT_PASSWORD=minioadmin
+    volumes:
+      - minio_data_dev:/data
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mysql:
+    image: mysql:8.0
+    container_name: mysql-dev
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=campus_lost_found
+    # KEIN persistentes Volume - Datenbank wird bei jedem Neustart gelöscht
+    # Das bedeutet: Bei jedem Start komplett frische DB mit neuen Schemas
+    # volumes:
+    #   - mysql_data_dev:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mysql-dashboard:
+    image: adminer
+    container_name: mysql-dashboard-dev
+    restart: always
+    ports:
+      - "8082:8080"
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+volumes:
+  # mysql_data_dev:  # Auskommentiert für automatisches Reset
+  minio_data_dev: 

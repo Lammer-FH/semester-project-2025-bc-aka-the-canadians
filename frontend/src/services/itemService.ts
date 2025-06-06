@@ -1,5 +1,5 @@
 import axios from "axios";
-import { Item, ItemFilters } from "@/models/item";
+import { Item, ItemCreateData, ItemUpdateData, ItemFilters } from "@/models/item";
 
 const API_URL = `${import.meta.env.VITE_API_URL}/api/v1/items`;
 
@@ -7,10 +7,11 @@ export const itemService = {
     async getAllItems(filters: ItemFilters = {}): Promise<Item[]> {
         try {
             const params = new URLSearchParams();
-            if (filters.status)
-                params.append("status", filters.status.toUpperCase());
-            if (filters.location) params.append("location", filters.location);
+            if (filters.status) params.append("status", filters.status);
+            if (filters.category) params.append("category", filters.category);
             if (filters.search) params.append("search", filters.search);
+            if (filters.userId) params.append("userId", filters.userId.toString());
+            if (filters.claimedByUserId) params.append("claimedByUserId", filters.claimedByUserId.toString());
 
             const response = await axios.get<Item[]>(API_URL, { params });
             return response.data;
@@ -30,86 +31,60 @@ export const itemService = {
         }
     },
 
-    async createItem(
-        itemData: Omit<Item, "id" | "createdAt" | "updatedAt">,
-    ): Promise<Item> {
+    async getItemsByStatus(status: string): Promise<Item[]> {
         try {
-            const { imageData, ...itemPayload } = itemData;
+            const response = await axios.get<Item[]>(`${API_URL}/status/${status}`);
+            return response.data;
+        } catch (error) {
+            console.error("Error fetching items by status:", error);
+            throw error;
+        }
+    },
 
-            const response = await axios.post<Item>(API_URL, itemPayload);
-            const newItem = response.data;
+    async getItemsByCategory(category: string): Promise<Item[]> {
+        try {
+            const response = await axios.get<Item[]>(`${API_URL}/category/${category}`);
+            return response.data;
+        } catch (error) {
+            console.error("Error fetching items by category:", error);
+            throw error;
+        }
+    },
 
-            if (imageData) {
-                try {
-                    const base64Response = await fetch(imageData);
-                    const blob = await base64Response.blob();
+    async getItemsByUser(userId: number): Promise<Item[]> {
+        try {
+            const response = await axios.get<Item[]>(`${API_URL}/user/${userId}`);
+            return response.data;
+        } catch (error) {
+            console.error("Error fetching items by user:", error);
+            throw error;
+        }
+    },
 
-                    const formData = new FormData();
-                    formData.append("file", blob, `item-${newItem.id}.jpg`);
-                    formData.append("itemId", newItem.id.toString());
+    async getClaimedItemsByUser(userId: number): Promise<Item[]> {
+        try {
+            const response = await axios.get<Item[]>(`${API_URL}/claimed/${userId}`);
+            return response.data;
+        } catch (error) {
+            console.error("Error fetching claimed items:", error);
+            throw error;
+        }
+    },
 
-                    await axios.post(
-                        `${API_URL}/${newItem.id}/image`,
-                        formData,
-                        {
-                            headers: {
-                                "Content-Type": "multipart/form-data",
-                            },
-                        },
-                    );
-
-                    return await this.getItemById(newItem.id);
-                } catch (imageError) {
-                    console.warn("Error uploading image:", imageError);
-                    return newItem;
-                }
-            }
-
-            return newItem;
+    async createItem(itemData: ItemCreateData): Promise<Item> {
+        try {
+            const response = await axios.post<Item>(API_URL, itemData);
+            return response.data;
         } catch (error) {
             console.error("Error creating item:", error);
             throw error;
         }
     },
 
-    async updateItem(id: number, itemData: Partial<Item>): Promise<Item> {
+    async updateItem(id: number, itemData: ItemUpdateData): Promise<Item> {
         try {
-            const {
-                id: itemId,
-                createdAt,
-                updatedAt,
-                imageData,
-                ...updateData
-            } = itemData;
-
-            const response = await axios.put<Item>(
-                `${API_URL}/${id}`,
-                updateData,
-            );
-            const updatedItem = response.data;
-
-            if (imageData) {
-                try {
-                    const base64Response = await fetch(imageData);
-                    const blob = await base64Response.blob();
-
-                    const formData = new FormData();
-                    formData.append("file", blob, `item-${id}.jpg`);
-
-                    await axios.post(`${API_URL}/${id}/image`, formData, {
-                        headers: {
-                            "Content-Type": "multipart/form-data",
-                        },
-                    });
-
-                    return await this.getItemById(id);
-                } catch (imageError) {
-                    console.warn("Error updating image:", imageError);
-                    return updatedItem;
-                }
-            }
-
-            return updatedItem;
+            const response = await axios.put<Item>(`${API_URL}/${id}`, itemData);
+            return response.data;
         } catch (error) {
             console.error("Error updating item:", error);
             throw error;
@@ -124,4 +99,16 @@ export const itemService = {
             throw error;
         }
     },
+
+    async searchItems(query: string): Promise<Item[]> {
+        try {
+            const response = await axios.get<Item[]>(`${API_URL}/search`, {
+                params: { query }
+            });
+            return response.data;
+        } catch (error) {
+            console.error("Error searching items:", error);
+            throw error;
+        }
+    }
 };

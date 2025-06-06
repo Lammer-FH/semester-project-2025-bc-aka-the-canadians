@@ -41,6 +41,33 @@ public class LocationController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+    @GetMapping("/building/{building}")
+    public ResponseEntity<List<LocationDTO>> getLocationsByBuilding(@PathVariable String building) {
+        List<Location> locations = locationService.getLocationsByBuilding(building);
+        return ResponseEntity.ok(locationMapper.toDTOList(locations));
+    }
+
+    @GetMapping("/floor/{floor}")
+    public ResponseEntity<List<LocationDTO>> getLocationsByFloor(@PathVariable String floor) {
+        List<Location> locations = locationService.getLocationsByFloor(floor);
+        return ResponseEntity.ok(locationMapper.toDTOList(locations));
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<LocationDTO>> searchLocations(@RequestParam String query) {
+        List<Location> locations = locationService.searchLocations(query);
+        return ResponseEntity.ok(locationMapper.toDTOList(locations));
+    }
+
+    @GetMapping("/nearby")
+    public ResponseEntity<List<LocationDTO>> findNearbyLocations(
+            @RequestParam Double latitude,
+            @RequestParam Double longitude,
+            @RequestParam Double radiusInKm) {
+        List<Location> locations = locationService.findNearbyLocations(latitude, longitude, radiusInKm);
+        return ResponseEntity.ok(locationMapper.toDTOList(locations));
+    }
+
     @GetMapping("/{id}/items")
     public ResponseEntity<List<ItemDTO>> getItemsByLocation(@PathVariable Long id) {
         Optional<Location> location = locationService.getLocationById(id);
@@ -56,7 +83,7 @@ public class LocationController {
     @PostMapping
     public ResponseEntity<LocationDTO> createLocation(@RequestBody LocationDTO locationDTO) {
         Location location = locationMapper.toEntity(locationDTO);
-        Location savedLocation = locationService.saveLocation(location);
+        Location savedLocation = locationService.createLocation(location);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(locationMapper.toDTO(savedLocation));
     }
@@ -70,7 +97,7 @@ public class LocationController {
 
         locationDTO.setId(id);
         Location updatedLocation =
-                locationService.saveLocation(locationMapper.toEntity(locationDTO));
+                locationService.updateLocation(id, locationMapper.toEntity(locationDTO));
 
         return ResponseEntity.ok(locationMapper.toDTO(updatedLocation));
     }

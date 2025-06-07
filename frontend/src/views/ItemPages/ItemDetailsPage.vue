@@ -951,51 +951,6 @@ onMounted(async () => {
   font-size: 14px;
 }
 
-.image-section {
-  margin-bottom: 16px;
-}
-
-.image-container {
-  position: relative;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.item-image {
-  width: 100%;
-  height: 300px;
-  object-fit: cover;
-  transition: transform 0.3s ease;
-  cursor: pointer;
-}
-
-.item-image:hover {
-  transform: scale(1.02);
-}
-
-.expand-button {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  --background: rgba(0, 0, 0, 0.5);
-  --color: white;
-  --border-radius: 50%;
-  backdrop-filter: blur(10px);
-}
-
-.image-overlay {
-  position: absolute;
-  bottom: 12px;
-  left: 12px;
-}
-
-.image-chip {
-  --background: rgba(0, 0, 0, 0.7);
-  --color: white;
-  backdrop-filter: blur(10px);
-}
-
 .info-card {
   background: white;
   border-radius: 12px;
@@ -1051,16 +1006,6 @@ onMounted(async () => {
     rgba(var(--ion-color-warning-rgb), 0.1)
   );
   border-left-color: var(--ion-color-warning);
-}
-
-.claimed-banner,
-.returned-banner {
-  background: linear-gradient(
-    135deg,
-    var(--ion-color-medium-tint),
-    rgba(var(--ion-color-medium-rgb), 0.1)
-  );
-  border-left-color: var(--ion-color-medium);
 }
 
 .banner-content {
@@ -1241,10 +1186,6 @@ onMounted(async () => {
   border-color: var(--ion-color-primary);
 }
 
-.timeline-marker.updated {
-  border-color: var(--ion-color-warning);
-}
-
 .timeline-marker.claimed {
   border-color: var(--ion-color-success);
 }
@@ -1260,17 +1201,6 @@ onMounted(async () => {
   color: var(--ion-color-medium);
   margin: 0 0 4px 0;
   font-size: 0.9em;
-}
-
-.timeline-type,
-.timeline-status {
-  display: inline-block;
-  padding: 2px 8px;
-  border-radius: 12px;
-  font-size: 0.75em;
-  font-weight: 500;
-  background: var(--ion-color-light-shade);
-  color: var(--ion-color-medium-shade);
 }
 
 .stats-grid {
@@ -1360,33 +1290,6 @@ onMounted(async () => {
   grid-template-columns: 1fr;
   gap: 8px;
   margin-top: 8px;
-}
-
-.modal-content {
-  background: black;
-}
-
-.modal-image-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  padding: 20px;
-}
-
-.modal-image {
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
-}
-
-:global(.alert-button-confirm) {
-  color: var(--ion-color-success) !important;
-  font-weight: 600 !important;
-}
-
-:global(.alert-button-cancel) {
-  color: var(--ion-color-medium) !important;
 }
 
 @keyframes slideInUp {

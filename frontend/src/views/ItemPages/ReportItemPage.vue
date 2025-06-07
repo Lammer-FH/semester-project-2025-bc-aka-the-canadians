@@ -450,7 +450,7 @@ const handleSubmit = async () => {
     const selectedLocation = availableLocations.value.find(
       location => location.name === reportData.value.location
     );
-    
+
     if (!selectedLocation) {
       console.error("Selected location not found");
       return;
@@ -460,11 +460,11 @@ const handleSubmit = async () => {
     const reportCreateData: ReportCreateData = {
       userId: CURRENT_USER_ID,
       locationId: selectedLocation.id,
-      status: reportData.value.type === "FOUND" // true for FOUND, false for LOST
+      status: reportData.value.type === "FOUND", // true for FOUND, false for LOST
     };
 
     const newReport = await reportStore.createReport(reportCreateData);
-    
+
     if (!newReport) {
       console.error("Failed to create report");
       return;
@@ -491,7 +491,7 @@ const handleSubmit = async () => {
     const itemData: Omit<Item, "id" | "createdAt"> = {
       name: reportData.value.itemName,
       description: enhancedDescription,
-      reportId: newReport.id
+      reportId: newReport.id,
     };
 
     const newItem = await itemStore.createItem(itemData);
@@ -694,13 +694,6 @@ watch(
 .modern-textarea.textarea-filled {
   border-color: var(--ion-color-primary-tint);
   --background: rgba(var(--ion-color-primary-rgb), 0.05);
-}
-
-.modern-select.select-error,
-.modern-input.input-error,
-.modern-textarea.textarea-error {
-  border-color: var(--ion-color-danger);
-  --background: rgba(var(--ion-color-danger-rgb), 0.05);
 }
 
 .modern-select:focus-within,

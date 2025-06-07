@@ -333,8 +333,8 @@ const loadLocation = async () => {
 const loadItemsAtLocation = async (locationId: number) => {
   try {
     itemsLoading.value = true;
-    const items = await locationStore.fetchItemsByLocation(locationId);
-    itemsAtLocation.value = items;
+    itemsAtLocation.value =
+      await locationStore.fetchItemsByLocation(locationId);
   } catch (error) {
     console.error("Error loading items at location:", error);
     itemsAtLocation.value = [];

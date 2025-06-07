@@ -240,7 +240,6 @@ import {
   trashOutline,
 } from "ionicons/icons";
 import { useReportStore } from "@/stores/reportStore";
-import { Report } from "@/models/report";
 import { Item } from "@/models/item";
 import TemplatePage from "@/components/TemplatePage.vue";
 
@@ -407,16 +406,6 @@ onMounted(async () => {
   font-weight: 500;
 }
 
-.status-chip.status-active {
-  background: var(--ion-color-success-tint);
-  color: var(--ion-color-success-shade);
-}
-
-.status-chip.status-closed {
-  background: var(--ion-color-medium-tint);
-  color: var(--ion-color-medium-shade);
-}
-
 .chip-icon {
   font-size: 16px;
 }
@@ -455,21 +444,13 @@ onMounted(async () => {
   font-weight: 600;
   color: var(--ion-color-medium);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 1px;
 }
 
 .info-item span {
   font-size: 14px;
   color: var(--ion-color-dark);
   font-weight: 500;
-}
-
-.status-text.status-active {
-  color: var(--ion-color-success);
-}
-
-.status-text.status-closed {
-  color: var(--ion-color-medium);
 }
 
 .items-list {

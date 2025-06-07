@@ -9,6 +9,10 @@ backend:
 	@echo "Building and running application (locally):"
 	cd $(BACKEND_PATH) && mvn spring-boot:run
 
+backend-dev-profile:
+	@echo "Building and running application (locally) with the dev profile:"
+	cd $(BACKEND_PATH) && mvn spring-boot:run -Dspring-boot.run.profiles=dev
+
 backend-docker:
 	@echo "Building and running backend (with Docker):"
 	cd $(BACKEND_PATH) && docker compose -f ../$(DOCKER_COMPOSE_PATH) up backend --build

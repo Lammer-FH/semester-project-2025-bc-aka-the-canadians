@@ -279,7 +279,7 @@ const isValid = computed(() => {
       location.value?.building?.trim() !== "" &&
       location.value?.floor?.trim() !== "" &&
       location.value?.room?.trim() !== "" &&
-      Object.values(errors.value).every((error) => error === "")
+      Object.values(errors.value).every(error => error === "")
     );
   } catch (error) {
     console.error("Error in isValid computed:", error);
@@ -319,7 +319,7 @@ const formatDate = (dateString: string) => {
 const validateField = (fieldName: keyof typeof errors.value) => {
   try {
     const value = String(
-      location.value?.[fieldName as keyof typeof location.value] || "",
+      location.value?.[fieldName as keyof typeof location.value] || ""
     ).trim();
 
     switch (fieldName) {
@@ -451,7 +451,7 @@ const confirmDelete = async () => {
 
 watch(
   () => location.value?.name,
-  (newName) => {
+  newName => {
     try {
       if (newName && errors.value.name) {
         errors.value.name = "";
@@ -459,12 +459,12 @@ watch(
     } catch (error) {
       console.error("Error in name watcher:", error);
     }
-  },
+  }
 );
 
 watch(
   () => location.value?.building,
-  (newBuilding) => {
+  newBuilding => {
     try {
       if (newBuilding && errors.value.building) {
         errors.value.building = "";
@@ -472,12 +472,12 @@ watch(
     } catch (error) {
       console.error("Error in building watcher:", error);
     }
-  },
+  }
 );
 
 watch(
   () => location.value?.floor,
-  (newFloor) => {
+  newFloor => {
     try {
       if (newFloor && errors.value.floor) {
         errors.value.floor = "";
@@ -485,12 +485,12 @@ watch(
     } catch (error) {
       console.error("Error in floor watcher:", error);
     }
-  },
+  }
 );
 
 watch(
   () => location.value?.room,
-  (newRoom) => {
+  newRoom => {
     try {
       if (newRoom && errors.value.room) {
         errors.value.room = "";
@@ -498,7 +498,7 @@ watch(
     } catch (error) {
       console.error("Error in room watcher:", error);
     }
-  },
+  }
 );
 
 onMounted(async () => {
@@ -622,12 +622,6 @@ onMounted(async () => {
 .modern-textarea.textarea-filled {
   border-color: var(--ion-color-primary-tint);
   --background: rgba(var(--ion-color-primary-rgb), 0.05);
-}
-
-.modern-input.input-error,
-.modern-textarea.textarea-error {
-  border-color: var(--ion-color-danger);
-  --background: rgba(var(--ion-color-danger-rgb), 0.05);
 }
 
 .modern-input:focus-within,

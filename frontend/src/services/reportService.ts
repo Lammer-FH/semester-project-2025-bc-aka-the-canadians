@@ -3,20 +3,13 @@ import {
     Report,
     ReportCreateData,
     ReportUpdateData,
-    ReportStatus,
-    ReportType,
 } from "@/models/report";
 
-const API_URL = "http://localhost:8080/api/reports";
+const API_URL = `${import.meta.env.VITE_API_URL}/api/reports`;
 
 export const reportService = {
-    async getAllReports(
-        status?: ReportStatus,
-        type?: ReportType,
-    ): Promise<Report[]> {
-        const response = await axios.get<Report[]>(API_URL, {
-            params: { status, type },
-        });
+    async getAllReports(): Promise<Report[]> {
+        const response = await axios.get<Report[]>(API_URL);
         return response.data;
     },
 
@@ -32,11 +25,11 @@ export const reportService = {
 
     async updateReport(
         id: number,
-        reportData: ReportUpdateData,
+        reportData: ReportUpdateData
     ): Promise<Report> {
         const response = await axios.put<Report>(
             `${API_URL}/${id}`,
-            reportData,
+            reportData
         );
         return response.data;
     },

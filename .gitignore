@@ -76,3 +76,5 @@ frontend/capacitor.config.json
 frontend/resources/
 frontend/.gradle/
 /backend/.factorypath
+/data/
+/backend/data/

@@ -9,6 +9,10 @@ backend:
 	@echo "Building and running application (locally):"
 	cd $(BACKEND_PATH) && mvn spring-boot:run
 
+backend-dev-profile:
+	@echo "Building and running application (locally) with the dev profile:"
+	cd $(BACKEND_PATH) && mvn spring-boot:run -Dspring-boot.run.profiles=dev
+
 backend-docker:
 	@echo "Building and running backend (with Docker):"
 	cd $(BACKEND_PATH) && docker compose -f ../$(DOCKER_COMPOSE_PATH) up backend --build
@@ -19,8 +23,15 @@ frontend:
 
 lint-frontend:
 	@echo "Linting frontend code:"
-	cd $(FRONTEND_PATH) && npm run lint
+	cd $(FRONTEND_PATH) && npm run lint:check
 
+fix-frontend:
+	@echo "Fixing frontend code issues:"
+	cd $(FRONTEND_PATH) && npm run fix
+
+check-frontend:
+	@echo "Running full frontend code quality check:"
+	cd $(FRONTEND_PATH) && npm run check
 
 frontend-docker:
 	@echo "Building and running frontend (with Docker):"

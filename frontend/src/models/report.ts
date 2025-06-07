@@ -31,3 +31,14 @@ export interface ReportFilters {
     locationId?: number;
     status?: boolean;
 }
+
+// Enum for report status - matches backend but converted to TypeScript
+export enum ReportStatus {
+    OPEN = "OPEN",
+    IN_PROGRESS = "IN_PROGRESS",
+    RESOLVED = "RESOLVED",
+    CLOSED = "CLOSED",
+}
+
+// Helper type for display purposes
+export type ReportType = "FOUND" | "LOST";

@@ -3,6 +3,9 @@
     <ion-segment-button value="items">
       <ion-label>Items</ion-label>
     </ion-segment-button>
+    <ion-segment-button value="reports">
+      <ion-label>Reports</ion-label>
+    </ion-segment-button>
     <ion-segment-button value="locations">
       <ion-label>Locations</ion-label>
     </ion-segment-button>
@@ -11,12 +14,28 @@
 
 <script setup lang="ts">
 import { IonSegment, IonSegmentButton, IonLabel } from "@ionic/vue";
+import { useRouter } from "vue-router";
 
-const props = defineProps<{ modelValue: string }>();
-const emit = defineEmits<(e: "update:modelValue", value: string) => void>();
+defineProps<{ modelValue: string }>();
+const emit = defineEmits<{ "update:modelValue": [value: string] }>();
+
+const router = useRouter();
 
 function onTabChange(event: CustomEvent) {
-  emit("update:modelValue", event.detail.value);
+  const value = event.detail.value;
+  emit("update:modelValue", value);
+
+  switch (value) {
+    case "items":
+      router.push("/items/overview");
+      break;
+    case "reports":
+      router.push("/reports/overview");
+      break;
+    case "locations":
+      router.push("/locations/overview");
+      break;
+  }
 }
 </script>
 

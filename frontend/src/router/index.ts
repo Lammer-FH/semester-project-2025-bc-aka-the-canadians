@@ -1,6 +1,8 @@
 import { createRouter, createWebHashHistory, RouteRecordRaw } from "vue-router";
 import HomePage from "@/views/HomePage/HomePage.vue";
 import ItemsOverviewPage from "@/views/ItemPages/ItemsOverviewPage.vue";
+import ReportsOverviewPage from "@/views/ReportPages/ReportsOverviewPage.vue";
+import ReportDetailsPage from "@/views/ReportPages/ReportDetailsPage.vue";
 import LocationsOverviewPage from "@/views/LocationsPages/LocationsOverviewPage.vue";
 import ReportItemPage from "@/views/ItemPages/ReportItemPage.vue";
 import ItemDetailsPage from "@/views/ItemPages/ItemDetailsPage.vue";
@@ -39,6 +41,20 @@ const routes: RouteRecordRaw[] = [
         path: "/items/:id/edit",
         name: "edit-item",
         component: EditItemPage,
+    },
+    {
+        path: "/reports",
+        redirect: "/reports/overview",
+    },
+    {
+        path: "/reports/overview",
+        name: "reports-overview",
+        component: ReportsOverviewPage,
+    },
+    {
+        path: "/reports/:id",
+        name: "report-details",
+        component: ReportDetailsPage,
     },
     {
         path: "/locations",

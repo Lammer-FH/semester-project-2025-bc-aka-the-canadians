@@ -92,7 +92,7 @@
             :class="{
               'textarea-filled': reportData.description,
             }"
-            rows="4"
+            :rows="4"
           ></ion-textarea>
         </div>
 
@@ -115,8 +115,7 @@
               :key="location.id"
               :value="location.name"
             >
-              {{ location.name }} - {{ location.building }}, Floor
-              {{ location.floor }}
+              {{ location.name }}
             </ion-select-option>
             <ion-select-option value="other">
               <strong>Other Location (please specify in description)</strong>
@@ -283,8 +282,6 @@
 <script setup lang="ts">
 import TemplatePage from "@/components/TemplatePage.vue";
 import {
-  IonItem,
-  IonLabel,
   IonInput,
   IonTextarea,
   IonIcon,
@@ -294,10 +291,6 @@ import {
 } from "@ionic/vue";
 import {
   megaphoneOutline,
-  textOutline,
-  documentTextOutline,
-  locationOutline,
-  flagOutline,
   alertCircleOutline,
   checkmarkCircleOutline,
   closeCircleOutline,
@@ -306,7 +299,6 @@ import {
   trashOutline,
   bulbOutline,
   personOutline,
-  mailOutline,
   searchOutline,
   eyeOutline,
 } from "ionicons/icons";
@@ -314,11 +306,17 @@ import { ref, computed, watch, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useItemStore } from "@/stores/itemStore";
 import { useLocationStore } from "@/stores/locationStore";
+import { useReportStore } from "@/stores/reportStore";
 import type { Item } from "@/models/item";
+import type { ReportCreateData } from "@/models/report";
 
 const router = useRouter();
 const itemStore = useItemStore();
 const locationStore = useLocationStore();
+const reportStore = useReportStore();
+
+// Mock user ID for now - in a real app, this would come from authentication
+const CURRENT_USER_ID = 1;
 
 const reportData = ref({
   type: "",
@@ -373,13 +371,13 @@ const completionPercentage = computed(() => {
   const optionalFields = ["description", "contactInfo"];
 
   const requiredFilled = requiredFields.filter(
-    (field) =>
-      reportData.value[field as keyof typeof reportData.value].trim() !== "",
+    field =>
+      reportData.value[field as keyof typeof reportData.value].trim() !== ""
   ).length;
 
   const optionalFilled = optionalFields.filter(
-    (field) =>
-      reportData.value[field as keyof typeof reportData.value].trim() !== "",
+    field =>
+      reportData.value[field as keyof typeof reportData.value].trim() !== ""
   ).length;
 
   const requiredWeight = 0.8;
@@ -399,7 +397,7 @@ onMounted(async () => {
 
 const validateField = (fieldName: keyof typeof errors.value) => {
   const value = String(
-    reportData.value[fieldName as keyof typeof reportData.value] || "",
+    reportData.value[fieldName as keyof typeof reportData.value] || ""
   ).trim();
 
   switch (fieldName) {
@@ -448,6 +446,31 @@ const handleSubmit = async () => {
   }
 
   try {
+    // First, find the location ID from the selected location name
+    const selectedLocation = availableLocations.value.find(
+      location => location.name === reportData.value.location
+    );
+    
+    if (!selectedLocation) {
+      console.error("Selected location not found");
+      return;
+    }
+
+    // Create the report first
+    const reportCreateData: ReportCreateData = {
+      userId: CURRENT_USER_ID,
+      locationId: selectedLocation.id,
+      status: reportData.value.type === "FOUND" // true for FOUND, false for LOST
+    };
+
+    const newReport = await reportStore.createReport(reportCreateData);
+    
+    if (!newReport) {
+      console.error("Failed to create report");
+      return;
+    }
+
+    // Create enhanced description with report information
     const enhancedDescription = [
       reportData.value.description,
       "",
@@ -464,12 +487,11 @@ const handleSubmit = async () => {
       .filter(Boolean)
       .join("\n");
 
-    const itemData: Omit<Item, "id" | "createdAt" | "updatedAt"> = {
+    // Now create the item with the report ID
+    const itemData: Omit<Item, "id" | "createdAt"> = {
       name: reportData.value.itemName,
       description: enhancedDescription,
-      location: reportData.value.location,
-      status: reportData.value.type,
-      imageData: imagePreview.value,
+      reportId: newReport.id
     };
 
     const newItem = await itemStore.createItem(itemData);
@@ -504,7 +526,7 @@ const handleFileSelect = (event: Event) => {
     }
 
     const reader = new FileReader();
-    reader.onload = (e) => {
+    reader.onload = e => {
       const result = e.target?.result as string;
       imagePreview.value = result;
       reportData.value.imageData = result;
@@ -533,28 +555,28 @@ watch(
   () => reportData.value.type,
   () => {
     if (errors.value.type) validateField("type");
-  },
+  }
 );
 
 watch(
   () => reportData.value.itemName,
   () => {
     if (errors.value.itemName) validateField("itemName");
-  },
+  }
 );
 
 watch(
   () => reportData.value.location,
   () => {
     if (errors.value.location) validateField("location");
-  },
+  }
 );
 
 watch(
   () => reportData.value.reporterName,
   () => {
     if (errors.value.reporterName) validateField("reporterName");
-  },
+  }
 );
 </script>
 

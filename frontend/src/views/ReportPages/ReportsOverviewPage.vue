@@ -596,22 +596,6 @@ onMounted(async () => {
   overflow: hidden;
 }
 
-.card-header.status-active {
-  background: linear-gradient(
-    135deg,
-    var(--ion-color-success) 0%,
-    var(--ion-color-success-shade) 100%
-  );
-}
-
-.card-header.status-closed {
-  background: linear-gradient(
-    135deg,
-    var(--ion-color-medium) 0%,
-    var(--ion-color-medium-shade) 100%
-  );
-}
-
 .card-header::before {
   content: "";
   position: absolute;

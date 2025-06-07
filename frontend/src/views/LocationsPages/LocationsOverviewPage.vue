@@ -108,7 +108,10 @@
                   v-if="getOpenReportsCount(location) > 0"
                 >
                   <ion-chip color="warning" class="report-chip">
-                    <ion-icon :icon="alertCircleOutline" class="chip-icon"></ion-icon>
+                    <ion-icon
+                      :icon="alertCircleOutline"
+                      class="chip-icon"
+                    ></ion-icon>
                     {{ getOpenReportsCount(location) }} Open
                   </ion-chip>
                 </div>
@@ -343,8 +346,9 @@ const totalOpenReports = computed(() => {
 });
 
 const totalResolvedReports = computed(() => {
-  return reports.value.filter(report => report.status.toUpperCase() === "RESOLVED")
-    .length;
+  return reports.value.filter(
+    report => report.status.toUpperCase() === "RESOLVED"
+  ).length;
 });
 
 const totalReports = computed(() => {
@@ -353,7 +357,9 @@ const totalReports = computed(() => {
 
 const getReportsForLocation = (location: Location): VirtualReport[] => {
   return reports.value.filter(
-    report => reportStore.getReports.find(r => r.id === report.id)?.locationId === location.id
+    report =>
+      reportStore.getReports.find(r => r.id === report.id)?.locationId ===
+      location.id
   );
 };
 
@@ -629,15 +635,8 @@ watch(activeTab, tab => {
   color: white;
   font-size: 1.2em;
   font-weight: 600;
-  margin: 0;
   flex: 1;
-  margin-right: 12px;
-}
-
-.building-chip {
-  --background: rgba(255, 255, 255, 0.2);
-  --color: white;
-  margin: 0;
+  margin: 0 12px 0 0;
 }
 
 .chip-icon {
@@ -885,10 +884,6 @@ watch(activeTab, tab => {
   .header-content {
     flex-direction: column;
     gap: 8px;
-  }
-
-  .building-chip {
-    align-self: flex-start;
   }
 }
 

@@ -38,7 +38,9 @@
           @click="clearClaimedStatusFilter"
         >
           <ion-icon :icon="personOutline"></ion-icon>
-          <ion-label>{{ getClaimedStatusText(selectedClaimedStatus) }}</ion-label>
+          <ion-label>{{
+            getClaimedStatusText(selectedClaimedStatus)
+          }}</ion-label>
           <ion-icon :icon="closeOutline"></ion-icon>
         </ion-chip>
         <ion-button
@@ -97,18 +99,26 @@
       </div>
 
       <div v-else class="items-grid">
-        <ion-card 
-          v-for="item in filteredItems" 
-          :key="item.id" 
+        <ion-card
+          v-for="item in filteredItems"
+          :key="item.id"
           class="item-card"
           @click="navigateToItem(item.id)"
         >
-          <div class="card-header" :class="getClaimedStatusClass(item.claimedByUserId)">
+          <div
+            class="card-header"
+            :class="getClaimedStatusClass(item.claimedByUserId)"
+          >
             <div class="header-content">
               <h3 class="item-title">{{ item.name }}</h3>
               <div class="status-chip">
-                <ion-icon :icon="getClaimedStatusIcon(item.claimedByUserId)" class="chip-icon"></ion-icon>
-                <span>{{ getClaimedStatusText(item.claimedByUserId !== null) }}</span>
+                <ion-icon
+                  :icon="getClaimedStatusIcon(item.claimedByUserId)"
+                  class="chip-icon"
+                ></ion-icon>
+                <span>{{
+                  getClaimedStatusText(item.claimedByUserId !== null)
+                }}</span>
               </div>
             </div>
           </div>
@@ -120,12 +130,17 @@
 
             <div class="item-details">
               <div class="detail-item">
-                <ion-icon :icon="documentTextOutline" class="detail-icon"></ion-icon>
+                <ion-icon
+                  :icon="documentTextOutline"
+                  class="detail-icon"
+                ></ion-icon>
                 <span>Report #{{ item.reportId }}</span>
               </div>
               <div v-if="item.claimedByUser" class="detail-item">
                 <ion-icon :icon="personOutline" class="detail-icon"></ion-icon>
-                <span>Claimed by {{ item.claimedByUser.name || 'Unknown' }}</span>
+                <span
+                  >Claimed by {{ item.claimedByUser.name || "Unknown" }}</span
+                >
               </div>
               <div class="detail-item">
                 <ion-icon :icon="timeOutline" class="detail-icon"></ion-icon>
@@ -135,33 +150,38 @@
 
             <div class="metadata">
               <div class="metadata-item">
-                <ion-icon :icon="calendarOutline" class="metadata-icon"></ion-icon>
-                <span class="metadata-text">{{ getTimeAgo(item.createdAt) }}</span>
+                <ion-icon
+                  :icon="calendarOutline"
+                  class="metadata-icon"
+                ></ion-icon>
+                <span class="metadata-text">{{
+                  getTimeAgo(item.createdAt)
+                }}</span>
               </div>
             </div>
           </ion-card-content>
 
           <div class="card-actions">
-            <ion-button 
-              fill="clear" 
+            <ion-button
+              fill="clear"
               size="small"
               @click.stop="editItem(item.id)"
             >
               <ion-icon :icon="createOutline" slot="icon-only"></ion-icon>
             </ion-button>
-            <ion-button 
+            <ion-button
               v-if="!item.claimedByUserId"
-              fill="solid" 
-              size="small" 
+              fill="solid"
+              size="small"
               color="success"
               @click.stop="showClaimModal(item)"
             >
               <ion-icon :icon="handRightOutline" slot="start"></ion-icon>
               Claim Item
             </ion-button>
-            <ion-button 
-              fill="clear" 
-              size="small" 
+            <ion-button
+              fill="clear"
+              size="small"
               color="primary"
               @click.stop="navigateToItem(item.id)"
             >
@@ -201,8 +221,12 @@
           </div>
 
           <div class="filter-actions">
-            <ion-button expand="block" @click="applyFilters">Apply Filters</ion-button>
-            <ion-button expand="block" fill="clear" @click="clearAllFilters">Clear All</ion-button>
+            <ion-button expand="block" @click="applyFilters"
+              >Apply Filters</ion-button
+            >
+            <ion-button expand="block" fill="clear" @click="clearAllFilters"
+              >Clear All</ion-button
+            >
           </div>
         </ion-content>
       </ion-modal>
@@ -221,7 +245,10 @@
           <div v-if="selectedItemToClaim" class="claim-form">
             <div class="item-info-section">
               <h2>{{ selectedItemToClaim.name }}</h2>
-              <p v-if="selectedItemToClaim.description" class="item-description">
+              <p
+                v-if="selectedItemToClaim.description"
+                class="item-description"
+              >
                 {{ selectedItemToClaim.description }}
               </p>
               <div class="item-details">
@@ -229,7 +256,8 @@
                   <strong>Report ID:</strong> {{ selectedItemToClaim.reportId }}
                 </div>
                 <div class="detail-row">
-                  <strong>Reported:</strong> {{ formatDate(selectedItemToClaim.createdAt) }}
+                  <strong>Reported:</strong>
+                  {{ formatDate(selectedItemToClaim.createdAt) }}
                 </div>
               </div>
             </div>
@@ -237,19 +265,23 @@
             <div class="claim-form-section">
               <h3>Claim Information</h3>
               <p class="form-description">
-                Please provide details about why you believe this item belongs to you.
+                Please provide details about why you believe this item belongs
+                to you.
               </p>
 
               <div class="input-group">
-                <ion-item 
+                <ion-item
                   class="modern-item"
-                  :class="{ 
+                  :class="{
                     'item-filled': claimData.description.trim(),
-                    'item-error': claimErrors.description 
+                    'item-error': claimErrors.description,
                   }"
                 >
                   <ion-label class="custom-label" position="stacked">
-                    <ion-icon :icon="chatbubbleOutline" class="label-icon"></ion-icon>
+                    <ion-icon
+                      :icon="chatbubbleOutline"
+                      class="label-icon"
+                    ></ion-icon>
                     Description *
                   </ion-label>
                   <ion-textarea
@@ -276,8 +308,16 @@
             </div>
 
             <div class="modal-actions">
-              <ion-button expand="block" @click="submitClaim" :disabled="!isClaimFormValid || isSubmittingClaim">
-                <ion-spinner v-if="isSubmittingClaim" name="crescent" class="spinner"></ion-spinner>
+              <ion-button
+                expand="block"
+                @click="submitClaim"
+                :disabled="!isClaimFormValid || isSubmittingClaim"
+              >
+                <ion-spinner
+                  v-if="isSubmittingClaim"
+                  name="crescent"
+                  class="spinner"
+                ></ion-spinner>
                 <span v-else>Submit Claim</span>
               </ion-button>
             </div>
@@ -289,8 +329,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { ref, computed, onMounted } from "vue";
+import { useRouter } from "vue-router";
 import {
   IonCard,
   IonCardContent,
@@ -311,7 +351,7 @@ import {
   IonItem,
   IonTextarea,
   IonCheckbox,
-} from '@ionic/vue';
+} from "@ionic/vue";
 import {
   funnelOutline,
   personOutline,
@@ -328,18 +368,18 @@ import {
   createOutline,
   handRightOutline,
   chatbubbleOutline,
-} from 'ionicons/icons';
-import { useItemStore } from '@/stores/itemStore';
-import { Item } from '@/models/item';
-import TemplatePage from '@/components/TemplatePage.vue';
-import NavigationTabs from '@/components/NavigationTabs.vue';
+} from "ionicons/icons";
+import { useItemStore } from "@/stores/itemStore";
+import { Item } from "@/models/item";
+import TemplatePage from "@/components/TemplatePage.vue";
+import NavigationTabs from "@/components/NavigationTabs.vue";
 
 const router = useRouter();
 const itemStore = useItemStore();
 
 // Reactive data
-const activeTab = ref('items');
-const searchTerm = ref('');
+const activeTab = ref("items");
+const searchTerm = ref("");
 const showFilterModal = ref(false);
 const selectedClaimedStatus = ref<boolean | null>(null);
 
@@ -354,11 +394,12 @@ const filteredItems = computed(() => {
   // Filter by search term
   if (searchTerm.value.trim()) {
     const search = searchTerm.value.toLowerCase();
-    filtered = filtered.filter(item => 
-      item.name.toLowerCase().includes(search) ||
-      item.description?.toLowerCase().includes(search) ||
-      item.id.toString().includes(search) ||
-      item.reportId.toString().includes(search)
+    filtered = filtered.filter(
+      item =>
+        item.name.toLowerCase().includes(search) ||
+        item.description?.toLowerCase().includes(search) ||
+        item.id.toString().includes(search) ||
+        item.reportId.toString().includes(search)
     );
   }
 
@@ -374,12 +415,12 @@ const filteredItems = computed(() => {
   return filtered;
 });
 
-const claimedItemsCount = computed(() => 
-  items.value.filter(item => item.claimedByUserId !== null).length
+const claimedItemsCount = computed(
+  () => items.value.filter(item => item.claimedByUserId !== null).length
 );
 
-const unclaimedItemsCount = computed(() => 
-  items.value.filter(item => item.claimedByUserId === null).length
+const unclaimedItemsCount = computed(
+  () => items.value.filter(item => item.claimedByUserId === null).length
 );
 
 const activeFiltersCount = computed(() => {
@@ -394,31 +435,37 @@ const selectedItemToClaim = ref<Item | null>(null);
 const isSubmittingClaim = ref(false);
 
 const claimData = ref({
-  description: '',
+  description: "",
   hasProof: false,
 });
 
 const claimErrors = ref({
-  description: '',
+  description: "",
 });
 
 const isClaimFormValid = computed(() => {
-  return claimData.value.description.trim().length >= 10 &&
-         claimData.value.hasProof &&
-         !Object.values(claimErrors.value).some(error => error);
+  return (
+    claimData.value.description.trim().length >= 10 &&
+    claimData.value.hasProof &&
+    !Object.values(claimErrors.value).some(error => error)
+  );
 });
 
 // Methods
 const getClaimedStatusText = (isClaimed: boolean): string => {
-  return isClaimed ? 'Claimed' : 'Unclaimed';
+  return isClaimed ? "Claimed" : "Unclaimed";
 };
 
-const getClaimedStatusIcon = (claimedByUserId: number | null | undefined): string => {
+const getClaimedStatusIcon = (
+  claimedByUserId: number | null | undefined
+): string => {
   return claimedByUserId ? checkmarkCircleOutline : searchOutline;
 };
 
-const getClaimedStatusClass = (claimedByUserId: number | null | undefined): string => {
-  return claimedByUserId ? 'status-claimed' : 'status-unclaimed';
+const getClaimedStatusClass = (
+  claimedByUserId: number | null | undefined
+): string => {
+  return claimedByUserId ? "status-claimed" : "status-unclaimed";
 };
 
 const getTimeAgo = (dateString: string): string => {
@@ -429,28 +476,31 @@ const getTimeAgo = (dateString: string): string => {
   const diffInDays = Math.floor(diffInHours / 24);
 
   if (diffInDays > 0) {
-    return `${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`;
+    return `${diffInDays} day${diffInDays > 1 ? "s" : ""} ago`;
   } else if (diffInHours > 0) {
-    return `${diffInHours} hour${diffInHours > 1 ? 's' : ''} ago`;
+    return `${diffInHours} hour${diffInHours > 1 ? "s" : ""} ago`;
   } else {
-    return 'Less than an hour ago';
+    return "Less than an hour ago";
   }
 };
 
 const formatDate = (dateString: string): string => {
   const date = new Date(dateString);
-  return date.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
   });
 };
 
-const truncateDescription = (description: string, maxLength: number = 120): string => {
+const truncateDescription = (
+  description: string,
+  maxLength: number = 120
+): string => {
   if (description.length <= maxLength) return description;
-  return description.substring(0, maxLength) + '...';
+  return description.substring(0, maxLength) + "...";
 };
 
 const toggleFilterModal = (): void => {
@@ -463,7 +513,7 @@ const clearClaimedStatusFilter = (): void => {
 
 const clearAllFilters = (): void => {
   selectedClaimedStatus.value = null;
-  searchTerm.value = '';
+  searchTerm.value = "";
 };
 
 const applyFilters = (): void => {
@@ -482,7 +532,7 @@ const loadItems = async (): Promise<void> => {
   try {
     await itemStore.fetchItems();
   } catch (error) {
-    console.error('Error loading items:', error);
+    console.error("Error loading items:", error);
   }
 };
 
@@ -490,11 +540,11 @@ const loadItems = async (): Promise<void> => {
 const showClaimModal = (item: Item): void => {
   selectedItemToClaim.value = item;
   claimData.value = {
-    description: '',
+    description: "",
     hasProof: false,
   };
   claimErrors.value = {
-    description: '',
+    description: "",
   };
   showClaimModalOpen.value = true;
 };
@@ -506,11 +556,12 @@ const closeClaimModal = (): void => {
 
 const validateClaimField = (field: string): void => {
   switch (field) {
-    case 'description':
+    case "description":
       if (claimData.value.description.trim().length < 10) {
-        claimErrors.value.description = 'Description must be at least 10 characters long';
+        claimErrors.value.description =
+          "Description must be at least 10 characters long";
       } else {
-        claimErrors.value.description = '';
+        claimErrors.value.description = "";
       }
       break;
   }
@@ -521,20 +572,23 @@ const submitClaim = async (): Promise<void> => {
 
   try {
     isSubmittingClaim.value = true;
-    
+
     // For now, we'll simulate claiming by updating the item
     // In a real implementation, you'd call a proper claim API
-    const updatedItem = await itemStore.updateItem(selectedItemToClaim.value.id, {
-      claimedByUserId: 1, // This should be the current user's ID
-    });
+    const updatedItem = await itemStore.updateItem(
+      selectedItemToClaim.value.id,
+      {
+        claimedByUserId: 1, // This should be the current user's ID
+      }
+    );
 
     if (updatedItem) {
       closeClaimModal();
       // You might want to show a success toast here
-      console.log('Item claimed successfully');
+      console.log("Item claimed successfully");
     }
   } catch (error) {
-    console.error('Error claiming item:', error);
+    console.error("Error claiming item:", error);
     // You might want to show an error toast here
   } finally {
     isSubmittingClaim.value = false;
@@ -672,22 +726,18 @@ onMounted(async () => {
 
 .card-header {
   padding: 16px;
-  background: linear-gradient(135deg, var(--ion-color-primary) 0%, var(--ion-color-primary-shade) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--ion-color-primary) 0%,
+    var(--ion-color-primary-shade) 100%
+  );
   color: white;
   position: relative;
   overflow: hidden;
 }
 
-.card-header.status-claimed {
-  background: linear-gradient(135deg, var(--ion-color-success) 0%, var(--ion-color-success-shade) 100%);
-}
-
-.card-header.status-unclaimed {
-  background: linear-gradient(135deg, var(--ion-color-warning) 0%, var(--ion-color-warning-shade) 100%);
-}
-
 .card-header::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   right: 0;
@@ -899,10 +949,6 @@ onMounted(async () => {
   width: 100%;
 }
 
-.textarea-item {
-  --background: transparent;
-}
-
 .error-message {
   color: var(--ion-color-danger);
   font-size: 12px;
@@ -931,13 +977,6 @@ onMounted(async () => {
   gap: 12px;
 }
 
-.checklist-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-size: 14px;
-}
-
 .modal-actions {
   display: flex;
   flex-direction: column;
@@ -953,34 +992,34 @@ onMounted(async () => {
   .items-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .items-container {
     padding: 12px;
   }
-  
+
   .search-and-filter {
     flex-direction: column;
     align-items: stretch;
   }
-  
+
   .filter-button {
     align-self: flex-end;
   }
-  
+
   .stats-summary {
     flex-direction: column;
     gap: 12px;
   }
-  
+
   .card-actions {
     flex-direction: column;
     gap: 8px;
   }
-  
+
   .claim-modal-content {
     padding: 12px;
   }
-  
+
   .modal-actions {
     margin-top: 16px;
   }

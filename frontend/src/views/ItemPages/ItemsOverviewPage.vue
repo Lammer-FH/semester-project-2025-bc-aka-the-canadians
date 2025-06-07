@@ -13,7 +13,7 @@
         <ion-searchbar
           v-model="searchTerm"
           placeholder="Search for reports..."
-          debounce="300"
+          :debounce="300"
           class="custom-searchbar"
         ></ion-searchbar>
 

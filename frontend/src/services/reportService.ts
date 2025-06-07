@@ -5,7 +5,7 @@ import {
     ReportUpdateData,
 } from "@/models/report";
 
-const API_URL = `${import.meta.env.VITE_API_URL}/api/reports`;
+const API_URL = `${import.meta.env.VITE_API_URL}/api/v1/reports`;
 
 export const reportService = {
     async getAllReports(): Promise<Report[]> {

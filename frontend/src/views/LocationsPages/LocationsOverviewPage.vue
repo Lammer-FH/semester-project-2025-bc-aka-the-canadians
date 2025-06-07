@@ -50,9 +50,7 @@
         <h2>Error Loading</h2>
         <p>{{ error }}</p>
         <ion-button @click="loadLocations">
-          <template #start>
-            <ion-icon :icon="refreshOutline"></ion-icon>
-          </template>
+          <ion-icon :icon="refreshOutline" slot="start"></ion-icon>
           Try Again
         </ion-button>
       </div>
@@ -65,9 +63,7 @@
         </p>
         <p v-else>No locations created yet. Add the first location!</p>
         <ion-button @click="navigateToAddLocation">
-          <template #start>
-            <ion-icon :icon="addOutline"></ion-icon>
-          </template>
+          <ion-icon :icon="addOutline" slot="start"></ion-icon>
           Add First Location
         </ion-button>
       </div>
@@ -176,7 +172,7 @@
                 <div class="recent-reports-list">
                   <div
                     v-for="report in getRecentReportsForLocation(
-                      location.name
+                      location.name,
                     ).slice(0, 2)"
                     :key="report.id"
                     class="recent-report-item"
@@ -236,9 +232,7 @@
               size="small"
               @click.stop="navigateToLocation(location.id)"
             >
-              <template #start>
-                <ion-icon :icon="eyeOutline"></ion-icon>
-              </template>
+              <ion-icon :icon="eyeOutline" slot="start"></ion-icon>
               View Location
             </ion-button>
             <ion-button
@@ -246,9 +240,7 @@
               size="small"
               @click.stop="viewAllReportsAtLocation(location.name)"
             >
-              <template #start>
-                <ion-icon :icon="flagOutline"></ion-icon>
-              </template>
+              <ion-icon :icon="flagOutline" slot="start"></ion-icon>
               Reports ({{ getReportsForLocation(location.name).length }})
             </ion-button>
             <ion-button
@@ -256,9 +248,7 @@
               size="small"
               @click.stop="editLocation(location.id)"
             >
-              <template #start>
-                <ion-icon :icon="createOutline"></ion-icon>
-              </template>
+              <ion-icon :icon="createOutline" slot="start"></ion-icon>
               Edit
             </ion-button>
           </div>
@@ -326,7 +316,7 @@ const searchTerm = ref("");
 const locations = computed(() => locationStore.getLocations || []);
 const items = computed(() => itemStore.getItems || []);
 const isLoading = computed(
-  () => locationStore.isLoading || itemStore.isLoading
+  () => locationStore.isLoading || itemStore.isLoading,
 );
 const error = computed(() => locationStore.getError);
 
@@ -378,47 +368,49 @@ const filteredLocations = computed(() => {
         .includes(searchTerm.value.toLowerCase()) ||
       location.description
         .toLowerCase()
-        .includes(searchTerm.value.toLowerCase())
+        .includes(searchTerm.value.toLowerCase()),
   );
 });
 
 const totalFoundReports = computed(() => {
-  return reports.value.filter(report => report.status.toUpperCase() === "FOUND")
-    .length;
+  return reports.value.filter(
+    (report) => report.status.toUpperCase() === "FOUND",
+  ).length;
 });
 
 const totalLostReports = computed(() => {
-  return reports.value.filter(report => report.status.toUpperCase() === "LOST")
-    .length;
+  return reports.value.filter(
+    (report) => report.status.toUpperCase() === "LOST",
+  ).length;
 });
 
 const totalClaimedReports = computed(() => {
   return reports.value.filter(
-    report => report.status.toUpperCase() === "CLAIMED"
+    (report) => report.status.toUpperCase() === "CLAIMED",
   ).length;
 });
 
 const getReportsForLocation = (locationName: string): VirtualReport[] => {
   return reports.value.filter(
-    report => report.location.toLowerCase() === locationName.toLowerCase()
+    (report) => report.location.toLowerCase() === locationName.toLowerCase(),
   );
 };
 
 const getFoundReportsCount = (locationName: string): number => {
   return getReportsForLocation(locationName).filter(
-    report => report.status.toUpperCase() === "FOUND"
+    (report) => report.status.toUpperCase() === "FOUND",
   ).length;
 };
 
 const getLostReportsCount = (locationName: string): number => {
   return getReportsForLocation(locationName).filter(
-    report => report.status.toUpperCase() === "LOST"
+    (report) => report.status.toUpperCase() === "LOST",
   ).length;
 };
 
 const getClaimedReportsCount = (locationName: string): number => {
   return getReportsForLocation(locationName).filter(
-    report => report.status.toUpperCase() === "CLAIMED"
+    (report) => report.status.toUpperCase() === "CLAIMED",
   ).length;
 };
 
@@ -426,7 +418,7 @@ const getRecentReportsForLocation = (locationName: string): VirtualReport[] => {
   return getReportsForLocation(locationName)
     .sort(
       (a, b) =>
-        new Date(b.dateCreated).getTime() - new Date(a.dateCreated).getTime()
+        new Date(b.dateCreated).getTime() - new Date(a.dateCreated).getTime(),
     )
     .slice(0, 3);
 };
@@ -465,7 +457,7 @@ const getTimeAgo = (dateString: string) => {
   const date = new Date(dateString);
   const now = new Date();
   const diffInHours = Math.floor(
-    (now.getTime() - date.getTime()) / (1000 * 60 * 60)
+    (now.getTime() - date.getTime()) / (1000 * 60 * 60),
   );
 
   if (diffInHours < 1) return "A few minutes ago";
@@ -510,7 +502,7 @@ const viewAllReportsAtLocation = (locationName: string) => {
   });
 };
 
-watch(activeTab, tab => {
+watch(activeTab, (tab) => {
   if (tab === "items") {
     router.push("/items/overview");
   }

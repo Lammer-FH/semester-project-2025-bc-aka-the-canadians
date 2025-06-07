@@ -17,9 +17,7 @@
         <h2>Error Loading</h2>
         <p>{{ error }}</p>
         <ion-button @click="loadItem">
-          <template #start>
-            <ion-icon :icon="refreshOutline"></ion-icon>
-          </template>
+          <ion-icon :icon="refreshOutline" slot="start"></ion-icon>
           Try Again
         </ion-button>
       </div>
@@ -48,9 +46,11 @@
             }"
             @ionBlur="validateField('name')"
           >
-            <template #start>
-              <ion-icon :icon="textOutline" class="input-icon"></ion-icon>
-            </template>
+            <ion-icon
+              :icon="textOutline"
+              slot="start"
+              class="input-icon"
+            ></ion-icon>
           </ion-input>
           <div v-if="errors.name" class="error-message">
             <ion-icon :icon="alertCircleOutline"></ion-icon>
@@ -71,12 +71,11 @@
             :auto-grow="true"
             rows="3"
           >
-            <template #start>
-              <ion-icon
-                :icon="documentTextOutline"
-                class="input-icon"
-              ></ion-icon>
-            </template>
+            <ion-icon
+              :icon="documentTextOutline"
+              slot="start"
+              class="input-icon"
+            ></ion-icon>
           </ion-textarea>
         </div>
 
@@ -93,9 +92,11 @@
             }"
             @ionBlur="validateField('location')"
           >
-            <template #start>
-              <ion-icon :icon="locationOutline" class="input-icon"></ion-icon>
-            </template>
+            <ion-icon
+              :icon="locationOutline"
+              slot="start"
+              class="input-icon"
+            ></ion-icon>
           </ion-input>
           <div v-if="errors.location" class="error-message">
             <ion-icon :icon="alertCircleOutline"></ion-icon>
@@ -117,9 +118,11 @@
             }"
             @ionChange="validateField('status')"
           >
-            <template #start>
-              <ion-icon :icon="flagOutline" class="input-icon"></ion-icon>
-            </template>
+            <ion-icon
+              :icon="flagOutline"
+              slot="start"
+              class="input-icon"
+            ></ion-icon>
             <ion-select-option value="LOST">
               <div class="select-option">
                 <ion-icon :icon="searchOutline" class="option-icon"></ion-icon>
@@ -173,17 +176,13 @@
                 class="remove-image-btn"
                 @click="removeImage"
               >
-                <template #icon-only>
-                  <ion-icon :icon="trashOutline"></ion-icon>
-                </template>
+                <ion-icon :icon="trashOutline" slot="icon-only"></ion-icon>
               </ion-button>
             </div>
 
             <div class="upload-buttons">
               <ion-button fill="outline" class="upload-btn" @click="takePhoto">
-                <template #start>
-                  <ion-icon :icon="cameraOutline"></ion-icon>
-                </template>
+                <ion-icon :icon="cameraOutline" slot="start"></ion-icon>
                 Take Photo
               </ion-button>
               <ion-button
@@ -191,9 +190,7 @@
                 class="upload-btn"
                 @click="triggerFileInput"
               >
-                <template #start>
-                  <ion-icon :icon="cloudUploadOutline"></ion-icon>
-                </template>
+                <ion-icon :icon="cloudUploadOutline" slot="start"></ion-icon>
                 Upload File
               </ion-button>
             </div>
@@ -216,9 +213,7 @@
             class="delete-button"
             @click="handleDelete"
           >
-            <template #start>
-              <ion-icon :icon="trashOutline"></ion-icon>
-            </template>
+            <ion-icon :icon="trashOutline" slot="start"></ion-icon>
             Delete Item
           </ion-button>
         </div>
@@ -339,7 +334,7 @@ const isValid = computed(() => {
     item.value?.name?.trim() !== "" &&
     item.value?.location?.trim() !== "" &&
     item.value?.status?.trim() !== "" &&
-    Object.values(errors.value).every(error => error === "")
+    Object.values(errors.value).every((error) => error === "")
   );
 });
 
@@ -375,7 +370,7 @@ const formatDate = (dateString: string) => {
 const validateField = (fieldName: keyof typeof errors.value) => {
   try {
     const value = String(
-      item.value[fieldName as keyof typeof item.value] || ""
+      item.value[fieldName as keyof typeof item.value] || "",
     ).trim();
 
     switch (fieldName) {
@@ -531,12 +526,12 @@ const handleFileSelect = (event: Event) => {
       }
 
       const reader = new FileReader();
-      reader.onload = e => {
+      reader.onload = (e) => {
         if (e.target?.result) {
           imagePreview.value = e.target.result as string;
         }
       };
-      reader.onerror = error => {
+      reader.onerror = (error) => {
         console.error("Error reading file:", error);
       };
       reader.readAsDataURL(file);
@@ -571,7 +566,7 @@ const removeImage = () => {
 // Wrap watchers in try-catch and add null checks
 watch(
   () => item.value?.name,
-  newName => {
+  (newName) => {
     try {
       if (newName && errors.value.name) {
         errors.value.name = "";
@@ -579,12 +574,12 @@ watch(
     } catch (error) {
       console.error("Error in name watcher:", error);
     }
-  }
+  },
 );
 
 watch(
   () => item.value?.location,
-  newLocation => {
+  (newLocation) => {
     try {
       if (newLocation && errors.value.location) {
         errors.value.location = "";
@@ -592,12 +587,12 @@ watch(
     } catch (error) {
       console.error("Error in location watcher:", error);
     }
-  }
+  },
 );
 
 watch(
   () => item.value?.status,
-  newStatus => {
+  (newStatus) => {
     try {
       if (newStatus && errors.value.status) {
         errors.value.status = "";
@@ -605,7 +600,7 @@ watch(
     } catch (error) {
       console.error("Error in status watcher:", error);
     }
-  }
+  },
 );
 
 onMounted(async () => {

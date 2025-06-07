@@ -17,9 +17,7 @@
         <h2>Error Loading</h2>
         <p>{{ error }}</p>
         <ion-button @click="loadItem">
-          <template #start>
-            <ion-icon :icon="refreshOutline"></ion-icon>
-          </template>
+          <ion-icon :icon="refreshOutline" slot="start"></ion-icon>
           Try Again
         </ion-button>
       </div>
@@ -71,9 +69,7 @@
               class="expand-button"
               @click="openImageModal"
             >
-              <template #icon-only>
-                <ion-icon :icon="expandOutline"></ion-icon>
-              </template>
+              <ion-icon :icon="expandOutline" slot="icon-only"></ion-icon>
             </ion-button>
             <div class="image-overlay">
               <ion-chip color="dark" class="image-chip">
@@ -91,9 +87,7 @@
             </h1>
             <div class="title-actions">
               <ion-button fill="clear" size="small" @click="shareItem">
-                <template #icon-only>
-                  <ion-icon :icon="shareOutline"></ion-icon>
-                </template>
+                <ion-icon :icon="shareOutline" slot="icon-only"></ion-icon>
               </ion-button>
             </div>
           </div>
@@ -120,9 +114,7 @@
                   class="claim-button"
                   @click="showClaimDialog"
                 >
-                  <template #start>
-                    <ion-icon :icon="handRightOutline"></ion-icon>
-                  </template>
+                  <ion-icon :icon="handRightOutline" slot="start"></ion-icon>
                   Claim Item
                 </ion-button>
               </div>
@@ -149,9 +141,7 @@
                   color="warning"
                   @click="reportFound"
                 >
-                  <template #start>
-                    <ion-icon :icon="megaphoneOutline"></ion-icon>
-                  </template>
+                  <ion-icon :icon="megaphoneOutline" slot="start"></ion-icon>
                   Report as Found
                 </ion-button>
               </div>
@@ -248,9 +238,7 @@
               <span class="location-name">{{ item.location.name }}</span>
             </div>
             <ion-button fill="clear" size="small" @click="viewLocationReports">
-              <template #start>
-                <ion-icon :icon="flagOutline"></ion-icon>
-              </template>
+              <ion-icon :icon="flagOutline" slot="start"></ion-icon>
               More Reports at this Location
             </ion-button>
           </div>
@@ -364,9 +352,7 @@
             color="success"
             @click="showClaimDialog"
           >
-            <template #start>
-              <ion-icon :icon="handRightOutline"></ion-icon>
-            </template>
+            <ion-icon :icon="handRightOutline" slot="start"></ion-icon>
             Claim Item
           </ion-button>
 
@@ -378,17 +364,13 @@
             color="warning"
             @click="reportFound"
           >
-            <template #start>
-              <ion-icon :icon="megaphoneOutline"></ion-icon>
-            </template>
+            <ion-icon :icon="megaphoneOutline" slot="start"></ion-icon>
             Report as Found
           </ion-button>
 
           <div class="secondary-actions">
             <ion-button expand="block" fill="outline" @click="shareItem">
-              <template #start>
-                <ion-icon :icon="shareOutline"></ion-icon>
-              </template>
+              <ion-icon :icon="shareOutline" slot="start"></ion-icon>
               Share Report
             </ion-button>
 
@@ -398,9 +380,7 @@
               color="medium"
               @click="toggleStatistics"
             >
-              <template #start>
-                <ion-icon :icon="statsChartOutline"></ion-icon>
-              </template>
+              <ion-icon :icon="statsChartOutline" slot="start"></ion-icon>
               {{ showStatistics ? "Hide Statistics" : "Show Statistics" }}
             </ion-button>
 
@@ -410,9 +390,7 @@
               color="danger"
               @click="showDeleteConfirmation"
             >
-              <template #start>
-                <ion-icon :icon="trashOutline"></ion-icon>
-              </template>
+              <ion-icon :icon="trashOutline" slot="start"></ion-icon>
               Delete Report
             </ion-button>
           </div>
@@ -424,13 +402,11 @@
       <ion-header>
         <ion-toolbar>
           <ion-title>Report Photo</ion-title>
-          <template #end>
-            <ion-buttons>
-              <ion-button @click="closeImageModal">
-                <ion-icon :icon="closeOutline"></ion-icon>
-              </ion-button>
-            </ion-buttons>
-          </template>
+          <ion-buttons slot="end">
+            <ion-button @click="closeImageModal">
+              <ion-icon :icon="closeOutline"></ion-icon>
+            </ion-button>
+          </ion-buttons>
         </ion-toolbar>
       </ion-header>
       <ion-content class="modal-content">
@@ -574,7 +550,7 @@ const claimAlertMessage = computed(() => {
                 <br>
                 <p>Do you want to request this item for pickup?</p>
                 <p style="color: #666; font-size: 0.9em;">
-                    The finder will be notified and can contact you
+                    The finder will be notified and can contact you 
                     to coordinate the pickup.
                 </p>
             </div>
@@ -639,10 +615,10 @@ const loadRelatedReports = async () => {
 
     relatedReports.value = allItems
       .filter(
-        i =>
+        (i) =>
           i.id !== item.value!.id &&
           i.location === item.value!.location &&
-          i.status?.toUpperCase() !== "CLAIMED"
+          i.status?.toUpperCase() !== "CLAIMED",
       )
       .slice(0, 3);
   } catch (error) {
@@ -776,7 +752,7 @@ const getTimeAgo = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
     const diffInHours = Math.floor(
-      (now.getTime() - date.getTime()) / (1000 * 60 * 60)
+      (now.getTime() - date.getTime()) / (1000 * 60 * 60),
     );
 
     if (diffInHours < 1) return "A few minutes ago";
@@ -804,21 +780,21 @@ const getCleanDescription = (description: string): string => {
 };
 
 const getReporterInfo = (
-  description: string
+  description: string,
 ): Record<string, string> | null => {
   try {
     if (!description) return null;
 
     const metadataMatch = description.match(
-      /--- Report Information ---([\s\S]*?)(?:--- |$)/
+      /--- Report Information ---([\s\S]*?)(?:--- |$)/,
     );
     if (!metadataMatch) return null;
 
     const metadata = metadataMatch[1];
     const info: Record<string, string> = {};
 
-    const lines = metadata.split("\n").filter(line => line.trim());
-    lines.forEach(line => {
+    const lines = metadata.split("\n").filter((line) => line.trim());
+    lines.forEach((line) => {
       const [key, ...valueParts] = line.split(":");
       if (key && valueParts.length > 0) {
         info[key.trim()] = valueParts.join(":").trim();

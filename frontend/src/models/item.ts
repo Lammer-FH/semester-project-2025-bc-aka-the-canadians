@@ -1,27 +1,30 @@
-import { Location } from "./location";
-import { User } from "./user";
+import type { Report } from "./report";
+import type { User } from "./user";
 
 export interface Item {
     id: number;
     name: string;
-    description: string;
-    category: string;
-    imageUrl?: string;
-    dateReported: string;
-    location: Location;
-    status: ItemStatus;
-    reportedBy: User;
+    description?: string;
+    reportId: number;
+    claimedByUserId?: number;
+    createdAt: string;
+    report?: Report;
+    claimedByUser?: User;
 }
 
-export enum ItemStatus {
-    LOST = "LOST",
-    FOUND = "FOUND",
-    CLAIMED = "CLAIMED",
-    RETURNED = "RETURNED",
+export interface ItemCreateData {
+    name: string;
+    description?: string;
+    reportId: number;
+}
+
+export interface ItemUpdateData {
+    name?: string;
+    description?: string;
+    claimedByUserId?: number;
 }
 
 export interface ItemFilters {
-    status?: ItemStatus;
-    category?: string;
-    locationId?: number;
+    reportId?: number;
+    claimedByUserId?: number;
 }

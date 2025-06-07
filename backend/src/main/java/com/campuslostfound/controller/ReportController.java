@@ -40,10 +40,17 @@ public class ReportController {
 
     @PostMapping
     public ResponseEntity<ReportDTO> createReport(@RequestBody ReportDTO reportDTO) {
-        Report report = reportMapper.toEntity(reportDTO);
-        Report savedReport = reportService.saveReport(report);
+        try {
+            Report savedReport = reportService.createReportFromIds(
+                reportDTO.getUserId(),
+                reportDTO.getLocationId(),
+                reportDTO.getStatus()
+            );
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(reportMapper.toDTO(savedReport));
+            return ResponseEntity.status(HttpStatus.CREATED).body(reportMapper.toDTO(savedReport));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     @PutMapping("/{id}")

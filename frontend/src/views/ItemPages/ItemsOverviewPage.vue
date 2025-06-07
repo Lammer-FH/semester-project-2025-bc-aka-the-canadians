@@ -1,18 +1,18 @@
 <template>
   <template-page
-    :headline="'Browse Reports'"
+    :headline="'Browse Items'"
     addButtonPath="/items/report"
-    addButtonText="Create New Report"
+    addButtonText="Report New Item"
   >
     <template #header>
       <NavigationTabs v-model="activeTab" />
     </template>
 
-    <div class="reports-container">
+    <div class="items-container">
       <div class="search-and-filter">
         <ion-searchbar
           v-model="searchTerm"
-          placeholder="Search for reports..."
+          placeholder="Search for items..."
           :debounce="300"
           class="custom-searchbar"
         ></ion-searchbar>
@@ -33,21 +33,12 @@
 
       <div v-if="activeFiltersCount > 0" class="filter-chips">
         <ion-chip
-          v-if="selectedStatus"
+          v-if="selectedClaimedStatus !== null"
           class="filter-chip"
-          @click="clearStatusFilter"
+          @click="clearClaimedStatusFilter"
         >
-          <ion-icon :icon="flagOutline"></ion-icon>
-          <ion-label>{{ getStatusText(selectedStatus) }}</ion-label>
-          <ion-icon :icon="closeOutline"></ion-icon>
-        </ion-chip>
-        <ion-chip
-          v-if="selectedLocation"
-          class="filter-chip"
-          @click="clearLocationFilter"
-        >
-          <ion-icon :icon="locationOutline"></ion-icon>
-          <ion-label>{{ selectedLocation }}</ion-label>
+          <ion-icon :icon="personOutline"></ion-icon>
+          <ion-label>{{ getClaimedStatusText(selectedClaimedStatus) }}</ion-label>
           <ion-icon :icon="closeOutline"></ion-icon>
         </ion-chip>
         <ion-button
@@ -62,874 +53,539 @@
 
       <div class="stats-summary">
         <div class="stat-item">
-          <ion-icon :icon="eyeOutline" color="success"></ion-icon>
-          <span>{{ foundReportsCount }} Found Reports</span>
+          <ion-icon :icon="cubeOutline" color="primary"></ion-icon>
+          <span>{{ filteredItems.length }} Total Items</span>
+        </div>
+        <div class="stat-item">
+          <ion-icon :icon="checkmarkCircleOutline" color="success"></ion-icon>
+          <span>{{ claimedItemsCount }} Claimed</span>
         </div>
         <div class="stat-item">
           <ion-icon :icon="searchOutline" color="warning"></ion-icon>
-          <span>{{ lostReportsCount }} Lost Reports</span>
-        </div>
-        <div class="stat-item">
-          <ion-icon :icon="checkmarkCircleOutline" color="medium"></ion-icon>
-          <span>{{ claimedReportsCount }} Completed</span>
+          <span>{{ unclaimedItemsCount }} Unclaimed</span>
         </div>
       </div>
 
       <div v-if="isLoading" class="loading-container">
         <ion-spinner name="crescent" color="primary"></ion-spinner>
-        <p>Loading reports...</p>
+        <p>Loading items...</p>
       </div>
 
       <div v-else-if="error" class="empty-state">
         <ion-icon :icon="alertCircleOutline" class="empty-icon"></ion-icon>
         <h2>Error Loading</h2>
         <p>{{ error }}</p>
-        <ion-button @click="loadReports">
+        <ion-button @click="loadItems">
           <ion-icon :icon="refreshOutline" slot="start"></ion-icon>
           Try Again
         </ion-button>
       </div>
 
-      <div v-else-if="filteredReports.length === 0" class="empty-state">
-        <ion-icon :icon="bagOutline" class="empty-icon"></ion-icon>
-        <h2>No Reports Found</h2>
+      <div v-else-if="filteredItems.length === 0" class="empty-state">
+        <ion-icon :icon="cubeOutline" class="empty-icon"></ion-icon>
+        <h2>No Items Found</h2>
         <p v-if="activeFiltersCount > 0">
-          No reports match the current filter criteria.
+          No items match the current filter criteria.
         </p>
         <p v-else>
-          No reports created yet. Be the first and report a found or lost item!
+          No items reported yet. Be the first to report a found or lost item!
         </p>
-        <ion-button
-          v-if="activeFiltersCount === 0"
-          fill="outline"
-          @click="navigateToReportCreation"
-        >
+        <ion-button routerLink="/items/report" fill="solid">
           <ion-icon :icon="addOutline" slot="start"></ion-icon>
-          Create First Report
-        </ion-button>
-        <ion-button v-else fill="outline" @click="clearAllFilters">
-          Clear Filters
+          Report First Item
         </ion-button>
       </div>
 
-      <div v-else class="reports-grid">
-        <ion-card
-          v-for="(report, index) in filteredReports"
-          :key="report.id"
-          class="report-card"
-          :class="getStatusClass(report.status)"
-          :style="{ '--animation-delay': `${index * 0.1}s` }"
-          @click="navigateToReport(report.id)"
+      <div v-else class="items-grid">
+        <ion-card 
+          v-for="item in filteredItems" 
+          :key="item.id" 
+          class="item-card"
+          @click="navigateToItem(item.id)"
         >
-          <ion-card-header class="card-header">
+          <div class="card-header" :class="getClaimedStatusClass(item.claimedByUserId)">
             <div class="header-content">
-              <ion-card-title class="report-title">{{
-                report.title
-              }}</ion-card-title>
-              <ion-chip
-                :color="getStatusColor(report.status)"
-                class="status-chip"
-              >
-                <ion-icon
-                  :icon="getStatusIcon(report.status)"
-                  class="chip-icon"
-                ></ion-icon>
-                {{ getStatusText(report.status) }}
-              </ion-chip>
+              <h3 class="item-title">{{ item.name }}</h3>
+              <div class="status-chip">
+                <ion-icon :icon="getClaimedStatusIcon(item.claimedByUserId)" class="chip-icon"></ion-icon>
+                <span>{{ getClaimedStatusText(item.claimedByUserId !== null) }}</span>
+              </div>
             </div>
-            <div class="report-details">
+          </div>
+
+          <ion-card-content class="card-content">
+            <div v-if="item.description" class="description">
+              <p>{{ truncateDescription(item.description) }}</p>
+            </div>
+
+            <div class="item-details">
               <div class="detail-item">
-                <ion-icon
-                  :icon="locationOutline"
-                  class="detail-icon"
-                ></ion-icon>
-                {{ report.location }}
+                <ion-icon :icon="documentTextOutline" class="detail-icon"></ion-icon>
+                <span>Report #{{ item.reportId }}</span>
+              </div>
+              <div v-if="item.claimedByUser" class="detail-item">
+                <ion-icon :icon="personOutline" class="detail-icon"></ion-icon>
+                <span>Claimed by {{ item.claimedByUser.name || 'Unknown' }}</span>
               </div>
               <div class="detail-item">
                 <ion-icon :icon="timeOutline" class="detail-icon"></ion-icon>
-                {{ getTimeAgo(report.dateCreated) }}
+                <span>{{ formatDate(item.createdAt) }}</span>
               </div>
             </div>
-          </ion-card-header>
-
-          <ion-card-content class="card-content">
-            <div v-if="report.imageUrl" class="report-image-container">
-              <img
-                :src="report.imageUrl"
-                :alt="report.title"
-                class="report-image"
-                @error="handleImageError"
-              />
-            </div>
-            <div v-else class="no-image-placeholder">
-              <ion-icon :icon="imageOutline" class="no-image-icon"></ion-icon>
-              <span>No image available</span>
-            </div>
-
-            <p v-if="report.description" class="description">
-              {{ report.description }}
-            </p>
 
             <div class="metadata">
               <div class="metadata-item">
-                <ion-icon
-                  :icon="fingerPrintOutline"
-                  class="metadata-icon"
-                ></ion-icon>
-                <span class="metadata-text">Report #{{ report.id }}</span>
-              </div>
-              <div class="metadata-item">
-                <ion-icon
-                  :icon="calendarOutline"
-                  class="metadata-icon"
-                ></ion-icon>
-                <span class="metadata-text">{{
-                  formatDate(report.dateCreated)
-                }}</span>
-              </div>
-              <div v-if="report.reporterName" class="metadata-item">
-                <ion-icon
-                  :icon="personOutline"
-                  class="metadata-icon"
-                ></ion-icon>
-                <span class="metadata-text"
-                  >Reported by {{ report.reporterName }}</span
-                >
+                <ion-icon :icon="calendarOutline" class="metadata-icon"></ion-icon>
+                <span class="metadata-text">{{ getTimeAgo(item.createdAt) }}</span>
               </div>
             </div>
           </ion-card-content>
 
           <div class="card-actions">
-            <ion-button
-              fill="clear"
+            <ion-button 
+              fill="clear" 
               size="small"
-              @click.stop="navigateToReport(report.id)"
+              @click.stop="editItem(item.id)"
             >
-              <ion-icon :icon="eyeOutline" slot="start"></ion-icon>
-              View Report
+              <ion-icon :icon="createOutline" slot="icon-only"></ion-icon>
             </ion-button>
-
-            <ion-button
-              v-if="report.status.toUpperCase() === 'FOUND'"
-              fill="solid"
-              size="small"
+            <ion-button 
+              v-if="!item.claimedByUserId"
+              fill="solid" 
+              size="small" 
               color="success"
-              class="claim-button"
-              @click.stop="showClaimModal(report)"
+              @click.stop="showClaimModal(item)"
             >
               <ion-icon :icon="handRightOutline" slot="start"></ion-icon>
               Claim Item
             </ion-button>
-
-            <ion-button
-              v-else-if="report.status.toUpperCase() === 'CLAIMED'"
-              fill="clear"
-              size="small"
-              color="medium"
-              disabled
+            <ion-button 
+              fill="clear" 
+              size="small" 
+              color="primary"
+              @click.stop="navigateToItem(item.id)"
             >
-              <ion-icon :icon="checkmarkCircleOutline" slot="start"></ion-icon>
-              Already Claimed
-            </ion-button>
-
-            <ion-button
-              fill="clear"
-              size="small"
-              @click.stop="editReport(report.id)"
-            >
-              <ion-icon :icon="createOutline" slot="start"></ion-icon>
-              Edit
+              View Details
             </ion-button>
           </div>
         </ion-card>
       </div>
-    </div>
 
-    <ion-modal :is-open="showClaimModalOpen" @did-dismiss="closeClaimModal">
-      <ion-header>
-        <ion-toolbar>
-          <ion-title>Claim Item</ion-title>
-          <ion-buttons slot="end">
-            <ion-button @click="closeClaimModal">
+      <!-- Filter Modal -->
+      <ion-modal :is-open="showFilterModal" @did-dismiss="toggleFilterModal">
+        <ion-header>
+          <ion-toolbar>
+            <ion-title>Filter Items</ion-title>
+            <ion-button slot="end" fill="clear" @click="toggleFilterModal">
               <ion-icon :icon="closeOutline"></ion-icon>
             </ion-button>
-          </ion-buttons>
-        </ion-toolbar>
-      </ion-header>
-      <ion-content class="claim-modal-content">
-        <div v-if="selectedItemToClaim" class="claim-form">
-          <div class="item-info-section">
-            <h2>{{ selectedItemToClaim.title }}</h2>
-            <p class="item-description">
-              {{ selectedItemToClaim.description }}
-            </p>
-            <div class="item-details">
-              <div class="detail-row">
-                <ion-icon
-                  :icon="locationOutline"
-                  class="detail-icon"
-                ></ion-icon>
-                <span>{{ selectedItemToClaim.location }}</span>
-              </div>
-              <div class="detail-row">
-                <ion-icon :icon="timeOutline" class="detail-icon"></ion-icon>
-                <span
-                  >Reported
-                  {{ getTimeAgo(selectedItemToClaim.dateCreated) }}</span
-                >
-              </div>
-            </div>
+          </ion-toolbar>
+        </ion-header>
+        <ion-content class="filter-modal-content">
+          <div class="filter-section">
+            <h3>Claim Status</h3>
+            <ion-radio-group v-model="selectedClaimedStatus">
+              <ion-item>
+                <ion-radio slot="start" :value="null"></ion-radio>
+                <ion-label>All Items</ion-label>
+              </ion-item>
+              <ion-item>
+                <ion-radio slot="start" :value="false"></ion-radio>
+                <ion-label>Unclaimed Items</ion-label>
+              </ion-item>
+              <ion-item>
+                <ion-radio slot="start" :value="true"></ion-radio>
+                <ion-label>Claimed Items</ion-label>
+              </ion-item>
+            </ion-radio-group>
           </div>
 
-          <div class="claim-form-section">
-            <h3>Pickup Confirmation</h3>
-            <p class="form-description">
-              Please confirm that you want to claim this item. The finder will
-              be notified and can contact you.
-            </p>
+          <div class="filter-actions">
+            <ion-button expand="block" @click="applyFilters">Apply Filters</ion-button>
+            <ion-button expand="block" fill="clear" @click="clearAllFilters">Clear All</ion-button>
+          </div>
+        </ion-content>
+      </ion-modal>
 
-            <div class="input-group">
-              <ion-item
-                class="modern-item"
-                :class="{
-                  'item-filled': claimData.claimerName,
-                  'item-error': claimErrors.claimerName,
-                }"
-              >
-                <ion-label position="stacked" class="custom-label">
-                  <ion-icon :icon="personOutline" class="label-icon"></ion-icon>
-                  Your Name *
-                </ion-label>
-                <ion-input
-                  v-model="claimData.claimerName"
-                  placeholder="First and Last Name"
-                  class="custom-input"
-                  @ionBlur="validateClaimField('claimerName')"
-                ></ion-input>
-              </ion-item>
-              <div v-if="claimErrors.claimerName" class="error-message">
-                <ion-icon :icon="alertCircleOutline"></ion-icon>
-                {{ claimErrors.claimerName }}
+      <!-- Claim Modal -->
+      <ion-modal :is-open="showClaimModalOpen" @did-dismiss="closeClaimModal">
+        <ion-header>
+          <ion-toolbar>
+            <ion-title>Claim Item</ion-title>
+            <ion-button slot="end" fill="clear" @click="closeClaimModal">
+              <ion-icon :icon="closeOutline"></ion-icon>
+            </ion-button>
+          </ion-toolbar>
+        </ion-header>
+        <ion-content class="claim-modal-content">
+          <div v-if="selectedItemToClaim" class="claim-form">
+            <div class="item-info-section">
+              <h2>{{ selectedItemToClaim.name }}</h2>
+              <p v-if="selectedItemToClaim.description" class="item-description">
+                {{ selectedItemToClaim.description }}
+              </p>
+              <div class="item-details">
+                <div class="detail-row">
+                  <strong>Report ID:</strong> {{ selectedItemToClaim.reportId }}
+                </div>
+                <div class="detail-row">
+                  <strong>Reported:</strong> {{ formatDate(selectedItemToClaim.createdAt) }}
+                </div>
               </div>
             </div>
 
-            <div class="input-group">
-              <ion-item
-                class="modern-item"
-                :class="{
-                  'item-filled': claimData.contactInfo,
-                  'item-error': claimErrors.contactInfo,
-                }"
-              >
-                <ion-label position="stacked" class="custom-label">
-                  <ion-icon :icon="mailOutline" class="label-icon"></ion-icon>
-                  Contact Information *
-                </ion-label>
-                <ion-input
-                  v-model="claimData.contactInfo"
-                  placeholder="Email or phone number"
-                  class="custom-input"
-                  @ionBlur="validateClaimField('contactInfo')"
-                ></ion-input>
-              </ion-item>
-              <div v-if="claimErrors.contactInfo" class="error-message">
-                <ion-icon :icon="alertCircleOutline"></ion-icon>
-                {{ claimErrors.contactInfo }}
+            <div class="claim-form-section">
+              <h3>Claim Information</h3>
+              <p class="form-description">
+                Please provide details about why you believe this item belongs to you.
+              </p>
+
+              <div class="input-group">
+                <ion-item 
+                  class="modern-item"
+                  :class="{ 
+                    'item-filled': claimData.description.trim(),
+                    'item-error': claimErrors.description 
+                  }"
+                >
+                  <ion-label class="custom-label" position="stacked">
+                    <ion-icon :icon="chatbubbleOutline" class="label-icon"></ion-icon>
+                    Description *
+                  </ion-label>
+                  <ion-textarea
+                    v-model="claimData.description"
+                    placeholder="Describe how you lost this item or provide identifying details..."
+                    :rows="4"
+                    class="custom-textarea"
+                    @blur="validateClaimField('description')"
+                  ></ion-textarea>
+                </ion-item>
+                <div v-if="claimErrors.description" class="error-message">
+                  {{ claimErrors.description }}
+                </div>
               </div>
-            </div>
 
-            <div class="input-group">
-              <ion-item class="modern-item textarea-item">
-                <ion-label position="stacked" class="custom-label">
-                  <ion-icon
-                    :icon="documentTextOutline"
-                    class="label-icon"
-                  ></ion-icon>
-                  Additional Information (optional)
-                </ion-label>
-                <ion-textarea
-                  v-model="claimData.additionalInfo"
-                  placeholder="Why do you think this is your item? Describe special features..."
-                  class="custom-textarea"
-                  rows="3"
-                ></ion-textarea>
-              </ion-item>
-            </div>
-
-            <div class="verification-section">
-              <h4>Verification</h4>
-              <div class="checklist">
-                <ion-item class="checklist-item">
-                  <ion-checkbox
-                    v-model="claimData.confirmOwnership"
-                    slot="start"
-                  ></ion-checkbox>
-                  <ion-label> I confirm that this is my lost item </ion-label>
-                </ion-item>
-                <ion-item class="checklist-item">
-                  <ion-checkbox
-                    v-model="claimData.confirmContact"
-                    slot="start"
-                  ></ion-checkbox>
-                  <ion-label> I agree to be contacted by the finder </ion-label>
-                </ion-item>
+              <div class="verification-section">
+                <h4>Verification</h4>
+                <div class="checklist">
+                  <ion-checkbox v-model="claimData.hasProof">
+                    I have proof of ownership or identifying details
+                  </ion-checkbox>
+                </div>
               </div>
             </div>
 
             <div class="modal-actions">
-              <ion-button
-                expand="block"
-                fill="outline"
-                @click="closeClaimModal"
-                :disabled="isSubmittingClaim"
-              >
-                Cancel
-              </ion-button>
-              <ion-button
-                expand="block"
-                @click="submitClaim"
-                :disabled="!isClaimFormValid || isSubmittingClaim"
-                color="success"
-              >
-                <ion-spinner
-                  v-if="isSubmittingClaim"
-                  name="crescent"
-                  class="spinner"
-                ></ion-spinner>
-                <ion-icon
-                  v-else
-                  :icon="handRightOutline"
-                  slot="start"
-                ></ion-icon>
-                {{ isSubmittingClaim ? "Processing..." : "Confirm Claim" }}
+              <ion-button expand="block" @click="submitClaim" :disabled="!isClaimFormValid || isSubmittingClaim">
+                <ion-spinner v-if="isSubmittingClaim" name="crescent" class="spinner"></ion-spinner>
+                <span v-else>Submit Claim</span>
               </ion-button>
             </div>
           </div>
-        </div>
-      </ion-content>
-    </ion-modal>
-
-    <ion-modal
-      :is-open="showFilterModal"
-      @did-dismiss="showFilterModal = false"
-    >
-      <ion-header>
-        <ion-toolbar>
-          <ion-title>Filter Reports</ion-title>
-          <ion-buttons slot="end">
-            <ion-button @click="showFilterModal = false">
-              <ion-icon :icon="closeOutline"></ion-icon>
-            </ion-button>
-          </ion-buttons>
-        </ion-toolbar>
-      </ion-header>
-      <ion-content class="filter-modal-content">
-        <div class="filter-section">
-          <h3>Status</h3>
-          <ion-radio-group v-model="selectedStatus">
-            <ion-item>
-              <ion-radio slot="start" value=""></ion-radio>
-              <ion-label>All Status</ion-label>
-            </ion-item>
-            <ion-item>
-              <ion-radio slot="start" value="FOUND"></ion-radio>
-              <ion-label>
-                <ion-icon
-                  :icon="eyeOutline"
-                  style="margin-right: 8px"
-                ></ion-icon>
-                Found
-              </ion-label>
-            </ion-item>
-            <ion-item>
-              <ion-radio slot="start" value="LOST"></ion-radio>
-              <ion-label>
-                <ion-icon
-                  :icon="searchOutline"
-                  style="margin-right: 8px"
-                ></ion-icon>
-                Lost
-              </ion-label>
-            </ion-item>
-            <ion-item>
-              <ion-radio slot="start" value="CLAIMED"></ion-radio>
-              <ion-label>
-                <ion-icon
-                  :icon="checkmarkOutline"
-                  style="margin-right: 8px"
-                ></ion-icon>
-                Claimed
-              </ion-label>
-            </ion-item>
-          </ion-radio-group>
-        </div>
-
-        <div class="filter-section">
-          <h3>Location</h3>
-          <ion-radio-group v-model="selectedLocation">
-            <ion-item>
-              <ion-radio slot="start" value=""></ion-radio>
-              <ion-label>All Locations</ion-label>
-            </ion-item>
-            <ion-item v-for="location in uniqueLocations" :key="location">
-              <ion-radio slot="start" :value="location"></ion-radio>
-              <ion-label>{{ location }}</ion-label>
-            </ion-item>
-          </ion-radio-group>
-        </div>
-
-        <div class="filter-actions">
-          <ion-button expand="block" fill="outline" @click="clearAllFilters">
-            Clear All Filters
-          </ion-button>
-          <ion-button expand="block" @click="applyFilters">
-            Apply Filters
-          </ion-button>
-        </div>
-      </ion-content>
-    </ion-modal>
+        </ion-content>
+      </ion-modal>
+    </div>
   </template-page>
 </template>
 
 <script setup lang="ts">
-import TemplatePage from "@/components/TemplatePage.vue";
-import NavigationTabs from "@/components/NavigationTabs.vue";
+import { ref, computed, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import {
-  IonSearchbar,
   IonCard,
-  IonCardHeader,
-  IonCardTitle,
   IonCardContent,
   IonButton,
   IonIcon,
-  IonChip,
+  IonSearchbar,
   IonBadge,
+  IonChip,
+  IonLabel,
   IonSpinner,
   IonModal,
   IonHeader,
   IonToolbar,
   IonTitle,
-  IonButtons,
   IonContent,
   IonRadioGroup,
   IonRadio,
   IonItem,
-  IonLabel,
-  IonInput,
   IonTextarea,
   IonCheckbox,
-} from "@ionic/vue";
+} from '@ionic/vue';
 import {
-  bagOutline,
-  addOutline,
   funnelOutline,
-  closeOutline,
-  locationOutline,
-  timeOutline,
-  refreshOutline,
-  eyeOutline,
-  handRightOutline,
-  createOutline,
-  checkmarkCircleOutline,
-  alertCircleOutline,
-  searchOutline,
-  imageOutline,
-  fingerPrintOutline,
-  calendarOutline,
   personOutline,
-  flagOutline,
-  checkmarkOutline,
+  closeOutline,
+  cubeOutline,
+  checkmarkCircleOutline,
+  searchOutline,
+  alertCircleOutline,
+  refreshOutline,
+  addOutline,
   documentTextOutline,
-  mailOutline,
-} from "ionicons/icons";
-import { ref, computed, watch, onMounted } from "vue";
-import { useRouter } from "vue-router";
-import { useItemStore } from "@/stores/itemStore";
-import type { Item } from "@/models/item";
-
-interface VirtualReport {
-  id: number;
-  title: string;
-  description: string;
-  status: string;
-  location: string;
-  dateCreated: string;
-  imageUrl?: string;
-  reporterName?: string;
-}
+  timeOutline,
+  calendarOutline,
+  createOutline,
+  handRightOutline,
+  chatbubbleOutline,
+} from 'ionicons/icons';
+import { useItemStore } from '@/stores/itemStore';
+import { Item } from '@/models/item';
+import TemplatePage from '@/components/TemplatePage.vue';
+import NavigationTabs from '@/components/NavigationTabs.vue';
 
 const router = useRouter();
 const itemStore = useItemStore();
-const activeTab = ref("items");
-const searchTerm = ref("");
-const showFilterModal = ref(false);
-const selectedStatus = ref("");
-const selectedLocation = ref("");
 
-const items = computed(() => itemStore.getItems || []);
+// Reactive data
+const activeTab = ref('items');
+const searchTerm = ref('');
+const showFilterModal = ref(false);
+const selectedClaimedStatus = ref<boolean | null>(null);
+
+// Computed properties
+const items = computed(() => itemStore.getItems);
 const isLoading = computed(() => itemStore.isLoading);
 const error = computed(() => itemStore.getError);
 
-const reports = computed((): VirtualReport[] => {
-  return items.value.map((item: Item) => ({
-    id: item.id,
-    title: item.name,
-    description: item.description,
-    status: item.status || "UNKNOWN",
-    location: item.location,
-    dateCreated: item.createdAt,
-    imageUrl: item.imageUrl,
-    reporterName: "Unbekannt",
-  }));
-});
+const filteredItems = computed(() => {
+  let filtered = items.value;
 
-onMounted(async () => {
-  await loadReports();
-});
-
-const loadReports = async () => {
-  try {
-    await itemStore.fetchItems();
-  } catch (error) {
-    console.error("Error loading reports:", error);
-  }
-};
-
-const filteredReports = computed(() => {
-  let filtered = reports.value;
-
+  // Filter by search term
   if (searchTerm.value.trim()) {
     const search = searchTerm.value.toLowerCase();
-    filtered = filtered.filter(
-      (report) =>
-        report.title.toLowerCase().includes(search) ||
-        report.description.toLowerCase().includes(search) ||
-        report.location.toLowerCase().includes(search),
+    filtered = filtered.filter(item => 
+      item.name.toLowerCase().includes(search) ||
+      item.description?.toLowerCase().includes(search) ||
+      item.id.toString().includes(search) ||
+      item.reportId.toString().includes(search)
     );
   }
 
-  if (selectedStatus.value) {
-    filtered = filtered.filter(
-      (report) =>
-        report.status.toUpperCase() === selectedStatus.value.toUpperCase(),
-    );
-  }
-
-  if (selectedLocation.value) {
-    filtered = filtered.filter(
-      (report) => report.location === selectedLocation.value,
-    );
+  // Filter by claimed status
+  if (selectedClaimedStatus.value !== null) {
+    if (selectedClaimedStatus.value) {
+      filtered = filtered.filter(item => item.claimedByUserId !== null);
+    } else {
+      filtered = filtered.filter(item => item.claimedByUserId === null);
+    }
   }
 
   return filtered;
 });
 
-const uniqueLocations = computed(() => {
-  return [
-    ...new Set(reports.value.map((report) => report.location).filter(Boolean)),
-  ].sort();
-});
+const claimedItemsCount = computed(() => 
+  items.value.filter(item => item.claimedByUserId !== null).length
+);
 
-const foundReportsCount = computed(() => {
-  return filteredReports.value.filter(
-    (report) => report.status.toUpperCase() === "FOUND",
-  ).length;
-});
-
-const lostReportsCount = computed(() => {
-  return filteredReports.value.filter(
-    (report) => report.status.toUpperCase() === "LOST",
-  ).length;
-});
-
-const claimedReportsCount = computed(() => {
-  return filteredReports.value.filter(
-    (report) => report.status.toUpperCase() === "CLAIMED",
-  ).length;
-});
+const unclaimedItemsCount = computed(() => 
+  items.value.filter(item => item.claimedByUserId === null).length
+);
 
 const activeFiltersCount = computed(() => {
   let count = 0;
-  if (selectedStatus.value) count++;
-  if (selectedLocation.value) count++;
+  if (selectedClaimedStatus.value !== null) count++;
   return count;
 });
 
-const getStatusText = (status: string) => {
-  switch (status.toUpperCase()) {
-    case "FOUND":
-      return "Found";
-    case "LOST":
-      return "Lost";
-    case "CLAIMED":
-      return "Claimed";
-    case "RETURNED":
-      return "Returned";
-    default:
-      return status;
-  }
-};
-
-const getStatusColor = (status: string) => {
-  switch (status.toUpperCase()) {
-    case "FOUND":
-      return "success";
-    case "LOST":
-      return "warning";
-    case "CLAIMED":
-      return "medium";
-    case "RETURNED":
-      return "success";
-    default:
-      return "primary";
-  }
-};
-
-const getStatusIcon = (status: string) => {
-  switch (status.toUpperCase()) {
-    case "FOUND":
-      return eyeOutline;
-    case "LOST":
-      return searchOutline;
-    case "CLAIMED":
-      return checkmarkOutline;
-    case "RETURNED":
-      return checkmarkCircleOutline;
-    default:
-      return flagOutline;
-  }
-};
-
-const getStatusClass = (status: string) => {
-  return `status-${status.toLowerCase()}`;
-};
-
-const getTimeAgo = (dateString: string) => {
-  const date = new Date(dateString);
-  const now = new Date();
-  const diffInHours = Math.floor(
-    (now.getTime() - date.getTime()) / (1000 * 60 * 60),
-  );
-
-  if (diffInHours < 1) return "A few minutes ago";
-  if (diffInHours < 24) return `${diffInHours} hours ago`;
-
-  const diffInDays = Math.floor(diffInHours / 24);
-  if (diffInDays < 7) return `${diffInDays} days ago`;
-
-  return date.toLocaleDateString("en-US");
-};
-
-const formatDate = (dateString: string) => {
-  return new Date(dateString).toLocaleDateString("en-US", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-};
-
-const toggleFilterModal = () => {
-  showFilterModal.value = !showFilterModal.value;
-};
-
-const clearStatusFilter = () => {
-  selectedStatus.value = "";
-};
-
-const clearLocationFilter = () => {
-  selectedLocation.value = "";
-};
-
-const clearAllFilters = () => {
-  selectedStatus.value = "";
-  selectedLocation.value = "";
-  showFilterModal.value = false;
-};
-
-const applyFilters = () => {
-  showFilterModal.value = false;
-};
-
-const navigateToReport = (reportId: number) => {
-  router.push(`/items/${reportId}`);
-};
-
-const navigateToReportCreation = () => {
-  router.push("/items/report");
-};
-
-const editReport = (reportId: number) => {
-  router.push(`/items/${reportId}/edit`);
-};
-
+// Claim modal data
 const showClaimModalOpen = ref(false);
-const selectedItemToClaim = ref<VirtualReport | null>(null);
+const selectedItemToClaim = ref<Item | null>(null);
 const isSubmittingClaim = ref(false);
 
 const claimData = ref({
-  claimerName: "",
-  contactInfo: "",
-  additionalInfo: "",
-  confirmOwnership: false,
-  confirmContact: false,
+  description: '',
+  hasProof: false,
 });
 
 const claimErrors = ref({
-  claimerName: "",
-  contactInfo: "",
+  description: '',
 });
 
 const isClaimFormValid = computed(() => {
-  return (
-    claimData.value.claimerName.trim() !== "" &&
-    claimData.value.contactInfo.trim() !== "" &&
-    claimData.value.confirmOwnership &&
-    claimData.value.confirmContact &&
-    !claimErrors.value.claimerName &&
-    !claimErrors.value.contactInfo
-  );
+  return claimData.value.description.trim().length >= 10 &&
+         claimData.value.hasProof &&
+         !Object.values(claimErrors.value).some(error => error);
 });
 
-const showClaimModal = (report: VirtualReport) => {
-  selectedItemToClaim.value = report;
+// Methods
+const getClaimedStatusText = (isClaimed: boolean): string => {
+  return isClaimed ? 'Claimed' : 'Unclaimed';
+};
+
+const getClaimedStatusIcon = (claimedByUserId: number | null | undefined): string => {
+  return claimedByUserId ? checkmarkCircleOutline : searchOutline;
+};
+
+const getClaimedStatusClass = (claimedByUserId: number | null | undefined): string => {
+  return claimedByUserId ? 'status-claimed' : 'status-unclaimed';
+};
+
+const getTimeAgo = (dateString: string): string => {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffInMs = now.getTime() - date.getTime();
+  const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
+  const diffInDays = Math.floor(diffInHours / 24);
+
+  if (diffInDays > 0) {
+    return `${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`;
+  } else if (diffInHours > 0) {
+    return `${diffInHours} hour${diffInHours > 1 ? 's' : ''} ago`;
+  } else {
+    return 'Less than an hour ago';
+  }
+};
+
+const formatDate = (dateString: string): string => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+};
+
+const truncateDescription = (description: string, maxLength: number = 120): string => {
+  if (description.length <= maxLength) return description;
+  return description.substring(0, maxLength) + '...';
+};
+
+const toggleFilterModal = (): void => {
+  showFilterModal.value = !showFilterModal.value;
+};
+
+const clearClaimedStatusFilter = (): void => {
+  selectedClaimedStatus.value = null;
+};
+
+const clearAllFilters = (): void => {
+  selectedClaimedStatus.value = null;
+  searchTerm.value = '';
+};
+
+const applyFilters = (): void => {
+  showFilterModal.value = false;
+};
+
+const navigateToItem = (itemId: number): void => {
+  router.push(`/items/${itemId}`);
+};
+
+const editItem = (itemId: number): void => {
+  router.push(`/items/${itemId}/edit`);
+};
+
+const loadItems = async (): Promise<void> => {
+  try {
+    await itemStore.fetchItems();
+  } catch (error) {
+    console.error('Error loading items:', error);
+  }
+};
+
+// Claim modal methods
+const showClaimModal = (item: Item): void => {
+  selectedItemToClaim.value = item;
   claimData.value = {
-    claimerName: "",
-    contactInfo: "",
-    additionalInfo: "",
-    confirmOwnership: false,
-    confirmContact: false,
+    description: '',
+    hasProof: false,
   };
   claimErrors.value = {
-    claimerName: "",
-    contactInfo: "",
+    description: '',
   };
   showClaimModalOpen.value = true;
 };
 
-const closeClaimModal = () => {
+const closeClaimModal = (): void => {
   showClaimModalOpen.value = false;
   selectedItemToClaim.value = null;
 };
 
-const validateClaimField = (fieldName: keyof typeof claimErrors.value) => {
-  const value =
-    claimData.value[fieldName as keyof typeof claimData.value]
-      ?.toString()
-      .trim() || "";
-
-  switch (fieldName) {
-    case "claimerName":
-      if (!value) {
-        claimErrors.value.claimerName = "Name is required";
-      } else if (value.length < 2) {
-        claimErrors.value.claimerName =
-          "Name must be at least 2 characters long";
+const validateClaimField = (field: string): void => {
+  switch (field) {
+    case 'description':
+      if (claimData.value.description.trim().length < 10) {
+        claimErrors.value.description = 'Description must be at least 10 characters long';
       } else {
-        claimErrors.value.claimerName = "";
-      }
-      break;
-    case "contactInfo":
-      if (!value) {
-        claimErrors.value.contactInfo = "Contact information is required";
-      } else if (value.length < 5) {
-        claimErrors.value.contactInfo = "Enter valid contact information";
-      } else {
-        claimErrors.value.contactInfo = "";
+        claimErrors.value.description = '';
       }
       break;
   }
 };
 
-const submitClaim = async () => {
-  if (!selectedItemToClaim.value || !isClaimFormValid.value) return;
+const submitClaim = async (): Promise<void> => {
+  if (!selectedItemToClaim.value) return;
 
   try {
     isSubmittingClaim.value = true;
-
-    const claimDescription = [
-      "--- CLAIM REQUESTED ---",
-      `Requested by: ${claimData.value.claimerName}`,
-      `Contact: ${claimData.value.contactInfo}`,
-      `Request Date: ${new Date().toLocaleDateString("en-US")}`,
-      "",
-      claimData.value.additionalInfo
-        ? `Additional Information: ${claimData.value.additionalInfo}`
-        : "",
-      "",
-      "--- ORIGINAL DESCRIPTION ---",
-      selectedItemToClaim.value.description,
-    ]
-      .filter(Boolean)
-      .join("\n");
-
-    await itemStore.updateItem(selectedItemToClaim.value.id, {
-      status: "CLAIMED",
-      description: claimDescription,
+    
+    // For now, we'll simulate claiming by updating the item
+    // In a real implementation, you'd call a proper claim API
+    const updatedItem = await itemStore.updateItem(selectedItemToClaim.value.id, {
+      claimedByUserId: 1, // This should be the current user's ID
     });
 
-    console.log("Item successfully claimed");
-
-    closeClaimModal();
-
-    await loadReports();
+    if (updatedItem) {
+      closeClaimModal();
+      // You might want to show a success toast here
+      console.log('Item claimed successfully');
+    }
   } catch (error) {
-    console.error("Error claiming item:", error);
+    console.error('Error claiming item:', error);
+    // You might want to show an error toast here
   } finally {
     isSubmittingClaim.value = false;
   }
 };
 
-watch(activeTab, (tab) => {
-  if (tab === "locations") {
-    router.push("/locations/overview");
-  }
+// Lifecycle
+onMounted(async () => {
+  await loadItems();
 });
 </script>
 
 <style scoped>
-.reports-container {
+.items-container {
   padding: 16px;
-  min-height: 100vh;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .search-and-filter {
   display: flex;
   gap: 12px;
-  align-items: center;
   margin-bottom: 16px;
+  align-items: center;
 }
 
 .custom-searchbar {
   flex: 1;
   --background: var(--ion-color-light);
   --border-radius: 12px;
-  --box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .filter-button {
-  position: relative;
   --border-radius: 12px;
+  position: relative;
 }
 
 .filter-badge {
   position: absolute;
-  top: -8px;
-  right: -8px;
-  background: var(--ion-color-primary);
-  color: white;
-  border-radius: 50%;
-  min-width: 20px;
-  height: 20px;
-  font-size: 12px;
+  top: -4px;
+  right: -4px;
+  min-width: 18px;
+  height: 18px;
+  font-size: 10px;
 }
 
 .filter-chips {
   display: flex;
-  flex-wrap: wrap;
   gap: 8px;
   margin-bottom: 16px;
+  flex-wrap: wrap;
 }
 
 .filter-chip {
@@ -939,24 +595,22 @@ watch(activeTab, (tab) => {
 
 .clear-all-button {
   --color: var(--ion-color-medium);
-  font-size: 0.9em;
 }
 
 .stats-summary {
   display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
   justify-content: space-around;
-  background: white;
-  border-radius: 12px;
   padding: 16px;
-  margin-bottom: 20px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  background: var(--ion-color-light);
+  border-radius: 12px;
 }
 
 .stat-item {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 0.9em;
   font-weight: 500;
 }
 
@@ -964,327 +618,222 @@ watch(activeTab, (tab) => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: 60px 20px;
-  text-align: center;
+  gap: 16px;
+  padding: 48px 16px;
 }
 
 .loading-container p {
-  margin-top: 16px;
   color: var(--ion-color-medium);
+  font-size: 14px;
 }
 
 .empty-state {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  gap: 16px;
+  padding: 48px 16px;
   text-align: center;
-  padding: 60px 20px;
-  margin-top: 80px;
 }
 
 .empty-icon {
   font-size: 64px;
   color: var(--ion-color-medium);
-  margin-bottom: 20px;
 }
 
 .empty-state h2 {
+  margin: 0;
   color: var(--ion-color-dark);
-  margin-bottom: 10px;
-  font-weight: 600;
 }
 
 .empty-state p {
+  margin: 0;
   color: var(--ion-color-medium);
-  margin-bottom: 30px;
-  line-height: 1.5;
 }
 
-.reports-grid {
+.items-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
   gap: 16px;
-  animation: fadeInUp 0.6s ease-out;
 }
 
-.report-card {
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+.item-card {
   cursor: pointer;
+  transition: all 0.2s ease;
+  border-radius: 16px;
   overflow: hidden;
-  border: 1px solid var(--ion-color-light-shade);
-  animation: slideInUp 0.6s ease-out;
-  animation-delay: var(--animation-delay);
-  animation-fill-mode: backwards;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-.report-card:hover {
+.item-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
 }
 
 .card-header {
-  background: linear-gradient(
-    135deg,
-    var(--ion-color-primary),
-    var(--ion-color-primary-shade)
-  );
+  padding: 16px;
+  background: linear-gradient(135deg, var(--ion-color-primary) 0%, var(--ion-color-primary-shade) 100%);
   color: white;
   position: relative;
   overflow: hidden;
 }
 
-.card-header.status-found {
-  background: linear-gradient(
-    135deg,
-    var(--ion-color-success),
-    var(--ion-color-success-shade)
-  );
-}
-
-.card-header.status-lost {
-  background: linear-gradient(
-    135deg,
-    var(--ion-color-warning),
-    var(--ion-color-warning-shade)
-  );
-}
-
 .card-header.status-claimed {
-  background: linear-gradient(
-    135deg,
-    var(--ion-color-medium),
-    var(--ion-color-medium-shade)
-  );
+  background: linear-gradient(135deg, var(--ion-color-success) 0%, var(--ion-color-success-shade) 100%);
+}
+
+.card-header.status-unclaimed {
+  background: linear-gradient(135deg, var(--ion-color-warning) 0%, var(--ion-color-warning-shade) 100%);
 }
 
 .card-header::before {
-  content: "";
+  content: '';
   position: absolute;
-  top: -50%;
-  right: -50%;
-  width: 100%;
-  height: 200%;
-  background: linear-gradient(
-    45deg,
-    transparent,
-    rgba(255, 255, 255, 0.1),
-    transparent
-  );
-  transform: rotate(45deg);
-  transition: all 0.6s ease;
+  top: 0;
+  right: 0;
+  width: 100px;
+  height: 100px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  transform: translate(30px, -30px);
+  transition: transform 0.3s ease;
 }
 
-.report-card:hover .card-header::before {
-  transform: rotate(45deg) translateX(100%);
+.item-card:hover .card-header::before {
+  transform: translate(25px, -25px);
 }
 
 .header-content {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 12px;
 }
 
-.report-title {
-  color: white;
-  font-size: 1.2em;
-  font-weight: 600;
+.item-title {
   margin: 0;
-  flex: 1;
-  margin-right: 12px;
+  font-size: 18px;
+  font-weight: 600;
 }
 
 .status-chip {
-  --background: rgba(255, 255, 255, 0.2);
-  --color: white;
-  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .chip-icon {
-  font-size: 14px;
-  margin-right: 4px;
-}
-
-.report-details {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  color: rgba(255, 255, 255, 0.9);
-}
-
-.detail-item {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.9em;
-}
-
-.detail-icon {
   font-size: 16px;
-  opacity: 0.8;
 }
 
 .card-content {
   padding: 16px;
 }
 
-.report-image-container {
-  margin-bottom: 12px;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.report-image {
-  width: 100%;
-  height: 150px;
-  object-fit: cover;
-  transition: transform 0.3s ease;
-}
-
-.report-image:hover {
-  transform: scale(1.05);
-}
-
-.no-image-placeholder {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100px;
-  background: var(--ion-color-light-tint);
-  border-radius: 8px;
-  margin-bottom: 12px;
-  color: var(--ion-color-medium);
-}
-
-.no-image-icon {
-  font-size: 32px;
-  margin-bottom: 8px;
-}
-
-.no-image-placeholder span {
-  font-size: 0.8em;
-  text-align: center;
-}
-
 .description {
-  color: var(--ion-color-dark);
-  line-height: 1.4;
   margin-bottom: 16px;
-  font-size: 0.9em;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+}
+
+.description p {
+  margin: 0;
+  color: var(--ion-color-dark);
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.item-details {
+  margin-bottom: 16px;
+}
+
+.detail-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.detail-icon {
+  font-size: 16px;
+  color: var(--ion-color-medium);
 }
 
 .metadata {
   display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-top: 16px;
-  padding-top: 16px;
-  border-top: 1px solid var(--ion-color-light-shade);
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  color: var(--ion-color-medium);
+  border-top: 1px solid var(--ion-color-light);
+  padding-top: 12px;
 }
 
 .metadata-item {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
 }
 
 .metadata-icon {
   font-size: 14px;
-  color: var(--ion-color-medium);
-  flex-shrink: 0;
 }
 
 .metadata-text {
-  font-size: 0.8em;
-  color: var(--ion-color-medium);
+  font-size: 12px;
 }
 
 .card-actions {
   display: flex;
   justify-content: space-between;
-  padding: 8px 12px 12px;
-  border-top: 1px solid var(--ion-color-light-shade);
-  background: var(--ion-color-light-tint);
-  gap: 8px;
+  align-items: center;
+  padding: 0 16px 16px;
 }
 
 .filter-modal-content {
-  padding: 20px;
+  padding: 16px;
 }
 
 .filter-section {
-  margin-bottom: 30px;
+  margin-bottom: 24px;
 }
 
 .filter-section h3 {
-  color: var(--ion-color-dark);
-  margin-bottom: 16px;
+  margin: 0 0 16px 0;
+  font-size: 18px;
   font-weight: 600;
 }
 
 .filter-actions {
-  margin-top: 40px;
   display: flex;
   flex-direction: column;
   gap: 12px;
-}
-
-.claim-button {
-  --background: var(--ion-color-success);
-  --color: white;
-  font-weight: 600;
-  animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-  0% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.05);
-  }
-  100% {
-    transform: scale(1);
-  }
+  margin-top: 32px;
 }
 
 .claim-modal-content {
-  padding: 20px;
+  padding: 16px;
 }
 
 .claim-form {
-  max-width: 500px;
-  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
 }
 
 .item-info-section {
-  background: var(--ion-color-light-tint);
+  padding: 16px;
+  background: var(--ion-color-light);
   border-radius: 12px;
-  padding: 20px;
-  margin-bottom: 24px;
-  border-left: 4px solid var(--ion-color-success);
 }
 
 .item-info-section h2 {
-  color: var(--ion-color-dark);
   margin: 0 0 8px 0;
-  font-weight: 600;
+  color: var(--ion-color-dark);
 }
 
 .item-description {
-  color: var(--ion-color-medium-shade);
-  margin: 0 0 16px 0;
-  line-height: 1.4;
+  margin: 8px 0;
+  color: var(--ion-color-medium);
+  font-size: 14px;
 }
 
 .item-details {
@@ -1295,107 +844,98 @@ watch(activeTab, (tab) => {
 
 .detail-row {
   display: flex;
-  align-items: center;
   gap: 8px;
-  color: var(--ion-color-medium);
-  font-size: 0.9em;
+  font-size: 14px;
 }
 
 .claim-form-section h3 {
-  color: var(--ion-color-dark);
   margin: 0 0 8px 0;
+  font-size: 18px;
   font-weight: 600;
 }
 
 .form-description {
+  margin: 0 0 16px 0;
   color: var(--ion-color-medium);
-  margin: 0 0 20px 0;
-  line-height: 1.4;
-  font-size: 0.9em;
+  font-size: 14px;
 }
 
 .input-group {
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 
 .modern-item {
-  --background: var(--ion-color-light-tint);
-  --border-radius: 8px;
-  border: 2px solid var(--ion-color-light-shade);
-  border-radius: 8px;
+  --border-radius: 12px;
+  --padding-start: 16px;
+  --padding-end: 16px;
+  --background: var(--ion-color-light);
   margin-bottom: 8px;
-  transition: border-color 0.3s ease;
 }
 
 .modern-item.item-filled {
-  border-color: var(--ion-color-success-tint);
-  --background: rgba(var(--ion-color-success-rgb), 0.05);
+  --background: var(--ion-color-light-tint);
 }
 
 .modern-item.item-error {
-  border-color: var(--ion-color-danger);
-  --background: rgba(var(--ion-color-danger-rgb), 0.05);
+  --border-color: var(--ion-color-danger);
 }
 
 .modern-item:focus-within {
-  border-color: var(--ion-color-success);
-  box-shadow: 0 0 0 3px rgba(var(--ion-color-success-rgb), 0.1);
+  --background: var(--ion-color-light-shade);
 }
 
 .custom-label {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-weight: 600;
-  color: var(--ion-color-dark);
+  font-weight: 500;
 }
 
 .label-icon {
   font-size: 16px;
-  color: var(--ion-color-success);
 }
 
 .custom-textarea {
-  min-height: 60px;
+  width: 100%;
 }
 
 .textarea-item {
-  --padding-bottom: 12px;
+  --background: transparent;
 }
 
 .error-message {
+  color: var(--ion-color-danger);
+  font-size: 12px;
+  margin-top: 4px;
+  padding-left: 16px;
   display: flex;
   align-items: center;
-  gap: 6px;
-  color: var(--ion-color-danger);
-  font-size: 0.85em;
-  margin-top: 4px;
+  gap: 4px;
 }
 
 .verification-section {
-  background: var(--ion-color-light-tint);
-  border-radius: 8px;
   padding: 16px;
-  margin: 20px 0;
+  background: var(--ion-color-light);
+  border-radius: 12px;
 }
 
 .verification-section h4 {
-  color: var(--ion-color-dark);
   margin: 0 0 12px 0;
+  font-size: 16px;
   font-weight: 600;
 }
 
 .checklist {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
 }
 
 .checklist-item {
-  --background: transparent;
-  --padding-start: 0;
-  --padding-end: 0;
-  --min-height: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
 }
 
 .modal-actions {
@@ -1406,50 +946,48 @@ watch(activeTab, (tab) => {
 }
 
 .spinner {
-  width: 16px;
-  height: 16px;
   margin-right: 8px;
 }
 
 @media (max-width: 768px) {
-  .reports-grid {
+  .items-grid {
     grid-template-columns: 1fr;
   }
-
-  .reports-container {
+  
+  .items-container {
     padding: 12px;
   }
-
+  
   .search-and-filter {
     flex-direction: column;
-    gap: 12px;
+    align-items: stretch;
   }
-
+  
   .filter-button {
-    align-self: stretch;
+    align-self: flex-end;
   }
-
+  
   .stats-summary {
     flex-direction: column;
     gap: 12px;
   }
-
+  
   .card-actions {
     flex-direction: column;
     gap: 8px;
   }
-
+  
   .claim-modal-content {
-    padding: 16px;
+    padding: 12px;
   }
-
+  
   .modal-actions {
-    gap: 8px;
+    margin-top: 16px;
   }
 }
 
 @media (min-width: 1200px) {
-  .reports-grid {
+  .items-grid {
     grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
   }
 }

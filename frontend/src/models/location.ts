@@ -1,28 +1,24 @@
+import type { Report } from "./report";
+
 export interface Location {
     id: number;
     name: string;
-    description: string;
-    building: string;
-    floor: string;
-    roomNumber: string;
-    latitude?: number;
-    longitude?: number;
+    description?: string;
     createdAt: string;
-    updatedAt: string;
+    reportIds?: number[];
+    reports?: Report[];
 }
 
 export interface LocationCreateData {
     name: string;
-    description: string;
-    building: string;
-    floor: string;
-    room: string;
+    description?: string;
 }
 
 export interface LocationUpdateData {
     name?: string;
     description?: string;
-    building?: string;
-    floor?: string;
-    room?: string;
+}
+
+export interface LocationFilters {
+    name?: string;
 }

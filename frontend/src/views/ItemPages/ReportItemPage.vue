@@ -184,7 +184,9 @@
                 class="remove-image-btn"
                 @click="removeImage"
               >
-                <ion-icon :icon="trashOutline" slot="icon-only"></ion-icon>
+                <template #icon-only>
+                  <ion-icon :icon="trashOutline"></ion-icon>
+                </template>
               </ion-button>
             </div>
 
@@ -195,7 +197,9 @@
                 class="upload-btn"
                 @click="takePhoto"
               >
-                <ion-icon :icon="cameraOutline" slot="start"></ion-icon>
+                <template #start>
+                  <ion-icon :icon="cameraOutline"></ion-icon>
+                </template>
                 Take Photo
               </ion-button>
               <ion-button
@@ -204,7 +208,9 @@
                 class="upload-btn"
                 @click="triggerFileInput"
               >
-                <ion-icon :icon="cloudUploadOutline" slot="start"></ion-icon>
+                <template #start>
+                  <ion-icon :icon="cloudUploadOutline"></ion-icon>
+                </template>
                 Upload Photo
               </ion-button>
             </div>
@@ -373,13 +379,13 @@ const completionPercentage = computed(() => {
   const optionalFields = ["description", "contactInfo"];
 
   const requiredFilled = requiredFields.filter(
-    (field) =>
-      reportData.value[field as keyof typeof reportData.value].trim() !== "",
+    field =>
+      reportData.value[field as keyof typeof reportData.value].trim() !== ""
   ).length;
 
   const optionalFilled = optionalFields.filter(
-    (field) =>
-      reportData.value[field as keyof typeof reportData.value].trim() !== "",
+    field =>
+      reportData.value[field as keyof typeof reportData.value].trim() !== ""
   ).length;
 
   const requiredWeight = 0.8;
@@ -399,7 +405,7 @@ onMounted(async () => {
 
 const validateField = (fieldName: keyof typeof errors.value) => {
   const value = String(
-    reportData.value[fieldName as keyof typeof reportData.value] || "",
+    reportData.value[fieldName as keyof typeof reportData.value] || ""
   ).trim();
 
   switch (fieldName) {
@@ -504,7 +510,7 @@ const handleFileSelect = (event: Event) => {
     }
 
     const reader = new FileReader();
-    reader.onload = (e) => {
+    reader.onload = e => {
       const result = e.target?.result as string;
       imagePreview.value = result;
       reportData.value.imageData = result;
@@ -533,28 +539,28 @@ watch(
   () => reportData.value.type,
   () => {
     if (errors.value.type) validateField("type");
-  },
+  }
 );
 
 watch(
   () => reportData.value.itemName,
   () => {
     if (errors.value.itemName) validateField("itemName");
-  },
+  }
 );
 
 watch(
   () => reportData.value.location,
   () => {
     if (errors.value.location) validateField("location");
-  },
+  }
 );
 
 watch(
   () => reportData.value.reporterName,
   () => {
     if (errors.value.reporterName) validateField("reporterName");
-  },
+  }
 );
 </script>
 

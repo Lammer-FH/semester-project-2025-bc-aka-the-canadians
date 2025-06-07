@@ -18,7 +18,9 @@
         <h2>Loading Error</h2>
         <p>{{ error }}</p>
         <ion-button @click="loadUserProfile">
-          <ion-icon :icon="refreshOutline" slot="start"></ion-icon>
+          <template #start>
+            <ion-icon :icon="refreshOutline"></ion-icon>
+          </template>
           Try Again
         </ion-button>
       </div>
@@ -42,7 +44,9 @@
                 class="avatar-edit-button"
                 @click="handleAvatarEdit"
               >
-                <ion-icon :icon="cameraOutline" slot="icon-only"></ion-icon>
+                <template #icon-only>
+                  <ion-icon :icon="cameraOutline"></ion-icon>
+                </template>
               </ion-button>
             </div>
             <div class="user-info">
@@ -81,22 +85,24 @@
                 autofocus
               ></ion-input>
               <div v-else class="display-value">{{ user.firstName }}</div>
-              <ion-button
-                fill="clear"
-                size="small"
-                slot="end"
-                :color="editingField === 'firstName' ? 'success' : 'primary'"
-                @click="toggleEdit('firstName')"
-              >
-                <ion-icon
-                  :icon="
-                    editingField === 'firstName'
-                      ? checkmarkOutline
-                      : createOutline
-                  "
-                  slot="icon-only"
-                ></ion-icon>
-              </ion-button>
+              <template #end>
+                <ion-button
+                  fill="clear"
+                  size="small"
+                  :color="editingField === 'firstName' ? 'success' : 'primary'"
+                  @click="toggleEdit('firstName')"
+                >
+                  <template #icon-only>
+                    <ion-icon
+                      :icon="
+                        editingField === 'firstName'
+                          ? checkmarkOutline
+                          : createOutline
+                      "
+                    ></ion-icon>
+                  </template>
+                </ion-button>
+              </template>
             </ion-item>
             <div v-if="errors.firstName" class="error-message">
               <ion-icon :icon="alertCircleOutline"></ion-icon>
@@ -126,22 +132,24 @@
                 autofocus
               ></ion-input>
               <div v-else class="display-value">{{ user.lastName }}</div>
-              <ion-button
-                fill="clear"
-                size="small"
-                slot="end"
-                :color="editingField === 'lastName' ? 'success' : 'primary'"
-                @click="toggleEdit('lastName')"
-              >
-                <ion-icon
-                  :icon="
-                    editingField === 'lastName'
-                      ? checkmarkOutline
-                      : createOutline
-                  "
-                  slot="icon-only"
-                ></ion-icon>
-              </ion-button>
+              <template #end>
+                <ion-button
+                  fill="clear"
+                  size="small"
+                  :color="editingField === 'lastName' ? 'success' : 'primary'"
+                  @click="toggleEdit('lastName')"
+                >
+                  <template #icon-only>
+                    <ion-icon
+                      :icon="
+                        editingField === 'lastName'
+                          ? checkmarkOutline
+                          : createOutline
+                      "
+                    ></ion-icon>
+                  </template>
+                </ion-button>
+              </template>
             </ion-item>
             <div v-if="errors.lastName" class="error-message">
               <ion-icon :icon="alertCircleOutline"></ion-icon>
@@ -172,20 +180,24 @@
                 autofocus
               ></ion-input>
               <div v-else class="display-value">{{ user.email }}</div>
-              <ion-button
-                fill="clear"
-                size="small"
-                slot="end"
-                :color="editingField === 'email' ? 'success' : 'primary'"
-                @click="toggleEdit('email')"
-              >
-                <ion-icon
-                  :icon="
-                    editingField === 'email' ? checkmarkOutline : createOutline
-                  "
-                  slot="icon-only"
-                ></ion-icon>
-              </ion-button>
+              <template #end>
+                <ion-button
+                  fill="clear"
+                  size="small"
+                  :color="editingField === 'email' ? 'success' : 'primary'"
+                  @click="toggleEdit('email')"
+                >
+                  <template #icon-only>
+                    <ion-icon
+                      :icon="
+                        editingField === 'email'
+                          ? checkmarkOutline
+                          : createOutline
+                      "
+                    ></ion-icon>
+                  </template>
+                </ion-button>
+              </template>
             </ion-item>
             <div v-if="errors.email" class="error-message">
               <ion-icon :icon="alertCircleOutline"></ion-icon>
@@ -200,7 +212,9 @@
                 Username
               </ion-label>
               <div class="display-value">{{ user.username }}</div>
-              <ion-note slot="end" color="medium">Not changeable</ion-note>
+              <template #end>
+                <ion-note color="medium">Not changeable</ion-note>
+              </template>
             </ion-item>
           </div>
         </div>
@@ -210,54 +224,57 @@
 
           <ion-list class="action-list">
             <ion-item button @click="changePassword" class="action-item">
-              <ion-icon
-                :icon="lockClosedOutline"
-                slot="start"
-                color="primary"
-              ></ion-icon>
+              <template #start>
+                <ion-icon :icon="lockClosedOutline" color="primary"></ion-icon>
+              </template>
               <ion-label>
                 <h4>Change Password</h4>
                 <p>Update your password for better security</p>
               </ion-label>
-              <ion-icon
-                :icon="chevronForwardOutline"
-                slot="end"
-                color="medium"
-              ></ion-icon>
+              <template #end>
+                <ion-icon
+                  :icon="chevronForwardOutline"
+                  color="medium"
+                ></ion-icon>
+              </template>
             </ion-item>
 
             <ion-item button @click="notificationSettings" class="action-item">
-              <ion-icon
-                :icon="notificationsOutline"
-                slot="start"
-                color="primary"
-              ></ion-icon>
+              <template #start>
+                <ion-icon
+                  :icon="notificationsOutline"
+                  color="primary"
+                ></ion-icon>
+              </template>
               <ion-label>
                 <h4>Notifications</h4>
                 <p>Manage email and push notifications</p>
               </ion-label>
-              <ion-icon
-                :icon="chevronForwardOutline"
-                slot="end"
-                color="medium"
-              ></ion-icon>
+              <template #end>
+                <ion-icon
+                  :icon="chevronForwardOutline"
+                  color="medium"
+                ></ion-icon>
+              </template>
             </ion-item>
 
             <ion-item button @click="privacySettings" class="action-item">
-              <ion-icon
-                :icon="shieldCheckmarkOutline"
-                slot="start"
-                color="primary"
-              ></ion-icon>
+              <template #start>
+                <ion-icon
+                  :icon="shieldCheckmarkOutline"
+                  color="primary"
+                ></ion-icon>
+              </template>
               <ion-label>
                 <h4>Privacy</h4>
                 <p>Manage your privacy settings</p>
               </ion-label>
-              <ion-icon
-                :icon="chevronForwardOutline"
-                slot="end"
-                color="medium"
-              ></ion-icon>
+              <template #end>
+                <ion-icon
+                  :icon="chevronForwardOutline"
+                  color="medium"
+                ></ion-icon>
+              </template>
             </ion-item>
           </ion-list>
         </div>
@@ -301,7 +318,9 @@
             class="delete-button"
             @click="deleteAccount"
           >
-            <ion-icon :icon="trashOutline" slot="start"></ion-icon>
+            <template #start>
+              <ion-icon :icon="trashOutline"></ion-icon>
+            </template>
             Delete Account
           </ion-button>
         </div>
@@ -573,7 +592,7 @@ watch(
         hasFirstNameChanged || hasLastNameChanged || hasEmailChanged;
     }
   },
-  { deep: true },
+  { deep: true }
 );
 </script>
 

@@ -15,9 +15,7 @@
               @click="navigateToItems"
               class="primary-button"
             >
-              <template #start>
-                <ion-icon :icon="eyeOutline"></ion-icon>
-              </template>
+              <ion-icon :icon="eyeOutline" slot="start"></ion-icon>
               Browse Lost Items
             </ion-button>
             <ion-button
@@ -27,9 +25,7 @@
               @click="navigateToReport"
               class="secondary-button"
             >
-              <template #start>
-                <ion-icon :icon="megaphoneOutline"></ion-icon>
-              </template>
+              <ion-icon :icon="megaphoneOutline" slot="start"></ion-icon>
               Report Item
             </ion-button>
           </div>
@@ -190,9 +186,7 @@
         </p>
         <div class="cta-buttons">
           <ion-button expand="block" size="large" @click="navigateToReport">
-            <template #start>
-              <ion-icon :icon="addOutline"></ion-icon>
-            </template>
+            <ion-icon :icon="addOutline" slot="start"></ion-icon>
             Create First Report
           </ion-button>
           <ion-button
@@ -201,9 +195,7 @@
             fill="outline"
             @click="navigateToItems"
           >
-            <template #start>
-              <ion-icon :icon="listOutline"></ion-icon>
-            </template>
+            <ion-icon :icon="listOutline" slot="start"></ion-icon>
             Browse All Reports
           </ion-button>
         </div>
@@ -253,9 +245,9 @@ onMounted(async () => {
     stats.value = {
       totalReports: items.length,
       itemsReturned: items.filter(
-        item =>
+        (item) =>
           item.status?.toUpperCase() === "CLAIMED" ||
-          item.status?.toUpperCase() === "RETURNED"
+          item.status?.toUpperCase() === "RETURNED",
       ).length,
       activeUsers: Math.max(1, Math.floor(items.length * 0.7)),
       locations: locations.length,

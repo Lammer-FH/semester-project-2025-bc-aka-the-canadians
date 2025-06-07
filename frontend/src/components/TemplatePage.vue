@@ -3,13 +3,11 @@
     <ion-header>
       <ion-toolbar>
         <ion-title @click="navigateTo('/')">Lost & Found</ion-title>
-        <template #end>
-          <ion-buttons v-if="showProfileButton">
-            <ion-button @click="navigateTo('/user')">
-              <ion-icon :icon="personCircleOutline" size="large"></ion-icon>
-            </ion-button>
-          </ion-buttons>
-        </template>
+        <ion-buttons slot="end" v-if="showProfileButton">
+          <ion-button @click="navigateTo('/user')">
+            <ion-icon :icon="personCircleOutline" size="large"></ion-icon>
+          </ion-button>
+        </ion-buttons>
       </ion-toolbar>
       <div v-if="headline" class="template-headline">
         {{ headline }}
@@ -32,12 +30,11 @@
             :color="leftFooterButton.color"
             @click="$emit('leftFooterButtonClicked')"
           >
-            <template #start>
-              <ion-icon
-                v-if="leftFooterButton.icon"
-                :icon="leftFooterButton.icon"
-              ></ion-icon>
-            </template>
+            <ion-icon
+              v-if="leftFooterButton.icon"
+              :icon="leftFooterButton.icon"
+              slot="start"
+            ></ion-icon>
             {{ leftFooterButton.name }}
           </ion-button>
           <ion-button
@@ -47,25 +44,27 @@
             :disabled="rightFooterButton.disabled"
             @click="$emit('rightFooterButtonClicked')"
           >
-            <template #start>
-              <ion-icon
-                v-if="rightFooterButton.icon"
-                :icon="rightFooterButton.icon"
-              ></ion-icon>
-            </template>
+            <ion-icon
+              v-if="rightFooterButton.icon"
+              :icon="rightFooterButton.icon"
+              slot="start"
+            ></ion-icon>
             {{ rightFooterButton.name }}
           </ion-button>
         </div>
       </ion-toolbar>
     </ion-footer>
 
-    <template #fixed>
-      <ion-fab v-if="addButtonPath" vertical="bottom" horizontal="end">
-        <ion-fab-button @click="navigateTo(addButtonPath)">
-          <ion-icon :icon="addOutline"></ion-icon>
-        </ion-fab-button>
-      </ion-fab>
-    </template>
+    <ion-fab
+      v-if="addButtonPath"
+      vertical="bottom"
+      horizontal="end"
+      slot="fixed"
+    >
+      <ion-fab-button @click="navigateTo(addButtonPath)">
+        <ion-icon :icon="addOutline"></ion-icon>
+      </ion-fab-button>
+    </ion-fab>
   </ion-page>
 </template>
 

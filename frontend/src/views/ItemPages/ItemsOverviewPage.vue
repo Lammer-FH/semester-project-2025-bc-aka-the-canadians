@@ -23,7 +23,9 @@
           class="filter-button"
           @click="toggleFilterModal"
         >
-          <ion-icon :icon="funnelOutline" slot="start"></ion-icon>
+          <template #start>
+            <ion-icon :icon="funnelOutline"></ion-icon>
+          </template>
           Filter
           <ion-badge v-if="activeFiltersCount > 0" class="filter-badge">
             {{ activeFiltersCount }}
@@ -85,7 +87,9 @@
         <h2>Error Loading</h2>
         <p>{{ error }}</p>
         <ion-button @click="loadReports">
-          <ion-icon :icon="refreshOutline" slot="start"></ion-icon>
+          <template #start>
+            <ion-icon :icon="refreshOutline"></ion-icon>
+          </template>
           Try Again
         </ion-button>
       </div>
@@ -104,7 +108,9 @@
           fill="outline"
           @click="navigateToReportCreation"
         >
-          <ion-icon :icon="addOutline" slot="start"></ion-icon>
+          <template #start>
+            <ion-icon :icon="addOutline"></ion-icon>
+          </template>
           Create First Report
         </ion-button>
         <ion-button v-else fill="outline" @click="clearAllFilters">
@@ -205,7 +211,9 @@
               size="small"
               @click.stop="navigateToReport(report.id)"
             >
-              <ion-icon :icon="eyeOutline" slot="start"></ion-icon>
+              <template #start>
+                <ion-icon :icon="eyeOutline"></ion-icon>
+              </template>
               View Report
             </ion-button>
 
@@ -217,7 +225,9 @@
               class="claim-button"
               @click.stop="showClaimModal(report)"
             >
-              <ion-icon :icon="handRightOutline" slot="start"></ion-icon>
+              <template #start>
+                <ion-icon :icon="handRightOutline"></ion-icon>
+              </template>
               Claim Item
             </ion-button>
 
@@ -228,7 +238,9 @@
               color="medium"
               disabled
             >
-              <ion-icon :icon="checkmarkCircleOutline" slot="start"></ion-icon>
+              <template #start>
+                <ion-icon :icon="checkmarkCircleOutline"></ion-icon>
+              </template>
               Already Claimed
             </ion-button>
 
@@ -237,7 +249,9 @@
               size="small"
               @click.stop="editReport(report.id)"
             >
-              <ion-icon :icon="createOutline" slot="start"></ion-icon>
+              <template #start>
+                <ion-icon :icon="createOutline"></ion-icon>
+              </template>
               Edit
             </ion-button>
           </div>
@@ -249,11 +263,13 @@
       <ion-header>
         <ion-toolbar>
           <ion-title>Claim Item</ion-title>
-          <ion-buttons slot="end">
-            <ion-button @click="closeClaimModal">
-              <ion-icon :icon="closeOutline"></ion-icon>
-            </ion-button>
-          </ion-buttons>
+          <template #end>
+            <ion-buttons>
+              <ion-button @click="closeClaimModal">
+                <ion-icon :icon="closeOutline"></ion-icon>
+              </ion-button>
+            </ion-buttons>
+          </template>
         </ion-toolbar>
       </ion-header>
       <ion-content class="claim-modal-content">
@@ -360,17 +376,19 @@
               <h4>Verification</h4>
               <div class="checklist">
                 <ion-item class="checklist-item">
-                  <ion-checkbox
-                    v-model="claimData.confirmOwnership"
-                    slot="start"
-                  ></ion-checkbox>
+                  <template #start>
+                    <ion-checkbox
+                      v-model="claimData.confirmOwnership"
+                    ></ion-checkbox>
+                  </template>
                   <ion-label> I confirm that this is my lost item </ion-label>
                 </ion-item>
                 <ion-item class="checklist-item">
-                  <ion-checkbox
-                    v-model="claimData.confirmContact"
-                    slot="start"
-                  ></ion-checkbox>
+                  <template #start>
+                    <ion-checkbox
+                      v-model="claimData.confirmContact"
+                    ></ion-checkbox>
+                  </template>
                   <ion-label> I agree to be contacted by the finder </ion-label>
                 </ion-item>
               </div>
@@ -396,11 +414,9 @@
                   name="crescent"
                   class="spinner"
                 ></ion-spinner>
-                <ion-icon
-                  v-else
-                  :icon="handRightOutline"
-                  slot="start"
-                ></ion-icon>
+                <template v-if="!isSubmittingClaim" #start>
+                  <ion-icon :icon="handRightOutline"></ion-icon>
+                </template>
                 {{ isSubmittingClaim ? "Processing..." : "Confirm Claim" }}
               </ion-button>
             </div>
@@ -416,11 +432,13 @@
       <ion-header>
         <ion-toolbar>
           <ion-title>Filter Reports</ion-title>
-          <ion-buttons slot="end">
-            <ion-button @click="showFilterModal = false">
-              <ion-icon :icon="closeOutline"></ion-icon>
-            </ion-button>
-          </ion-buttons>
+          <template #end>
+            <ion-buttons>
+              <ion-button @click="showFilterModal = false">
+                <ion-icon :icon="closeOutline"></ion-icon>
+              </ion-button>
+            </ion-buttons>
+          </template>
         </ion-toolbar>
       </ion-header>
       <ion-content class="filter-modal-content">
@@ -428,11 +446,15 @@
           <h3>Status</h3>
           <ion-radio-group v-model="selectedStatus">
             <ion-item>
-              <ion-radio slot="start" value=""></ion-radio>
+              <template #start>
+                <ion-radio value=""></ion-radio>
+              </template>
               <ion-label>All Status</ion-label>
             </ion-item>
             <ion-item>
-              <ion-radio slot="start" value="FOUND"></ion-radio>
+              <template #start>
+                <ion-radio value="FOUND"></ion-radio>
+              </template>
               <ion-label>
                 <ion-icon
                   :icon="eyeOutline"
@@ -442,7 +464,9 @@
               </ion-label>
             </ion-item>
             <ion-item>
-              <ion-radio slot="start" value="LOST"></ion-radio>
+              <template #start>
+                <ion-radio value="LOST"></ion-radio>
+              </template>
               <ion-label>
                 <ion-icon
                   :icon="searchOutline"
@@ -452,7 +476,9 @@
               </ion-label>
             </ion-item>
             <ion-item>
-              <ion-radio slot="start" value="CLAIMED"></ion-radio>
+              <template #start>
+                <ion-radio value="CLAIMED"></ion-radio>
+              </template>
               <ion-label>
                 <ion-icon
                   :icon="checkmarkOutline"
@@ -468,11 +494,15 @@
           <h3>Location</h3>
           <ion-radio-group v-model="selectedLocation">
             <ion-item>
-              <ion-radio slot="start" value=""></ion-radio>
+              <template #start>
+                <ion-radio value=""></ion-radio>
+              </template>
               <ion-label>All Locations</ion-label>
             </ion-item>
             <ion-item v-for="location in uniqueLocations" :key="location">
-              <ion-radio slot="start" :value="location"></ion-radio>
+              <template #start>
+                <ion-radio :value="location"></ion-radio>
+              </template>
               <ion-label>{{ location }}</ion-label>
             </ion-item>
           </ion-radio-group>
@@ -601,23 +631,23 @@ const filteredReports = computed(() => {
   if (searchTerm.value.trim()) {
     const search = searchTerm.value.toLowerCase();
     filtered = filtered.filter(
-      (report) =>
+      report =>
         report.title.toLowerCase().includes(search) ||
         report.description.toLowerCase().includes(search) ||
-        report.location.toLowerCase().includes(search),
+        report.location.toLowerCase().includes(search)
     );
   }
 
   if (selectedStatus.value) {
     filtered = filtered.filter(
-      (report) =>
-        report.status.toUpperCase() === selectedStatus.value.toUpperCase(),
+      report =>
+        report.status.toUpperCase() === selectedStatus.value.toUpperCase()
     );
   }
 
   if (selectedLocation.value) {
     filtered = filtered.filter(
-      (report) => report.location === selectedLocation.value,
+      report => report.location === selectedLocation.value
     );
   }
 
@@ -626,25 +656,25 @@ const filteredReports = computed(() => {
 
 const uniqueLocations = computed(() => {
   return [
-    ...new Set(reports.value.map((report) => report.location).filter(Boolean)),
+    ...new Set(reports.value.map(report => report.location).filter(Boolean)),
   ].sort();
 });
 
 const foundReportsCount = computed(() => {
   return filteredReports.value.filter(
-    (report) => report.status.toUpperCase() === "FOUND",
+    report => report.status.toUpperCase() === "FOUND"
   ).length;
 });
 
 const lostReportsCount = computed(() => {
   return filteredReports.value.filter(
-    (report) => report.status.toUpperCase() === "LOST",
+    report => report.status.toUpperCase() === "LOST"
   ).length;
 });
 
 const claimedReportsCount = computed(() => {
   return filteredReports.value.filter(
-    (report) => report.status.toUpperCase() === "CLAIMED",
+    report => report.status.toUpperCase() === "CLAIMED"
   ).length;
 });
 
@@ -708,7 +738,7 @@ const getTimeAgo = (dateString: string) => {
   const date = new Date(dateString);
   const now = new Date();
   const diffInHours = Math.floor(
-    (now.getTime() - date.getTime()) / (1000 * 60 * 60),
+    (now.getTime() - date.getTime()) / (1000 * 60 * 60)
   );
 
   if (diffInHours < 1) return "A few minutes ago";
@@ -881,7 +911,7 @@ const submitClaim = async () => {
   }
 };
 
-watch(activeTab, (tab) => {
+watch(activeTab, tab => {
   if (tab === "locations") {
     router.push("/locations/overview");
   }

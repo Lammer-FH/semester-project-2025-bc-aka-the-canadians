@@ -38,11 +38,9 @@
             }"
             @ionBlur="validateField('name')"
           >
-            <ion-icon
-              :icon="textOutline"
-              slot="start"
-              class="input-icon"
-            ></ion-icon>
+            <template #start>
+              <ion-icon :icon="textOutline" class="input-icon"></ion-icon>
+            </template>
           </ion-input>
           <div v-if="errors.name" class="error-message">
             <ion-icon :icon="alertCircleOutline"></ion-icon>
@@ -63,11 +61,12 @@
             :auto-grow="true"
             rows="3"
           >
-            <ion-icon
-              :icon="documentTextOutline"
-              slot="start"
-              class="input-icon"
-            ></ion-icon>
+            <template #start>
+              <ion-icon
+                :icon="documentTextOutline"
+                class="input-icon"
+              ></ion-icon>
+            </template>
           </ion-textarea>
         </div>
 
@@ -84,11 +83,9 @@
             }"
             @ionBlur="validateField('building')"
           >
-            <ion-icon
-              :icon="businessOutline"
-              slot="start"
-              class="input-icon"
-            ></ion-icon>
+            <template #start>
+              <ion-icon :icon="businessOutline" class="input-icon"></ion-icon>
+            </template>
           </ion-input>
           <div v-if="errors.building" class="error-message">
             <ion-icon :icon="alertCircleOutline"></ion-icon>
@@ -110,11 +107,9 @@
               }"
               @ionBlur="validateField('floor')"
             >
-              <ion-icon
-                :icon="layersOutline"
-                slot="start"
-                class="input-icon"
-              ></ion-icon>
+              <template #start>
+                <ion-icon :icon="layersOutline" class="input-icon"></ion-icon>
+              </template>
             </ion-input>
             <div v-if="errors.floor" class="error-message">
               <ion-icon :icon="alertCircleOutline"></ion-icon>
@@ -135,11 +130,9 @@
               }"
               @ionBlur="validateField('room')"
             >
-              <ion-icon
-                :icon="homeOutline"
-                slot="start"
-                class="input-icon"
-              ></ion-icon>
+              <template #start>
+                <ion-icon :icon="homeOutline" class="input-icon"></ion-icon>
+              </template>
             </ion-input>
             <div v-if="errors.room" class="error-message">
               <ion-icon :icon="alertCircleOutline"></ion-icon>
@@ -229,8 +222,7 @@ const rightFooterButton = computed(() => ({
 const completionProgress = computed(() => {
   const fields = ["name", "building", "floor", "room"];
   const filledFields = fields.filter(
-    (field) =>
-      location.value[field as keyof typeof location.value].trim() !== "",
+    field => location.value[field as keyof typeof location.value].trim() !== ""
   );
   return filledFields.length / fields.length;
 });
@@ -241,7 +233,7 @@ const isValid = computed(() => {
     location.value.building.trim() !== "" &&
     location.value.floor.trim() !== "" &&
     location.value.room.trim() !== "" &&
-    Object.values(errors.value).every((error) => error === "")
+    Object.values(errors.value).every(error => error === "")
   );
 });
 
@@ -322,28 +314,28 @@ watch(
   () => location.value.name,
   () => {
     if (errors.value.name) errors.value.name = "";
-  },
+  }
 );
 
 watch(
   () => location.value.building,
   () => {
     if (errors.value.building) errors.value.building = "";
-  },
+  }
 );
 
 watch(
   () => location.value.floor,
   () => {
     if (errors.value.floor) errors.value.floor = "";
-  },
+  }
 );
 
 watch(
   () => location.value.room,
   () => {
     if (errors.value.room) errors.value.room = "";
-  },
+  }
 );
 </script>
 

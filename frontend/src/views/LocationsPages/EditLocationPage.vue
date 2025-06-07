@@ -17,7 +17,9 @@
         <h2>Error Loading</h2>
         <p>{{ error }}</p>
         <ion-button @click="loadLocation">
-          <ion-icon :icon="refreshOutline" slot="start"></ion-icon>
+          <template #start>
+            <ion-icon :icon="refreshOutline"></ion-icon>
+          </template>
           Try Again
         </ion-button>
       </div>
@@ -46,11 +48,9 @@
             }"
             @ionBlur="validateField('name')"
           >
-            <ion-icon
-              :icon="textOutline"
-              slot="start"
-              class="input-icon"
-            ></ion-icon>
+            <template #start>
+              <ion-icon :icon="textOutline" class="input-icon"></ion-icon>
+            </template>
           </ion-input>
           <div v-if="errors.name" class="error-message">
             <ion-icon :icon="alertCircleOutline"></ion-icon>
@@ -71,11 +71,12 @@
             :auto-grow="true"
             rows="3"
           >
-            <ion-icon
-              :icon="documentTextOutline"
-              slot="start"
-              class="input-icon"
-            ></ion-icon>
+            <template #start>
+              <ion-icon
+                :icon="documentTextOutline"
+                class="input-icon"
+              ></ion-icon>
+            </template>
           </ion-textarea>
         </div>
 
@@ -92,11 +93,9 @@
             }"
             @ionBlur="validateField('building')"
           >
-            <ion-icon
-              :icon="businessOutline"
-              slot="start"
-              class="input-icon"
-            ></ion-icon>
+            <template #start>
+              <ion-icon :icon="businessOutline" class="input-icon"></ion-icon>
+            </template>
           </ion-input>
           <div v-if="errors.building" class="error-message">
             <ion-icon :icon="alertCircleOutline"></ion-icon>
@@ -118,11 +117,9 @@
               }"
               @ionBlur="validateField('floor')"
             >
-              <ion-icon
-                :icon="layersOutline"
-                slot="start"
-                class="input-icon"
-              ></ion-icon>
+              <template #start>
+                <ion-icon :icon="layersOutline" class="input-icon"></ion-icon>
+              </template>
             </ion-input>
             <div v-if="errors.floor" class="error-message">
               <ion-icon :icon="alertCircleOutline"></ion-icon>
@@ -143,11 +140,9 @@
               }"
               @ionBlur="validateField('room')"
             >
-              <ion-icon
-                :icon="homeOutline"
-                slot="start"
-                class="input-icon"
-              ></ion-icon>
+              <template #start>
+                <ion-icon :icon="homeOutline" class="input-icon"></ion-icon>
+              </template>
             </ion-input>
             <div v-if="errors.room" class="error-message">
               <ion-icon :icon="alertCircleOutline"></ion-icon>
@@ -164,7 +159,9 @@
             class="delete-button"
             @click="handleDelete"
           >
-            <ion-icon :icon="trashOutline" slot="start"></ion-icon>
+            <template #start>
+              <ion-icon :icon="trashOutline"></ion-icon>
+            </template>
             Delete Location
           </ion-button>
         </div>
@@ -279,7 +276,7 @@ const isValid = computed(() => {
       location.value?.building?.trim() !== "" &&
       location.value?.floor?.trim() !== "" &&
       location.value?.room?.trim() !== "" &&
-      Object.values(errors.value).every((error) => error === "")
+      Object.values(errors.value).every(error => error === "")
     );
   } catch (error) {
     console.error("Error in isValid computed:", error);
@@ -319,7 +316,7 @@ const formatDate = (dateString: string) => {
 const validateField = (fieldName: keyof typeof errors.value) => {
   try {
     const value = String(
-      location.value?.[fieldName as keyof typeof location.value] || "",
+      location.value?.[fieldName as keyof typeof location.value] || ""
     ).trim();
 
     switch (fieldName) {
@@ -451,7 +448,7 @@ const confirmDelete = async () => {
 
 watch(
   () => location.value?.name,
-  (newName) => {
+  newName => {
     try {
       if (newName && errors.value.name) {
         errors.value.name = "";
@@ -459,12 +456,12 @@ watch(
     } catch (error) {
       console.error("Error in name watcher:", error);
     }
-  },
+  }
 );
 
 watch(
   () => location.value?.building,
-  (newBuilding) => {
+  newBuilding => {
     try {
       if (newBuilding && errors.value.building) {
         errors.value.building = "";
@@ -472,12 +469,12 @@ watch(
     } catch (error) {
       console.error("Error in building watcher:", error);
     }
-  },
+  }
 );
 
 watch(
   () => location.value?.floor,
-  (newFloor) => {
+  newFloor => {
     try {
       if (newFloor && errors.value.floor) {
         errors.value.floor = "";
@@ -485,12 +482,12 @@ watch(
     } catch (error) {
       console.error("Error in floor watcher:", error);
     }
-  },
+  }
 );
 
 watch(
   () => location.value?.room,
-  (newRoom) => {
+  newRoom => {
     try {
       if (newRoom && errors.value.room) {
         errors.value.room = "";
@@ -498,7 +495,7 @@ watch(
     } catch (error) {
       console.error("Error in room watcher:", error);
     }
-  },
+  }
 );
 
 onMounted(async () => {

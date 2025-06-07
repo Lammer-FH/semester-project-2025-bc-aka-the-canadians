@@ -17,7 +17,9 @@
         <h2>Error Loading</h2>
         <p>{{ error }}</p>
         <ion-button @click="loadLocation">
-          <ion-icon :icon="refreshOutline" slot="start"></ion-icon>
+          <template #start>
+            <ion-icon :icon="refreshOutline"></ion-icon>
+          </template>
           Try Again
         </ion-button>
       </div>
@@ -49,7 +51,9 @@
           </div>
           <div class="quick-actions">
             <ion-button fill="clear" size="small" @click="handleEdit">
-              <ion-icon :icon="createOutline" slot="icon-only"></ion-icon>
+              <template #icon-only>
+                <ion-icon :icon="createOutline"></ion-icon>
+              </template>
             </ion-button>
           </div>
         </div>
@@ -117,7 +121,9 @@
             <h4>No Items Found</h4>
             <p>No items have been reported at this location yet.</p>
             <ion-button fill="outline" @click="navigateToReportItem">
-              <ion-icon :icon="addOutline" slot="start"></ion-icon>
+              <template #start>
+                <ion-icon :icon="addOutline"></ion-icon>
+              </template>
               Report Item
             </ion-button>
           </div>
@@ -167,7 +173,9 @@
                   size="small"
                   @click.stop="navigateToItem(item.id)"
                 >
-                  <ion-icon :icon="eyeOutline" slot="start"></ion-icon>
+                  <template #start>
+                    <ion-icon :icon="eyeOutline"></ion-icon>
+                  </template>
                   Details
                 </ion-button>
               </div>

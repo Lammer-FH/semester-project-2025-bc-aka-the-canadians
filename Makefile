@@ -19,8 +19,15 @@ frontend:
 
 lint-frontend:
 	@echo "Linting frontend code:"
-	cd $(FRONTEND_PATH) && npm run lint
+	cd $(FRONTEND_PATH) && npm run lint:check
 
+fix-frontend:
+	@echo "Fixing frontend code issues:"
+	cd $(FRONTEND_PATH) && npm run fix
+
+check-frontend:
+	@echo "Running full frontend code quality check:"
+	cd $(FRONTEND_PATH) && npm run check
 
 frontend-docker:
 	@echo "Building and running frontend (with Docker):"

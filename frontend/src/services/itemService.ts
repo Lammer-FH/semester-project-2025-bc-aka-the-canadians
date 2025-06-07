@@ -4,15 +4,11 @@ import { Item, ItemFilters } from "@/models/item";
 const API_URL = `${import.meta.env.VITE_API_URL}/api/v1/items`;
 
 export const itemService = {
-    async getAllItems(filters: ItemFilters = {}): Promise<Item[]> {
+    async getAllItems(_filters: ItemFilters = {}): Promise<Item[]> {
         try {
-            const params = new URLSearchParams();
-            if (filters.status)
-                params.append("status", filters.status.toUpperCase());
-            if (filters.location) params.append("location", filters.location);
-            if (filters.search) params.append("search", filters.search);
-
-            const response = await axios.get<Item[]>(API_URL, { params });
+            // Backend currently doesn't support query parameters for filtering
+            // All filtering is done client-side in the frontend
+            const response = await axios.get<Item[]>(API_URL);
             return response.data;
         } catch (error) {
             console.error("Error fetching items:", error);
@@ -31,41 +27,12 @@ export const itemService = {
     },
 
     async createItem(
-        itemData: Omit<Item, "id" | "createdAt" | "updatedAt">,
+        itemData: Omit<Item, "id" | "createdAt">,
     ): Promise<Item> {
         try {
-            const { imageData, ...itemPayload } = itemData;
-
-            const response = await axios.post<Item>(API_URL, itemPayload);
-            const newItem = response.data;
-
-            if (imageData) {
-                try {
-                    const base64Response = await fetch(imageData);
-                    const blob = await base64Response.blob();
-
-                    const formData = new FormData();
-                    formData.append("file", blob, `item-${newItem.id}.jpg`);
-                    formData.append("itemId", newItem.id.toString());
-
-                    await axios.post(
-                        `${API_URL}/${newItem.id}/image`,
-                        formData,
-                        {
-                            headers: {
-                                "Content-Type": "multipart/form-data",
-                            },
-                        },
-                    );
-
-                    return await this.getItemById(newItem.id);
-                } catch (imageError) {
-                    console.warn("Error uploading image:", imageError);
-                    return newItem;
-                }
-            }
-
-            return newItem;
+            // Remove image handling for now - backend doesn't support it yet
+            const response = await axios.post<Item>(API_URL, itemData);
+            return response.data;
         } catch (error) {
             console.error("Error creating item:", error);
             throw error;
@@ -75,10 +42,8 @@ export const itemService = {
     async updateItem(id: number, itemData: Partial<Item>): Promise<Item> {
         try {
             const {
-                id: itemId,
-                createdAt,
-                updatedAt,
-                imageData,
+                id: _itemId,
+                createdAt: _createdAt,
                 ...updateData
             } = itemData;
 
@@ -86,30 +51,7 @@ export const itemService = {
                 `${API_URL}/${id}`,
                 updateData,
             );
-            const updatedItem = response.data;
-
-            if (imageData) {
-                try {
-                    const base64Response = await fetch(imageData);
-                    const blob = await base64Response.blob();
-
-                    const formData = new FormData();
-                    formData.append("file", blob, `item-${id}.jpg`);
-
-                    await axios.post(`${API_URL}/${id}/image`, formData, {
-                        headers: {
-                            "Content-Type": "multipart/form-data",
-                        },
-                    });
-
-                    return await this.getItemById(id);
-                } catch (imageError) {
-                    console.warn("Error updating image:", imageError);
-                    return updatedItem;
-                }
-            }
-
-            return updatedItem;
+            return response.data;
         } catch (error) {
             console.error("Error updating item:", error);
             throw error;

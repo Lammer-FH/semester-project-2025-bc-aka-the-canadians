@@ -15,8 +15,6 @@ spring:
 
 server:
   port: ${SERVER_PORT:8080}
-  servlet:
-    context-path: /api
 
 minio:
   endpoint: ${MINIO_ENDPOINT:http://localhost:9000}
@@ -46,7 +44,7 @@ spring:
     activate:
       on-profile: dev
   datasource:
-    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    url: jdbc:h2:file:./data/devdb;AUTO_SERVER=TRUE
     driver-class-name: org.h2.Driver
     username: sa
     password:

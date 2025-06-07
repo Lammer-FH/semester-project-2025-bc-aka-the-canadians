@@ -14,6 +14,22 @@ export const useReportStore = defineStore("report", () => {
     const isLoading = computed(() => loading.value);
     const getError = computed(() => error.value);
 
+    const fetchReports = async () => {
+        try {
+            loading.value = true;
+            error.value = null;
+            const response = await reportService.getAllReports();
+            reports.value = Array.isArray(response) ? response : [];
+        } catch (err) {
+            error.value =
+                err instanceof Error ? err.message : "Failed to fetch reports";
+            reports.value = [];
+            console.error("Error fetching reports:", err);
+        } finally {
+            loading.value = false;
+        }
+    };
+
     const fetchReportById = async (id: number) => {
         try {
             loading.value = true;
@@ -85,6 +101,7 @@ export const useReportStore = defineStore("report", () => {
         getCurrentReport,
         isLoading,
         getError,
+        fetchReports,
         fetchReportById,
         createReport,
         updateReport,

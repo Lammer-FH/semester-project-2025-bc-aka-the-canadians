@@ -334,7 +334,7 @@ const isValid = computed(() => {
     item.value?.name?.trim() !== "" &&
     item.value?.location?.trim() !== "" &&
     item.value?.status?.trim() !== "" &&
-    Object.values(errors.value).every((error) => error === "")
+    Object.values(errors.value).every(error => error === "")
   );
 });
 
@@ -370,7 +370,7 @@ const formatDate = (dateString: string) => {
 const validateField = (fieldName: keyof typeof errors.value) => {
   try {
     const value = String(
-      item.value[fieldName as keyof typeof item.value] || "",
+      item.value[fieldName as keyof typeof item.value] || ""
     ).trim();
 
     switch (fieldName) {
@@ -526,12 +526,12 @@ const handleFileSelect = (event: Event) => {
       }
 
       const reader = new FileReader();
-      reader.onload = (e) => {
+      reader.onload = e => {
         if (e.target?.result) {
           imagePreview.value = e.target.result as string;
         }
       };
-      reader.onerror = (error) => {
+      reader.onerror = error => {
         console.error("Error reading file:", error);
       };
       reader.readAsDataURL(file);
@@ -566,7 +566,7 @@ const removeImage = () => {
 // Wrap watchers in try-catch and add null checks
 watch(
   () => item.value?.name,
-  (newName) => {
+  newName => {
     try {
       if (newName && errors.value.name) {
         errors.value.name = "";
@@ -574,12 +574,12 @@ watch(
     } catch (error) {
       console.error("Error in name watcher:", error);
     }
-  },
+  }
 );
 
 watch(
   () => item.value?.location,
-  (newLocation) => {
+  newLocation => {
     try {
       if (newLocation && errors.value.location) {
         errors.value.location = "";
@@ -587,12 +587,12 @@ watch(
     } catch (error) {
       console.error("Error in location watcher:", error);
     }
-  },
+  }
 );
 
 watch(
   () => item.value?.status,
-  (newStatus) => {
+  newStatus => {
     try {
       if (newStatus && errors.value.status) {
         errors.value.status = "";
@@ -600,7 +600,7 @@ watch(
     } catch (error) {
       console.error("Error in status watcher:", error);
     }
-  },
+  }
 );
 
 onMounted(async () => {
@@ -717,13 +717,6 @@ onMounted(async () => {
 .modern-select.select-filled {
   border-color: var(--ion-color-primary-tint);
   --background: rgba(var(--ion-color-primary-rgb), 0.05);
-}
-
-.modern-input.input-error,
-.modern-textarea.textarea-error,
-.modern-select.select-error {
-  border-color: var(--ion-color-danger);
-  --background: rgba(var(--ion-color-danger-rgb), 0.05);
 }
 
 .modern-input:focus-within,

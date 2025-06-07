@@ -46,8 +46,26 @@ export default [
       'vue/attribute-hyphenation': 'off',
       'vue/v-on-event-hyphenation': 'off',
 
-      // Warnings for deprecated features
-      'vue/no-deprecated-slot-attribute': 'warn',
+      // Warnings for deprecated features - but allow slot on Ionic components
+      'vue/no-deprecated-slot-attribute': [
+        'warn',
+        {
+          ignore: [
+            // Layout components
+            'ion-header', 'ion-footer', 'ion-content', 'ion-toolbar', 'ion-buttons',
+            // Interactive components
+            'ion-button', 'ion-fab-button', 'ion-tab-button', 'ion-segment-button',
+            // Form components
+            'ion-input', 'ion-textarea', 'ion-select', 'ion-checkbox', 'ion-radio', 'ion-toggle', 'ion-range', 'ion-searchbar',
+            // Display components
+            'ion-item', 'ion-label', 'ion-icon', 'ion-chip', 'ion-badge', 'ion-avatar', 'ion-thumbnail', 'ion-note',
+            // Feedback components
+            'ion-skeleton-text', 'ion-spinner', 'ion-progress-bar',
+            // List components
+            'ion-infinite-scroll-content', 'ion-refresher-content', 'ion-reorder', 'ion-slide'
+          ]
+        }
+      ],
     },
   },
   

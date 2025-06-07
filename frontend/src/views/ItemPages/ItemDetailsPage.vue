@@ -27,14 +27,14 @@
           <div class="header-content">
             <div class="header-left">
               <ion-chip
-                :color="getStatusColor(item.status || '')"
+                :color="getStatusColor(item.report?.status ?? false)"
                 class="status-chip"
               >
                 <ion-icon
-                  :icon="getStatusIcon(item.status || '')"
+                  :icon="getStatusIcon(item.report?.status ?? false)"
                   class="chip-icon"
                 ></ion-icon>
-                {{ getStatusText(item.status || "") }}
+                {{ getStatusText(item.report?.status ?? false) }}
               </ion-chip>
               <div class="report-meta">
                 <span class="report-id">Report #{{ item.id }}</span>
@@ -56,29 +56,7 @@
           </div>
         </div>
 
-        <div v-if="item.imageUrl" class="image-section">
-          <div class="image-container">
-            <img
-              :src="item.imageUrl"
-              :alt="item.name || 'Image'"
-              class="item-image"
-              @click="openImageModal"
-            />
-            <ion-button
-              fill="clear"
-              class="expand-button"
-              @click="openImageModal"
-            >
-              <ion-icon :icon="expandOutline" slot="icon-only"></ion-icon>
-            </ion-button>
-            <div class="image-overlay">
-              <ion-chip color="dark" class="image-chip">
-                <ion-icon :icon="cameraOutline" class="chip-icon"></ion-icon>
-                Tap to Enlarge
-              </ion-chip>
-            </div>
-          </div>
-        </div>
+        <!-- Image functionality removed - not available in current schema -->
 
         <div class="info-card main-info">
           <div class="card-header">
@@ -93,10 +71,7 @@
           </div>
 
           <div class="status-section">
-            <div
-              v-if="item.status && item.status.toUpperCase() === 'FOUND'"
-              class="found-item-section"
-            >
+            <div v-if="item.report?.status === true" class="found-item-section">
               <div class="action-banner found-banner">
                 <div class="banner-content">
                   <ion-icon :icon="eyeOutline" class="banner-icon"></ion-icon>
@@ -121,7 +96,7 @@
             </div>
 
             <div
-              v-else-if="item.status && item.status.toUpperCase() === 'LOST'"
+              v-else-if="item.report?.status === false && !item.claimedByUserId"
               class="lost-item-section"
             >
               <div class="action-banner lost-banner">
@@ -132,25 +107,26 @@
                   ></ion-icon>
                   <div class="banner-text">
                     <h3>Lost Item</h3>
-                    <p>Someone is looking for this item. Have you found it?</p>
+                    <p>
+                      If you found this item, please report it to help reunite
+                      it with the owner.
+                    </p>
                   </div>
                 </div>
                 <ion-button
                   expand="block"
-                  fill="outline"
+                  size="large"
                   color="warning"
+                  class="report-found-button"
                   @click="reportFound"
                 >
                   <ion-icon :icon="megaphoneOutline" slot="start"></ion-icon>
-                  Report as Found
+                  I Found This Item
                 </ion-button>
               </div>
             </div>
 
-            <div
-              v-else-if="item.status && item.status.toUpperCase() === 'CLAIMED'"
-              class="claimed-item-section"
-            >
+            <div v-else-if="item.claimedByUserId" class="claimed-item-section">
               <div class="action-banner claimed-banner">
                 <div class="banner-content">
                   <ion-icon
@@ -158,30 +134,8 @@
                     class="banner-icon"
                   ></ion-icon>
                   <div class="banner-text">
-                    <h3>Pickup Requested</h3>
+                    <h3>Claimed</h3>
                     <p>This item has already been requested for pickup.</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div
-              v-else-if="
-                item.status && item.status.toUpperCase() === 'RETURNED'
-              "
-              class="returned-item-section"
-            >
-              <div class="action-banner returned-banner">
-                <div class="banner-content">
-                  <ion-icon
-                    :icon="checkmarkCircleOutline"
-                    class="banner-icon"
-                  ></ion-icon>
-                  <div class="banner-text">
-                    <h3>Successfully Returned</h3>
-                    <p>
-                      This item has been successfully returned to the owner.
-                    </p>
                   </div>
                 </div>
               </div>
@@ -235,7 +189,9 @@
                 :icon="businessOutline"
                 class="location-icon"
               ></ion-icon>
-              <span class="location-name">{{ item.location.name }}</span>
+              <span class="location-name">{{
+                item.report?.location?.name || "Unknown Location"
+              }}</span>
             </div>
             <ion-button fill="clear" size="small" @click="viewLocationReports">
               <ion-icon :icon="flagOutline" slot="start"></ion-icon>
@@ -256,27 +212,12 @@
                 <h4>Report Created</h4>
                 <p>{{ formatDetailedDate(item.createdAt || "") }}</p>
                 <span class="timeline-type">{{
-                  getReportType(item.status || "")
+                  getReportType(item.report?.status ?? false)
                 }}</span>
               </div>
             </div>
-            <div
-              v-if="item.updatedAt && item.updatedAt !== item.createdAt"
-              class="timeline-item"
-            >
-              <div class="timeline-marker updated"></div>
-              <div class="timeline-content">
-                <h4>Status Updated</h4>
-                <p>{{ formatDetailedDate(item.updatedAt) }}</p>
-                <span class="timeline-status">{{
-                  getStatusText(item.status || "")
-                }}</span>
-              </div>
-            </div>
-            <div
-              v-if="item.status && item.status.toUpperCase() === 'CLAIMED'"
-              class="timeline-item"
-            >
+            <!-- Status update timeline removed - updatedAt not available in schema -->
+            <div v-if="item.claimedByUserId" class="timeline-item">
               <div class="timeline-marker claimed"></div>
               <div class="timeline-content">
                 <h4>Pickup Requested</h4>
@@ -321,18 +262,18 @@
             >
               <div class="related-content">
                 <ion-chip
-                  :color="getStatusColor(related.status || '')"
+                  :color="getStatusColor(related.report?.status ?? false)"
                   class="related-status"
                 >
                   <ion-icon
-                    :icon="getStatusIcon(related.status || '')"
+                    :icon="getStatusIcon(related.report?.status ?? false)"
                     class="chip-icon"
                   ></ion-icon>
-                  {{ getStatusText(related.status || "") }}
+                  {{ getStatusText(related.report?.status ?? false) }}
                 </ion-chip>
                 <h4>{{ related.name || "Unknown Item" }}</h4>
                 <p>
-                  {{ related.location || "Unknown Location" }} •
+                  {{ related.report?.location?.name || "Unknown Location" }} •
                   {{ getTimeAgo(related.createdAt || "") }}
                 </p>
               </div>
@@ -346,7 +287,7 @@
 
         <div class="action-buttons">
           <ion-button
-            v-if="item.status && item.status.toUpperCase() === 'FOUND'"
+            v-if="item.report?.status === true"
             expand="block"
             size="large"
             color="success"
@@ -357,7 +298,7 @@
           </ion-button>
 
           <ion-button
-            v-else-if="item.status && item.status.toUpperCase() === 'LOST'"
+            v-else-if="item.report?.status === false"
             expand="block"
             size="large"
             fill="outline"
@@ -398,28 +339,7 @@
       </div>
     </div>
 
-    <ion-modal :is-open="showImageModal" @did-dismiss="closeImageModal">
-      <ion-header>
-        <ion-toolbar>
-          <ion-title>Report Photo</ion-title>
-          <ion-buttons slot="end">
-            <ion-button @click="closeImageModal">
-              <ion-icon :icon="closeOutline"></ion-icon>
-            </ion-button>
-          </ion-buttons>
-        </ion-toolbar>
-      </ion-header>
-      <ion-content class="modal-content">
-        <div class="modal-image-container">
-          <img
-            v-if="item?.imageUrl"
-            :src="item.imageUrl"
-            :alt="item.name || 'Image'"
-            class="modal-image"
-          />
-        </div>
-      </ion-content>
-    </ion-modal>
+    <!-- Image modal removed - imageUrl not available in schema -->
 
     <ion-alert
       :is-open="showClaimAlert"
@@ -441,25 +361,12 @@
 
 <script setup lang="ts">
 import TemplatePage from "@/components/TemplatePage.vue";
-import {
-  IonIcon,
-  IonButton,
-  IonSpinner,
-  IonChip,
-  IonModal,
-  IonHeader,
-  IonToolbar,
-  IonTitle,
-  IonButtons,
-  IonContent,
-  IonAlert,
-} from "@ionic/vue";
+import { IonIcon, IonButton, IonSpinner, IonChip, IonAlert } from "@ionic/vue";
 import {
   arrowBackOutline,
   createOutline,
   alertCircleOutline,
   refreshOutline,
-  expandOutline,
   documentTextOutline,
   locationOutline,
   businessOutline,
@@ -467,16 +374,13 @@ import {
   shareOutline,
   trashOutline,
   statsChartOutline,
-  closeOutline,
   eyeOutline,
   flagOutline,
-  checkmarkOutline,
   handRightOutline,
   searchOutline,
   megaphoneOutline,
   checkmarkCircleOutline,
   personOutline,
-  cameraOutline,
   layersOutline,
   chevronForwardOutline,
 } from "ionicons/icons";
@@ -491,7 +395,7 @@ const itemStore = useItemStore();
 
 const item = ref<Item | null>(null);
 const relatedReports = ref<Item[]>([]);
-const showImageModal = ref(false);
+// Image functionality removed - not available in current schema
 const showDeleteAlert = ref(false);
 const showClaimAlert = ref(false);
 const showStatistics = ref(false);
@@ -545,12 +449,12 @@ const claimAlertMessage = computed(() => {
             <div style="text-align: left; padding: 8px;">
                 <p><strong>Item:</strong> ${item.value.name || "Unknown"}</p>
                 <p><strong>Location:</strong> ${
-                  item.value.location || "Unknown"
+                  item.value.report?.location?.name || "Unknown"
                 }</p>
                 <br>
                 <p>Do you want to request this item for pickup?</p>
                 <p style="color: #666; font-size: 0.9em;">
-                    The finder will be notified and can contact you 
+                    The finder will be notified and can contact you
                     to coordinate the pickup.
                 </p>
             </div>
@@ -591,7 +495,7 @@ const loadItem = async () => {
       await nextTick();
       item.value = { ...fetchedItem };
       await loadRelatedReports();
-      await loadItemStatistics(itemId);
+      await loadItemStatistics();
     } else {
       throw new Error("Item not found");
     }
@@ -615,10 +519,10 @@ const loadRelatedReports = async () => {
 
     relatedReports.value = allItems
       .filter(
-        (i) =>
+        i =>
           i.id !== item.value!.id &&
-          i.location === item.value!.location &&
-          i.status?.toUpperCase() !== "CLAIMED",
+          i.report?.locationId === item.value!.report?.locationId &&
+          !i.claimedByUserId
       )
       .slice(0, 3);
   } catch (error) {
@@ -627,7 +531,7 @@ const loadRelatedReports = async () => {
   }
 };
 
-const loadItemStatistics = async (itemId: number) => {
+const loadItemStatistics = async () => {
   try {
     viewCount.value = Math.floor(Math.random() * 50) + 5;
   } catch (error) {
@@ -636,76 +540,36 @@ const loadItemStatistics = async (itemId: number) => {
   }
 };
 
-const getStatusColor = (status: string): string => {
+const getStatusColor = (status: boolean): string => {
   try {
-    if (!status) return "primary";
-
-    switch (status.toUpperCase()) {
-      case "FOUND":
-        return "success";
-      case "LOST":
-        return "warning";
-      case "CLAIMED":
-        return "medium";
-      case "RETURNED":
-        return "success";
-      default:
-        return "primary";
-    }
+    return status ? "success" : "warning";
   } catch (error) {
     console.error("Error getting status color:", error);
     return "primary";
   }
 };
 
-const getStatusIcon = (status: string): string => {
+const getStatusIcon = (status: boolean): string => {
   try {
-    if (!status) return flagOutline;
-
-    switch (status.toUpperCase()) {
-      case "FOUND":
-        return eyeOutline;
-      case "LOST":
-        return searchOutline;
-      case "CLAIMED":
-        return checkmarkOutline;
-      case "RETURNED":
-        return checkmarkCircleOutline;
-      default:
-        return flagOutline;
-    }
+    return status ? eyeOutline : searchOutline;
   } catch (error) {
     console.error("Error getting status icon:", error);
     return flagOutline;
   }
 };
 
-const getStatusText = (status: string): string => {
+const getStatusText = (status: boolean): string => {
   try {
-    if (!status) return "Unknown";
-
-    switch (status.toUpperCase()) {
-      case "FOUND":
-        return "Found";
-      case "LOST":
-        return "Lost";
-      case "CLAIMED":
-        return "Claimed";
-      case "RETURNED":
-        return "Returned";
-      default:
-        return status;
-    }
+    return status ? "Found" : "Lost";
   } catch (error) {
     console.error("Error getting status text:", error);
     return "Unknown";
   }
 };
 
-const getReportType = (status: string): string => {
+const getReportType = (status: boolean): string => {
   try {
-    if (!status) return "Report";
-    return status.toUpperCase() === "LOST" ? "Lost Report" : "Found Report";
+    return status ? "Found Report" : "Lost Report";
   } catch (error) {
     console.error("Error getting report type:", error);
     return "Report";
@@ -752,7 +616,7 @@ const getTimeAgo = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
     const diffInHours = Math.floor(
-      (now.getTime() - date.getTime()) / (1000 * 60 * 60),
+      (now.getTime() - date.getTime()) / (1000 * 60 * 60)
     );
 
     if (diffInHours < 1) return "A few minutes ago";
@@ -780,21 +644,21 @@ const getCleanDescription = (description: string): string => {
 };
 
 const getReporterInfo = (
-  description: string,
+  description: string
 ): Record<string, string> | null => {
   try {
     if (!description) return null;
 
     const metadataMatch = description.match(
-      /--- Report Information ---([\s\S]*?)(?:--- |$)/,
+      /--- Report Information ---([\s\S]*?)(?:--- |$)/
     );
     if (!metadataMatch) return null;
 
     const metadata = metadataMatch[1];
     const info: Record<string, string> = {};
 
-    const lines = metadata.split("\n").filter((line) => line.trim());
-    lines.forEach((line) => {
+    const lines = metadata.split("\n").filter(line => line.trim());
+    lines.forEach(line => {
       const [key, ...valueParts] = line.split(":");
       if (key && valueParts.length > 0) {
         info[key.trim()] = valueParts.join(":").trim();
@@ -844,21 +708,7 @@ const handleEdit = () => {
   }
 };
 
-const openImageModal = () => {
-  try {
-    showImageModal.value = true;
-  } catch (error) {
-    console.error("Error opening image modal:", error);
-  }
-};
-
-const closeImageModal = () => {
-  try {
-    showImageModal.value = false;
-  } catch (error) {
-    console.error("Error closing image modal:", error);
-  }
-};
+// Image modal functions removed - not available in current schema
 
 const showDeleteConfirmation = () => {
   try {
@@ -904,7 +754,6 @@ const processClaim = async () => {
     ].join("\n");
 
     const updatedItem = await itemStore.updateItem(item.value.id, {
-      status: "CLAIMED",
       description: claimDescription,
     });
 
@@ -920,16 +769,17 @@ const processClaim = async () => {
 
 const reportFound = () => {
   try {
+    if (!item.value) return;
     router.push({
       path: "/items/report",
       query: {
         type: "FOUND",
-        name: item.value?.name || "",
-        location: item.value?.location || "",
+        name: item.value.name || "",
+        location: item.value.report?.location?.name || "",
       },
     });
   } catch (error) {
-    console.error("Error navigating to report found:", error);
+    console.error("Error navigating to create found report:", error);
   }
 };
 
@@ -939,9 +789,9 @@ const shareItem = async () => {
   try {
     const shareData = {
       title: `Lost & Found: ${item.value.name || "Unbekannt"}`,
-      text: `${getStatusText(item.value.status || "")}: ${
-        item.value.name || "Unbekannt"
-      } am ${item.value.location || "Unbekannt"}`,
+      text: `${getStatusText(item.value.report?.status ?? false)}: ${
+        item.value.name || "Unknown"
+      } at ${item.value.report?.location?.name || "Unknown"}`,
       url: window.location.href,
     };
 
@@ -960,17 +810,17 @@ const viewLocationReports = () => {
   try {
     router.push({
       path: "/items/overview",
-      query: { location: item.value?.location || "" },
+      query: { location: item.value?.report?.location?.name || "" },
     });
   } catch (error) {
     console.error("Error navigating to location reports:", error);
   }
 };
 
-const navigateToReport = (reportId: number) => {
+const navigateToReport = (_reportId: number) => {
   try {
-    if (reportId) {
-      router.push(`/items/${reportId}`);
+    if (_reportId) {
+      router.push(`/items/${_reportId}`);
     }
   } catch (error) {
     console.error("Error navigating to report:", error);

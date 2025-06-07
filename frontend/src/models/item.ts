@@ -6,7 +6,6 @@ export interface Item {
     name: string;
     description?: string;
     reportId: number;
-    claimedByUserId?: number;
     createdAt: string;
     report?: Report;
     claimedByUser?: User;
@@ -21,7 +20,6 @@ export interface ItemCreateData {
 export interface ItemUpdateData {
     name?: string;
     description?: string;
-    claimedByUserId?: number;
 }
 
 export interface ItemFilters {

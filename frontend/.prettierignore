@@ -1,0 +1,45 @@
+# Build output
+dist/
+build/
+
+# Dependencies
+node_modules/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Cache directories
+.cache/
+.vite/
+
+# Coverage reports
+coverage/
+
+# TypeScript build info
+*.tsbuildinfo
+
+# Ionic/Capacitor
+android/
+ios/
+www/
+platforms/
+plugins/
+resources/
+
+# IDE files
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Package lock files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Logs
+*.log

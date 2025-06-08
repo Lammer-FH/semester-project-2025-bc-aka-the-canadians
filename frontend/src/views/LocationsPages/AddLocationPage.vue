@@ -229,8 +229,7 @@ const rightFooterButton = computed(() => ({
 const completionProgress = computed(() => {
   const fields = ["name", "building", "floor", "room"];
   const filledFields = fields.filter(
-    (field) =>
-      location.value[field as keyof typeof location.value].trim() !== "",
+    field => location.value[field as keyof typeof location.value].trim() !== ""
   );
   return filledFields.length / fields.length;
 });
@@ -241,7 +240,7 @@ const isValid = computed(() => {
     location.value.building.trim() !== "" &&
     location.value.floor.trim() !== "" &&
     location.value.room.trim() !== "" &&
-    Object.values(errors.value).every((error) => error === "")
+    Object.values(errors.value).every(error => error === "")
   );
 });
 
@@ -322,28 +321,28 @@ watch(
   () => location.value.name,
   () => {
     if (errors.value.name) errors.value.name = "";
-  },
+  }
 );
 
 watch(
   () => location.value.building,
   () => {
     if (errors.value.building) errors.value.building = "";
-  },
+  }
 );
 
 watch(
   () => location.value.floor,
   () => {
     if (errors.value.floor) errors.value.floor = "";
-  },
+  }
 );
 
 watch(
   () => location.value.room,
   () => {
     if (errors.value.room) errors.value.room = "";
-  },
+  }
 );
 </script>
 
@@ -434,12 +433,6 @@ watch(
 .modern-textarea.textarea-filled {
   border-color: var(--ion-color-primary-tint);
   --background: rgba(var(--ion-color-primary-rgb), 0.05);
-}
-
-.modern-input.input-error,
-.modern-textarea.textarea-error {
-  border-color: var(--ion-color-danger);
-  --background: rgba(var(--ion-color-danger-rgb), 0.05);
 }
 
 .modern-input:focus-within,

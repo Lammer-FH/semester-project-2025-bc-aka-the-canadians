@@ -13,7 +13,7 @@
         <ion-searchbar
           v-model="searchTerm"
           placeholder="Search for locations..."
-          debounce="300"
+          :debounce="300"
           class="custom-searchbar"
         ></ion-searchbar>
       </div>
@@ -27,15 +27,15 @@
           </div>
           <div class="stat-item">
             <ion-icon :icon="eyeOutline" color="success"></ion-icon>
-            <span>{{ totalFoundReports }} Found Reports</span>
+            <span>{{ totalOpenReports }} Open Reports</span>
           </div>
           <div class="stat-item">
-            <ion-icon :icon="searchOutline" color="warning"></ion-icon>
-            <span>{{ totalLostReports }} Lost Reports</span>
+            <ion-icon :icon="checkmarkOutline" color="primary"></ion-icon>
+            <span>{{ totalResolvedReports }} Resolved Reports</span>
           </div>
           <div class="stat-item">
-            <ion-icon :icon="checkmarkCircleOutline" color="medium"></ion-icon>
-            <span>{{ totalClaimedReports }} Completed</span>
+            <ion-icon :icon="documentTextOutline" color="tertiary"></ion-icon>
+            <span>{{ totalReports }} Total Reports</span>
           </div>
         </div>
       </div>
@@ -81,23 +81,6 @@
               <ion-card-title class="location-name">{{
                 location.name
               }}</ion-card-title>
-              <ion-chip class="building-chip" color="primary">
-                <ion-icon :icon="businessOutline" class="chip-icon"></ion-icon>
-                {{ location.building }}
-              </ion-chip>
-            </div>
-            <div class="location-details">
-              <div class="detail-item">
-                <ion-icon :icon="layersOutline" class="detail-icon"></ion-icon>
-                Floor {{ location.floor }}
-              </div>
-              <div class="detail-item">
-                <ion-icon
-                  :icon="businessOutline"
-                  class="detail-icon"
-                ></ion-icon>
-                Room {{ location.room }}
-              </div>
             </div>
           </ion-card-header>
 
@@ -109,7 +92,7 @@
               </h4>
 
               <div
-                v-if="getReportsForLocation(location.name).length === 0"
+                v-if="getReportsForLocation(location).length === 0"
                 class="no-reports"
               >
                 <ion-icon
@@ -122,41 +105,44 @@
               <div v-else class="reports-stats">
                 <div
                   class="report-stat-item"
-                  v-if="getFoundReportsCount(location.name) > 0"
-                >
-                  <ion-chip color="success" class="report-chip">
-                    <ion-icon :icon="eyeOutline" class="chip-icon"></ion-icon>
-                    {{ getFoundReportsCount(location.name) }} Found
-                  </ion-chip>
-                </div>
-                <div
-                  class="report-stat-item"
-                  v-if="getLostReportsCount(location.name) > 0"
+                  v-if="getOpenReportsCount(location) > 0"
                 >
                   <ion-chip color="warning" class="report-chip">
                     <ion-icon
-                      :icon="searchOutline"
+                      :icon="alertCircleOutline"
                       class="chip-icon"
                     ></ion-icon>
-                    {{ getLostReportsCount(location.name) }} Lost
+                    {{ getOpenReportsCount(location) }} Open
                   </ion-chip>
                 </div>
                 <div
                   class="report-stat-item"
-                  v-if="getClaimedReportsCount(location.name) > 0"
+                  v-if="getResolvedReportsCount(location) > 0"
                 >
-                  <ion-chip color="medium" class="report-chip">
+                  <ion-chip color="success" class="report-chip">
                     <ion-icon
                       :icon="checkmarkOutline"
                       class="chip-icon"
                     ></ion-icon>
-                    {{ getClaimedReportsCount(location.name) }} Picked Up
+                    {{ getResolvedReportsCount(location) }} Resolved
+                  </ion-chip>
+                </div>
+                <div
+                  class="report-stat-item"
+                  v-if="getTotalReportsCount(location) > 0"
+                >
+                  <ion-chip color="primary" class="report-chip">
+                    <ion-icon
+                      :icon="documentTextOutline"
+                      class="chip-icon"
+                    ></ion-icon>
+                    {{ getTotalReportsCount(location) }} Total
                   </ion-chip>
                 </div>
               </div>
 
               <div
-                v-if="getRecentReportsForLocation(location.name).length > 0"
+                v-if="getRecentReportsForLocation(location).length > 0"
                 class="recent-reports"
               >
                 <div class="recent-reports-header">
@@ -172,7 +158,7 @@
                 <div class="recent-reports-list">
                   <div
                     v-for="report in getRecentReportsForLocation(
-                      location.name,
+                      location
                     ).slice(0, 2)"
                     :key="report.id"
                     class="recent-report-item"
@@ -217,12 +203,6 @@
                   >Created {{ formatDate(location.createdAt) }}</span
                 >
               </div>
-              <div class="metadata-item">
-                <ion-icon :icon="timeOutline" class="metadata-icon"></ion-icon>
-                <span class="metadata-text"
-                  >Updated {{ formatDate(location.updatedAt) }}</span
-                >
-              </div>
             </div>
           </ion-card-content>
 
@@ -241,7 +221,7 @@
               @click.stop="viewAllReportsAtLocation(location.name)"
             >
               <ion-icon :icon="flagOutline" slot="start"></ion-icon>
-              Reports ({{ getReportsForLocation(location.name).length }})
+              Reports ({{ getReportsForLocation(location).length }})
             </ion-button>
             <ion-button
               fill="clear"
@@ -275,9 +255,6 @@ import {
 import {
   locationOutline,
   addOutline,
-  businessOutline,
-  layersOutline,
-  timeOutline,
   refreshOutline,
   eyeOutline,
   createOutline,
@@ -292,9 +269,9 @@ import {
 import { ref, computed, watch, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useLocationStore } from "@/stores/locationStore";
-import { useItemStore } from "@/stores/itemStore";
+import { useReportStore } from "@/stores/reportStore";
 import type { Location } from "@/models/location";
-import type { Item } from "@/models/item";
+import type { Report } from "@/models/report";
 
 interface VirtualReport {
   id: number;
@@ -309,27 +286,25 @@ interface VirtualReport {
 
 const router = useRouter();
 const locationStore = useLocationStore();
-const itemStore = useItemStore();
+const reportStore = useReportStore();
 const activeTab = ref("locations");
 const searchTerm = ref("");
 
 const locations = computed(() => locationStore.getLocations || []);
-const items = computed(() => itemStore.getItems || []);
 const isLoading = computed(
-  () => locationStore.isLoading || itemStore.isLoading,
+  () => locationStore.isLoading || reportStore.isLoading
 );
 const error = computed(() => locationStore.getError);
 
 const reports = computed((): VirtualReport[] => {
-  return items.value.map((item: Item) => ({
-    id: item.id,
-    title: item.name,
-    description: item.description,
-    status: item.status || "UNKNOWN",
-    location: item.location,
-    dateCreated: item.createdAt,
-    imageUrl: item.imageUrl,
-    reporterName: "Unbekannt",
+  return reportStore.getReports.map((report: Report) => ({
+    id: report.id,
+    title: report.items?.[0]?.name || "Unknown Item",
+    description: report.items?.[0]?.description || "No description available",
+    status: report.status ? "RESOLVED" : "OPEN",
+    location: report.location?.name || "Unknown Location",
+    dateCreated: report.createdAt,
+    reporterName: report.user?.name || "Unknown Reporter",
   }));
 });
 
@@ -348,9 +323,9 @@ const loadLocations = async () => {
 
 const loadReports = async () => {
   try {
-    await itemStore.fetchItems();
-  } catch (error) {
-    console.error("Error loading reports:", error);
+    await reportStore.fetchReports();
+  } catch (err) {
+    console.error("Error loading reports:", err);
   }
 };
 
@@ -360,65 +335,55 @@ const filteredLocations = computed(() => {
     return [];
   }
 
-  return locationsArray.filter(
-    (location: Location) =>
-      location.name.toLowerCase().includes(searchTerm.value.toLowerCase()) ||
-      location.building
-        .toLowerCase()
-        .includes(searchTerm.value.toLowerCase()) ||
-      location.description
-        .toLowerCase()
-        .includes(searchTerm.value.toLowerCase()),
+  return locationsArray.filter((location: Location) =>
+    location.name.toLowerCase().includes(searchTerm.value.toLowerCase())
   );
 });
 
-const totalFoundReports = computed(() => {
+const totalOpenReports = computed(() => {
+  return reports.value.filter(report => report.status.toUpperCase() === "OPEN")
+    .length;
+});
+
+const totalResolvedReports = computed(() => {
   return reports.value.filter(
-    (report) => report.status.toUpperCase() === "FOUND",
+    report => report.status.toUpperCase() === "RESOLVED"
   ).length;
 });
 
-const totalLostReports = computed(() => {
-  return reports.value.filter(
-    (report) => report.status.toUpperCase() === "LOST",
-  ).length;
+const totalReports = computed(() => {
+  return reports.value.length;
 });
 
-const totalClaimedReports = computed(() => {
+const getReportsForLocation = (location: Location): VirtualReport[] => {
   return reports.value.filter(
-    (report) => report.status.toUpperCase() === "CLAIMED",
-  ).length;
-});
-
-const getReportsForLocation = (locationName: string): VirtualReport[] => {
-  return reports.value.filter(
-    (report) => report.location.toLowerCase() === locationName.toLowerCase(),
+    report =>
+      reportStore.getReports.find(r => r.id === report.id)?.locationId ===
+      location.id
   );
 };
 
-const getFoundReportsCount = (locationName: string): number => {
-  return getReportsForLocation(locationName).filter(
-    (report) => report.status.toUpperCase() === "FOUND",
+const getOpenReportsCount = (location: Location): number => {
+  return getReportsForLocation(location).filter(
+    report => report.status.toUpperCase() === "OPEN"
   ).length;
 };
 
-const getLostReportsCount = (locationName: string): number => {
-  return getReportsForLocation(locationName).filter(
-    (report) => report.status.toUpperCase() === "LOST",
+const getResolvedReportsCount = (location: Location): number => {
+  return getReportsForLocation(location).filter(
+    report => report.status.toUpperCase() === "RESOLVED"
   ).length;
 };
 
-const getClaimedReportsCount = (locationName: string): number => {
-  return getReportsForLocation(locationName).filter(
-    (report) => report.status.toUpperCase() === "CLAIMED",
-  ).length;
+const getTotalReportsCount = (location: Location): number => {
+  return getReportsForLocation(location).length;
 };
 
-const getRecentReportsForLocation = (locationName: string): VirtualReport[] => {
-  return getReportsForLocation(locationName)
+const getRecentReportsForLocation = (location: Location): VirtualReport[] => {
+  return getReportsForLocation(location)
     .sort(
       (a, b) =>
-        new Date(b.dateCreated).getTime() - new Date(a.dateCreated).getTime(),
+        new Date(b.dateCreated).getTime() - new Date(a.dateCreated).getTime()
     )
     .slice(0, 3);
 };
@@ -457,7 +422,7 @@ const getTimeAgo = (dateString: string) => {
   const date = new Date(dateString);
   const now = new Date();
   const diffInHours = Math.floor(
-    (now.getTime() - date.getTime()) / (1000 * 60 * 60),
+    (now.getTime() - date.getTime()) / (1000 * 60 * 60)
   );
 
   if (diffInHours < 1) return "A few minutes ago";
@@ -502,7 +467,7 @@ const viewAllReportsAtLocation = (locationName: string) => {
   });
 };
 
-watch(activeTab, (tab) => {
+watch(activeTab, tab => {
   if (tab === "items") {
     router.push("/items/overview");
   }
@@ -670,15 +635,8 @@ watch(activeTab, (tab) => {
   color: white;
   font-size: 1.2em;
   font-weight: 600;
-  margin: 0;
   flex: 1;
-  margin-right: 12px;
-}
-
-.building-chip {
-  --background: rgba(255, 255, 255, 0.2);
-  --color: white;
-  margin: 0;
+  margin: 0 12px 0 0;
 }
 
 .chip-icon {
@@ -926,10 +884,6 @@ watch(activeTab, (tab) => {
   .header-content {
     flex-direction: column;
     gap: 8px;
-  }
-
-  .building-chip {
-    align-self: flex-start;
   }
 }
 

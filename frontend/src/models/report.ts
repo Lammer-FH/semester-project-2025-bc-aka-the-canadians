@@ -1,3 +1,38 @@
+import type { User } from "./user";
+import type { Location } from "./location";
+import type { Item } from "./item";
+
+export interface Report {
+    id: number;
+    userId: number;
+    locationId: number;
+    createdAt: string;
+    status: boolean;
+    itemIds?: number[];
+    user?: User;
+    location?: Location;
+    items?: Item[];
+}
+
+export interface ReportCreateData {
+    userId: number;
+    locationId: number;
+    status?: boolean;
+}
+
+export interface ReportUpdateData {
+    userId?: number;
+    locationId?: number;
+    status?: boolean;
+}
+
+export interface ReportFilters {
+    userId?: number;
+    locationId?: number;
+    status?: boolean;
+}
+
+// Enum for report status - matches backend but converted to TypeScript
 export enum ReportStatus {
     OPEN = "OPEN",
     IN_PROGRESS = "IN_PROGRESS",
@@ -5,21 +40,5 @@ export enum ReportStatus {
     CLOSED = "CLOSED",
 }
 
-export enum ReportType {
-    LOST = "LOST",
-    FOUND = "FOUND",
-}
-
-export interface Report {
-    id: number;
-    title: string;
-    description: string;
-    status: ReportStatus;
-    type: ReportType;
-    dateCreated: string;
-    userId: number;
-    itemId?: number;
-}
-
-export type ReportCreateData = Omit<Report, "id" | "dateCreated">;
-export type ReportUpdateData = Partial<ReportCreateData>;
+// Helper type for display purposes
+export type ReportType = "FOUND" | "LOST";

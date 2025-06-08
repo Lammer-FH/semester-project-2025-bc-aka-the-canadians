@@ -4,8 +4,8 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        VITE_API_URL: /api
-        BASE_URL: /api
+        VITE_API_URL: ""
+        BASE_URL: ""
     container_name: frontend
     ports:
       - "3000:80"

@@ -1,6 +1,6 @@
 <template>
   <template-page
-    :headline="'Edit Item'"
+    :headline="'Edit Item Details'"
     :leftFooterButton="leftFooterButton"
     :rightFooterButton="rightFooterButton"
     @leftFooterButtonClicked="handleCancel"
@@ -25,12 +25,21 @@
       <div v-else class="form-content">
         <div class="form-header">
           <ion-icon :icon="createOutline" class="header-icon"></ion-icon>
-          <h2>Edit Item</h2>
-          <p>Update the details for this item</p>
-          <div v-if="item.updatedAt" class="last-modified">
+          <h2>Edit Item Details</h2>
+          <p>Update the name and description for this item only. Report information (location, type, etc.) must be edited separately.</p>
+          <div v-if="item.createdAt" class="last-modified">
             <ion-icon :icon="timeOutline" class="time-icon"></ion-icon>
-            Last modified: {{ formatDate(item.updatedAt) }}
+            Created: {{ formatDate(item.createdAt) }}
           </div>
+        </div>
+
+        <!-- Editable Item Fields -->
+        <div class="editable-section">
+          <h3 class="section-header">
+            <ion-icon :icon="createOutline" class="section-icon"></ion-icon>
+            Editable Item Fields
+          </h3>
+          <p class="section-description">Only these item-specific fields can be edited here:</p>
         </div>
 
         <div class="input-group">
@@ -69,7 +78,7 @@
               'textarea-filled': item.description,
             }"
             :auto-grow="true"
-            rows="3"
+            :rows="3"
           >
             <ion-icon
               :icon="documentTextOutline"
@@ -79,204 +88,112 @@
           </ion-textarea>
         </div>
 
-        <div class="input-group">
-          <ion-input
-            v-model="item.location"
-            label="Found/Lost Location *"
-            label-placement="stacked"
-            placeholder="e.g. Library, Lecture Hall A1, Cafeteria"
-            class="modern-input"
-            :class="{
-              'input-filled': item.location,
-              'input-error': errors.location,
-            }"
-            @ionBlur="validateField('location')"
-          >
-            <ion-icon
-              :icon="locationOutline"
-              slot="start"
-              class="input-icon"
-            ></ion-icon>
-          </ion-input>
-          <div v-if="errors.location" class="error-message">
-            <ion-icon :icon="alertCircleOutline"></ion-icon>
-            {{ errors.location }}
-          </div>
-        </div>
-
-        <div class="input-group">
-          <ion-select
-            v-model="item.status"
-            label="Status *"
-            label-placement="stacked"
-            placeholder="Choose the status"
-            interface="popover"
-            class="modern-select"
-            :class="{
-              'select-filled': item.status,
-              'select-error': errors.status,
-            }"
-            @ionChange="validateField('status')"
-          >
-            <ion-icon
-              :icon="flagOutline"
-              slot="start"
-              class="input-icon"
-            ></ion-icon>
-            <ion-select-option value="LOST">
-              <div class="select-option">
-                <ion-icon :icon="searchOutline" class="option-icon"></ion-icon>
-                <span>Lost</span>
+        <!-- Report Context Information (Read-Only) -->
+        <div class="divider"></div>
+        
+        <div class="context-section">
+          <h3 class="context-title">
+            <ion-icon :icon="informationCircleOutline" class="section-icon"></ion-icon>
+            Report Context (Read-Only)
+          </h3>
+          <p class="context-description">This item belongs to the following report (these fields cannot be edited here):</p>
+          
+          <div class="context-grid">
+            <div class="context-item">
+              <ion-icon :icon="documentOutline" class="context-icon"></ion-icon>
+              <div class="context-content">
+                <label>Report ID</label>
+                <span>{{ item.reportId }}</span>
               </div>
-            </ion-select-option>
-            <ion-select-option value="FOUND">
-              <div class="select-option">
-                <ion-icon :icon="eyeOutline" class="option-icon"></ion-icon>
-                <span>Found</span>
-              </div>
-            </ion-select-option>
-            <ion-select-option value="CLAIMED">
-              <div class="select-option">
-                <ion-icon
-                  :icon="checkmarkCircleOutline"
-                  class="option-icon"
-                ></ion-icon>
-                <span>Claimed</span>
-              </div>
-            </ion-select-option>
-          </ion-select>
-          <div v-if="errors.status" class="error-message">
-            <ion-icon :icon="alertCircleOutline"></ion-icon>
-            {{ errors.status }}
-          </div>
-        </div>
-
-        <div class="input-group">
-          <div class="image-upload-section">
-            <h4 class="upload-title">
-              <ion-icon :icon="cameraOutline" class="title-icon"></ion-icon>
-              Image (optional)
-            </h4>
-            <p class="upload-description">
-              Add an image to help identify the item better.
-            </p>
-
-            <div
-              v-if="imagePreview || item.imageUrl"
-              class="image-preview-container"
-            >
-              <img
-                :src="imagePreview || item.imageUrl"
-                :alt="item.name"
-                class="image-preview"
-              />
-              <ion-button
-                fill="clear"
-                color="danger"
-                class="remove-image-btn"
-                @click="removeImage"
-              >
-                <ion-icon :icon="trashOutline" slot="icon-only"></ion-icon>
-              </ion-button>
             </div>
 
-            <div class="upload-buttons">
-              <ion-button fill="outline" class="upload-btn" @click="takePhoto">
-                <ion-icon :icon="cameraOutline" slot="start"></ion-icon>
-                Take Photo
-              </ion-button>
-              <ion-button
-                fill="outline"
-                class="upload-btn"
-                @click="triggerFileInput"
-              >
-                <ion-icon :icon="cloudUploadOutline" slot="start"></ion-icon>
-                Upload File
-              </ion-button>
+            <div class="context-item">
+              <ion-icon :icon="locationOutline" class="context-icon"></ion-icon>
+              <div class="context-content">
+                <label>Location</label>
+                <span>{{ item.report?.location?.name || 'Not specified' }}</span>
+              </div>
             </div>
 
-            <input
-              ref="fileInput"
-              type="file"
-              accept="image/*"
-              style="display: none"
-              @change="handleFileSelect"
-            />
+            <div class="context-item">
+              <ion-icon :icon="flagOutline" class="context-icon"></ion-icon>
+              <div class="context-content">
+                <label>Report Type</label>
+                <span>{{ item.report?.status !== undefined ? (item.report.status ? 'Found Item' : 'Lost Item') : 'Unknown' }}</span>
+              </div>
+            </div>
+
+            <div class="context-item">
+              <ion-icon :icon="personOutline" class="context-icon"></ion-icon>
+              <div class="context-content">
+                <label>Reporter</label>
+                <span>{{ item.report?.user?.name || 'Unknown' }}</span>
+              </div>
+            </div>
+
+            <div v-if="item.claimedByUserId" class="context-item">
+              <ion-icon :icon="handRightOutline" class="context-icon"></ion-icon>
+              <div class="context-content">
+                <label>Claimed By</label>
+                <span>User ID: {{ item.claimedByUserId }}</span>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div class="action-buttons">
+        <!-- Delete Button -->
+        <div class="input-group">
           <ion-button
             fill="outline"
             color="danger"
             expand="block"
-            class="delete-button"
             @click="handleDelete"
           >
             <ion-icon :icon="trashOutline" slot="start"></ion-icon>
             Delete Item
           </ion-button>
         </div>
-
-        <div class="form-footer-info">
-          <div class="info-item">
-            <ion-icon
-              :icon="informationCircleOutline"
-              color="primary"
-              class="info-icon"
-            ></ion-icon>
-            <div class="info-text">
-              <p>
-                All changes will be automatically saved when you click "Save
-                Changes".
-              </p>
-              <p>Fields marked with * are required.</p>
-            </div>
-          </div>
-        </div>
       </div>
-    </div>
 
-    <ion-alert
-      :is-open="showDeleteAlert"
-      header="Delete Item"
-      message="Are you sure you want to delete this item? This action cannot be undone."
-      :buttons="alertButtons"
-      @didDismiss="showDeleteAlert = false"
-    ></ion-alert>
+      <!-- Delete Alert -->
+      <ion-alert
+        :is-open="showDeleteAlert"
+        header="Delete Item"
+        :message="`Are you sure you want to delete '${item.name}'? This action cannot be undone.`"
+        :buttons="alertButtons"
+        @didDismiss="showDeleteAlert = false"
+      ></ion-alert>
+    </div>
   </template-page>
 </template>
 
 <script setup lang="ts">
-import TemplatePage from "@/components/TemplatePage.vue";
 import {
   IonInput,
   IonTextarea,
-  IonIcon,
   IonButton,
   IonSpinner,
+  IonIcon,
   IonAlert,
-  IonSelect,
-  IonSelectOption,
 } from "@ionic/vue";
 import {
-  createOutline,
-  textOutline,
-  documentTextOutline,
-  locationOutline,
-  flagOutline,
   alertCircleOutline,
-  informationCircleOutline,
   checkmarkCircleOutline,
   closeCircleOutline,
-  trashOutline,
-  timeOutline,
-  cameraOutline,
-  cloudUploadOutline,
+  createOutline,
+  documentTextOutline,
+  documentOutline,
+  flagOutline,
+  handRightOutline,
+  informationCircleOutline,
+  locationOutline,
+  personOutline,
   refreshOutline,
-  eyeOutline,
-  searchOutline,
+  textOutline,
+  timeOutline,
+  trashOutline,
 } from "ionicons/icons";
+import TemplatePage from "@/components/TemplatePage.vue";
 import { ref, computed, watch, onMounted, nextTick } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { useItemStore } from "@/stores/itemStore";
@@ -291,27 +208,20 @@ const item = ref<Item>({
   id: 0,
   name: "",
   description: "",
-  location: "",
-  status: "",
+  reportId: 0,
+  claimedByUserId: undefined,
   createdAt: "",
-  updatedAt: "",
-  imageUrl: "",
 });
 
 const errors = ref({
   name: "",
-  location: "",
-  status: "",
 });
 
 const isLoading = ref(false);
 const error = ref<string | null>(null);
 const isSaving = ref(false);
 const showDeleteAlert = ref(false);
-const imagePreview = ref("");
-const fileInput = ref<HTMLInputElement>();
 
-// Use local loading state instead of store loading state
 const leftFooterButton = computed(() => ({
   name: "Cancel",
   color: "medium",
@@ -332,8 +242,6 @@ const rightFooterButton = computed(() => ({
 const isValid = computed(() => {
   return (
     item.value?.name?.trim() !== "" &&
-    item.value?.location?.trim() !== "" &&
-    item.value?.status?.trim() !== "" &&
     Object.values(errors.value).every(error => error === "")
   );
 });
@@ -383,20 +291,6 @@ const validateField = (fieldName: keyof typeof errors.value) => {
           errors.value.name = "";
         }
         break;
-      case "location":
-        if (!value) {
-          errors.value.location = "Location is required";
-        } else {
-          errors.value.location = "";
-        }
-        break;
-      case "status":
-        if (!value) {
-          errors.value.status = "Status is required";
-        } else {
-          errors.value.status = "";
-        }
-        break;
     }
   } catch (error) {
     console.error("Error validating field:", fieldName, error);
@@ -406,8 +300,6 @@ const validateField = (fieldName: keyof typeof errors.value) => {
 const validateAllFields = () => {
   try {
     validateField("name");
-    validateField("location");
-    validateField("status");
   } catch (error) {
     console.error("Error validating all fields:", error);
   }
@@ -427,7 +319,6 @@ const loadItem = async () => {
     const loadedItem = itemStore.getCurrentItem;
 
     if (loadedItem) {
-      // Use nextTick to ensure reactivity is properly handled
       await nextTick();
       item.value = { ...loadedItem };
     } else {
@@ -436,7 +327,6 @@ const loadItem = async () => {
   } catch (err) {
     console.error("Error loading item:", err);
     error.value = err instanceof Error ? err.message : "Unknown error";
-    // Don't navigate away immediately, let user see the error
     setTimeout(() => {
       router.back();
     }, 2000);
@@ -466,13 +356,7 @@ const handleSave = async () => {
     const updateData: Partial<Item> = {
       name: item.value.name.trim(),
       description: item.value.description?.trim() || "",
-      location: item.value.location.trim(),
-      status: item.value.status,
     };
-
-    if (imagePreview.value) {
-      updateData.imageData = imagePreview.value;
-    }
 
     await itemStore.updateItem(item.value.id, updateData);
 
@@ -500,70 +384,7 @@ const confirmDelete = async () => {
   }
 };
 
-const triggerFileInput = () => {
-  try {
-    fileInput.value?.click();
-  } catch (error) {
-    console.error("Error triggering file input:", error);
-  }
-};
-
-const handleFileSelect = (event: Event) => {
-  try {
-    const target = event.target as HTMLInputElement;
-    const file = target.files?.[0];
-
-    if (file) {
-      if (!file.type.startsWith("image/")) {
-        console.error("Please select an image file");
-        return;
-      }
-
-      const maxSize = 5 * 1024 * 1024; // 5MB
-      if (file.size > maxSize) {
-        console.error("File size must be less than 5MB");
-        return;
-      }
-
-      const reader = new FileReader();
-      reader.onload = e => {
-        if (e.target?.result) {
-          imagePreview.value = e.target.result as string;
-        }
-      };
-      reader.onerror = error => {
-        console.error("Error reading file:", error);
-      };
-      reader.readAsDataURL(file);
-    }
-  } catch (error) {
-    console.error("Error handling file select:", error);
-  }
-};
-
-const takePhoto = async () => {
-  try {
-    triggerFileInput();
-  } catch (error) {
-    console.error("Error taking photo:", error);
-  }
-};
-
-const removeImage = () => {
-  try {
-    imagePreview.value = "";
-    if (item.value) {
-      item.value.imageUrl = "";
-    }
-    if (fileInput.value) {
-      fileInput.value.value = "";
-    }
-  } catch (error) {
-    console.error("Error removing image:", error);
-  }
-};
-
-// Wrap watchers in try-catch and add null checks
+// Watch for name changes to clear errors
 watch(
   () => item.value?.name,
   newName => {
@@ -577,44 +398,14 @@ watch(
   }
 );
 
-watch(
-  () => item.value?.location,
-  newLocation => {
-    try {
-      if (newLocation && errors.value.location) {
-        errors.value.location = "";
-      }
-    } catch (error) {
-      console.error("Error in location watcher:", error);
-    }
-  }
-);
-
-watch(
-  () => item.value?.status,
-  newStatus => {
-    try {
-      if (newStatus && errors.value.status) {
-        errors.value.status = "";
-      }
-    } catch (error) {
-      console.error("Error in status watcher:", error);
-    }
-  }
-);
-
-onMounted(async () => {
-  try {
-    await loadItem();
-  } catch (error) {
-    console.error("Error in onMounted:", error);
-  }
+onMounted(() => {
+  loadItem();
 });
 </script>
 
 <style scoped>
 .form-container {
-  padding: 20px;
+  padding: 16px;
   max-width: 600px;
   margin: 0 auto;
 }
@@ -624,8 +415,7 @@ onMounted(async () => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 60px 20px;
-  text-align: center;
+  padding: 40px 20px;
 }
 
 .loading-container p {
@@ -638,98 +428,117 @@ onMounted(async () => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  padding: 40px 20px;
   text-align: center;
-  padding: 60px 20px;
 }
 
 .empty-icon {
-  font-size: 64px;
-  color: var(--ion-color-medium);
-  margin-bottom: 20px;
-}
-
-.form-header {
-  text-align: center;
-  margin-bottom: 40px;
-}
-
-.header-icon {
   font-size: 48px;
-  color: var(--ion-color-primary);
+  color: var(--ion-color-danger);
   margin-bottom: 16px;
 }
 
+.form-header {
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.header-icon {
+  font-size: 32px;
+  color: var(--ion-color-primary);
+  margin-bottom: 8px;
+}
+
 .form-header h2 {
+  margin: 8px 0 4px 0;
   color: var(--ion-color-dark);
-  margin: 0 0 8px 0;
-  font-weight: 600;
 }
 
 .form-header p {
-  color: var(--ion-color-medium);
   margin: 0 0 16px 0;
-  font-size: 0.95em;
+  color: var(--ion-color-medium);
 }
 
 .last-modified {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  background: var(--ion-color-light-tint);
-  padding: 8px 16px;
-  border-radius: 20px;
-  font-size: 0.85em;
+  gap: 8px;
+  font-size: 14px;
   color: var(--ion-color-medium);
-  margin-top: 12px;
+  margin-top: 8px;
 }
 
 .time-icon {
-  font-size: 14px;
+  font-size: 16px;
 }
 
 .form-content {
-  animation: slideInUp 0.6s ease-out;
+  padding: 0;
+}
+
+.editable-section {
+  margin-bottom: 16px;
+  padding: 16px 0 8px 0;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 6px 0;
+  color: var(--ion-color-success);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.section-description {
+  margin: 0;
+  color: var(--ion-color-medium);
+  font-size: 14px;
+}
+
+.divider {
+  height: 1px;
+  background: var(--ion-color-light);
+  margin: 24px 0 16px 0;
 }
 
 .input-group {
-  margin-bottom: 24px;
+  margin-bottom: 16px;
 }
 
 .modern-input,
-.modern-textarea,
-.modern-select {
-  --background: var(--ion-color-light-tint);
+.modern-textarea {
   --border-radius: 12px;
-  --padding-start: 48px;
+  --border-color: var(--ion-color-light);
+  --border-style: solid;
+  --border-width: 1px;
+  --padding-start: 44px;
   --padding-end: 16px;
-  --padding-top: 12px;
-  --padding-bottom: 12px;
-  border: 2px solid var(--ion-color-light-shade);
-  border-radius: 12px;
+  --padding-top: 16px;
+  --padding-bottom: 16px;
+  --background: var(--ion-color-light-tint);
   margin-bottom: 8px;
-  transition: all 0.3s ease;
-  position: relative;
 }
 
 .modern-input.input-filled,
-.modern-textarea.textarea-filled,
-.modern-select.select-filled {
-  border-color: var(--ion-color-primary-tint);
-  --background: rgba(var(--ion-color-primary-rgb), 0.05);
+.modern-textarea.textarea-filled {
+  --border-color: var(--ion-color-primary);
+  --color: var(--ion-color-dark);
+  --background: var(--ion-item-background);
 }
 
 .modern-input:focus-within,
-.modern-textarea:focus-within,
-.modern-select:focus-within {
-  border-color: var(--ion-color-primary);
-  box-shadow: 0 0 0 3px rgba(var(--ion-color-primary-rgb), 0.1);
-  transform: translateY(-2px);
+.modern-textarea:focus-within {
+  --border-color: var(--ion-color-primary);
+  --border-width: 2px;
+  --background: var(--ion-item-background);
 }
 
 .modern-textarea {
-  min-height: 80px;
-  --padding-start: 48px;
+  min-height: 100px;
+  resize: vertical;
 }
 
 .input-icon {
@@ -737,34 +546,24 @@ onMounted(async () => {
   left: 16px;
   top: 50%;
   transform: translateY(-50%);
-  color: var(--ion-color-primary);
+  color: var(--ion-color-medium);
   font-size: 18px;
   z-index: 10;
 }
 
-.select-option {
+.info-item {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 8px 0;
-}
-
-.option-icon {
-  font-size: 18px;
-  color: var(--ion-color-primary);
-}
-
-.info-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  background: transparent;
-  padding: 0;
+  padding: 16px;
+  background: var(--ion-color-light-tint);
+  border-radius: 12px;
+  border: 1px solid var(--ion-color-light);
 }
 
 .info-icon {
+  color: var(--ion-color-primary);
   font-size: 20px;
-  margin-top: 2px;
   flex-shrink: 0;
 }
 
@@ -772,61 +571,122 @@ onMounted(async () => {
   flex: 1;
 }
 
-@keyframes slideInUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.context-section {
+  margin: 24px 0;
+  padding: 20px;
+  background: var(--ion-color-light-tint);
+  border-radius: 12px;
+  border: 1px solid var(--ion-color-light);
 }
 
-@keyframes shake {
-  0%,
-  100% {
-    transform: translateX(0);
-  }
-  25% {
-    transform: translateX(-5px);
-  }
-  75% {
-    transform: translateX(5px);
-  }
+.context-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 8px 0;
+  color: var(--ion-color-dark);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.context-description {
+  margin: 0 0 16px 0;
+  color: var(--ion-color-medium);
+  font-size: 14px;
+}
+
+.context-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.context-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: var(--ion-item-background);
+  border-radius: 8px;
+  border: 1px solid var(--ion-color-light-shade);
+}
+
+.context-icon {
+  color: var(--ion-color-primary);
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.context-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.context-content label {
+  font-size: 12px;
+  color: var(--ion-color-medium);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.context-content span {
+  font-size: 14px;
+  color: var(--ion-color-dark);
+  font-weight: 500;
+}
+
+.error-message {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ion-color-danger);
+  font-size: 14px;
+  margin-top: 4px;
+  padding: 0 4px;
 }
 
 @media (max-width: 768px) {
   .form-container {
-    padding: 16px;
+    padding: 12px;
   }
 
   .form-header {
-    margin-bottom: 30px;
+    margin-bottom: 20px;
   }
 
   .header-icon {
-    font-size: 40px;
+    font-size: 28px;
   }
 
   .last-modified {
-    padding: 6px 12px;
-    font-size: 0.8em;
+    font-size: 12px;
   }
 }
 
 @media (max-width: 480px) {
   .form-header {
-    margin-bottom: 20px;
+    margin-bottom: 16px;
   }
 
   .input-group {
-    margin-bottom: 20px;
+    margin-bottom: 12px;
   }
 
-  .action-buttons {
-    margin: 30px 0;
+  .context-section {
+    margin: 16px 0;
     padding: 16px;
+  }
+
+  .context-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .context-item {
+    padding: 10px;
   }
 }
 </style>

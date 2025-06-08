@@ -52,16 +52,17 @@ public class ItemController {
 
     @PutMapping("/{id}")
     public ResponseEntity<ItemDTO> updateItem(@PathVariable Long id, @RequestBody ItemDTO itemDTO) {
-        if (itemService.getItemById(id).isEmpty()) {
+        try {
+            Item updatedItem = itemService.updateItem(
+                id,
+                itemDTO.getName(),
+                itemDTO.getDescription()
+            );
+
+            return ResponseEntity.ok(itemMapper.toDTO(updatedItem));
+        } catch (IllegalArgumentException e) {
             return ResponseEntity.notFound().build();
         }
-
-        // Setzen der ID, um sicherzustellen, dass das richtige Item aktualisiert wird
-        itemDTO.setId(id);
-
-        Item updatedItem = itemService.saveItem(itemMapper.toEntity(itemDTO));
-
-        return ResponseEntity.ok(itemMapper.toDTO(updatedItem));
     }
 
     @DeleteMapping("/{id}")

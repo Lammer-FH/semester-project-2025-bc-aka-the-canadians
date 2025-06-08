@@ -111,7 +111,7 @@
               <ion-icon :icon="locationOutline" class="context-icon"></ion-icon>
               <div class="context-content">
                 <label>Location</label>
-                <span>{{ item.report?.location?.name || 'Not specified' }}</span>
+                <span>{{ item.locationName || 'Not specified' }}</span>
               </div>
             </div>
 
@@ -119,7 +119,7 @@
               <ion-icon :icon="flagOutline" class="context-icon"></ion-icon>
               <div class="context-content">
                 <label>Report Type</label>
-                <span>{{ item.report?.status !== undefined ? (item.report.status ? 'Found Item' : 'Lost Item') : 'Unknown' }}</span>
+                <span>{{ item.reportStatus !== undefined ? (item.reportStatus ? 'Found Item' : 'Lost Item') : 'Unknown' }}</span>
               </div>
             </div>
 
@@ -127,7 +127,7 @@
               <ion-icon :icon="personOutline" class="context-icon"></ion-icon>
               <div class="context-content">
                 <label>Reporter</label>
-                <span>{{ item.report?.user?.name || 'Unknown' }}</span>
+                <span>{{ item.reporterUserName || 'Unknown' }}</span>
               </div>
             </div>
 

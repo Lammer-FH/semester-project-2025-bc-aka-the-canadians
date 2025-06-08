@@ -27,14 +27,14 @@
           <div class="header-content">
             <div class="header-left">
               <ion-chip
-                :color="getStatusColor(item.report?.status ?? false)"
+                :color="getStatusColor(item.reportStatus ?? false)"
                 class="status-chip"
               >
                 <ion-icon
-                  :icon="getStatusIcon(item.report?.status ?? false)"
+                  :icon="getStatusIcon(item.reportStatus ?? false)"
                   class="chip-icon"
                 ></ion-icon>
-                {{ getStatusText(item.report?.status ?? false) }}
+                {{ getStatusText(item.reportStatus ?? false) }}
               </ion-chip>
               <div class="report-meta">
                 <span class="report-id">Report #{{ item.id }}</span>
@@ -71,7 +71,7 @@
           </div>
 
           <div class="status-section">
-            <div v-if="item.report?.status === true" class="found-item-section">
+            <div v-if="item.reportStatus === true" class="found-item-section">
               <div class="action-banner found-banner">
                 <div class="banner-content">
                   <ion-icon :icon="eyeOutline" class="banner-icon"></ion-icon>
@@ -96,7 +96,7 @@
             </div>
 
             <div
-              v-else-if="item.report?.status === false && !item.claimedByUserId"
+              v-else-if="item.reportStatus === false && !item.claimedByUserId"
               class="lost-item-section"
             >
               <div class="action-banner lost-banner">
@@ -190,7 +190,7 @@
                 class="location-icon"
               ></ion-icon>
               <span class="location-name">{{
-                item.report?.location?.name || "Unknown Location"
+                item.locationName || "Unknown Location"
               }}</span>
             </div>
             <ion-button fill="clear" size="small" @click="viewLocationReports">
@@ -212,7 +212,7 @@
                 <h4>Report Created</h4>
                 <p>{{ formatDetailedDate(item.createdAt || "") }}</p>
                 <span class="timeline-type">{{
-                  getReportType(item.report?.status ?? false)
+                  getReportType(item.reportStatus ?? false)
                 }}</span>
               </div>
             </div>
@@ -287,7 +287,7 @@
 
         <div class="action-buttons">
           <ion-button
-            v-if="item.report?.status === true"
+            v-if="item.reportStatus === true"
             expand="block"
             size="large"
             color="success"
@@ -298,7 +298,7 @@
           </ion-button>
 
           <ion-button
-            v-else-if="item.report?.status === false"
+            v-else-if="item.reportStatus === false"
             expand="block"
             size="large"
             fill="outline"
@@ -810,7 +810,7 @@ const viewLocationReports = () => {
   try {
     router.push({
       path: "/items/overview",
-      query: { location: item.value?.report?.location?.name || "" },
+      query: { location: item.value?.locationName || "" },
     });
   } catch (error) {
     console.error("Error navigating to location reports:", error);

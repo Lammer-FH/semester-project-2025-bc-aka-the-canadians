@@ -18,11 +18,11 @@ public class ReportService {
     private final LocationService locationService;
 
     public List<Report> getAllReports() {
-        return reportRepository.findAll();
+        return reportRepository.findAllWithItems();
     }
 
     public Optional<Report> getReportById(Long id) {
-        return reportRepository.findById(id);
+        return reportRepository.findByIdWithItems(id);
     }
 
     public List<Report> getReportsByStatus(ReportStatus status) {

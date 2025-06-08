@@ -20,4 +20,5 @@ public class ReportDTO {
 
     private LocationDTO location;
     private UserDTO user;
+    private List<ItemDTO> items;
 }

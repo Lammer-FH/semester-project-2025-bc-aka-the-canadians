@@ -9,13 +9,14 @@ import org.mapstruct.Named;
 
 import java.util.List;
 
-@Mapper(componentModel = "spring", uses = {LocationMapper.class, UserMapper.class})
+@Mapper(componentModel = "spring", uses = {LocationMapper.class, UserMapper.class, ItemMapper.class})
 public interface ReportMapper {
     @Mapping(target = "userId", source = "user.id")
     @Mapping(target = "locationId", source = "location.id")
     @Mapping(target = "itemIds", source = "items", qualifiedByName = "reportItemListToIdList")
     @Mapping(target = "location", source = "location")
     @Mapping(target = "user", source = "user")
+    @Mapping(target = "items", source = "items")
     ReportDTO toDTO(Report report);
 
     @Mapping(target = "user", ignore = true)

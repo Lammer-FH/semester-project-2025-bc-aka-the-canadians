@@ -27,9 +27,9 @@
           <ion-icon :icon="createOutline" class="header-icon"></ion-icon>
           <h2>Edit Location</h2>
           <p>Update the details for this location</p>
-          <div v-if="location.updatedAt" class="last-modified">
+          <div v-if="location.createdAt" class="last-modified">
             <ion-icon :icon="timeOutline" class="time-icon"></ion-icon>
-            Last modified: {{ formatDate(location.updatedAt) }}
+            Created: {{ formatDate(location.createdAt) }}
           </div>
         </div>
 
@@ -69,7 +69,7 @@
               'textarea-filled': location.description,
             }"
             :auto-grow="true"
-            rows="3"
+            :rows="3"
           >
             <ion-icon
               :icon="documentTextOutline"
@@ -77,83 +77,6 @@
               class="input-icon"
             ></ion-icon>
           </ion-textarea>
-        </div>
-
-        <div class="input-group">
-          <ion-input
-            v-model="location.building"
-            label="Building *"
-            label-placement="stacked"
-            placeholder="e.g. Main Building, New Building, Laboratory"
-            class="modern-input"
-            :class="{
-              'input-filled': location.building,
-              'input-error': errors.building,
-            }"
-            @ionBlur="validateField('building')"
-          >
-            <ion-icon
-              :icon="businessOutline"
-              slot="start"
-              class="input-icon"
-            ></ion-icon>
-          </ion-input>
-          <div v-if="errors.building" class="error-message">
-            <ion-icon :icon="alertCircleOutline"></ion-icon>
-            {{ errors.building }}
-          </div>
-        </div>
-
-        <div class="input-row">
-          <div class="input-group half-width">
-            <ion-input
-              v-model="location.floor"
-              label="Floor *"
-              label-placement="stacked"
-              placeholder="e.g. GF, 1, 2, B1"
-              class="modern-input"
-              :class="{
-                'input-filled': location.floor,
-                'input-error': errors.floor,
-              }"
-              @ionBlur="validateField('floor')"
-            >
-              <ion-icon
-                :icon="layersOutline"
-                slot="start"
-                class="input-icon"
-              ></ion-icon>
-            </ion-input>
-            <div v-if="errors.floor" class="error-message">
-              <ion-icon :icon="alertCircleOutline"></ion-icon>
-              {{ errors.floor }}
-            </div>
-          </div>
-
-          <div class="input-group half-width">
-            <ion-input
-              v-model="location.room"
-              label="Room *"
-              label-placement="stacked"
-              placeholder="e.g. 101, A-15, Foyer"
-              class="modern-input"
-              :class="{
-                'input-filled': location.room,
-                'input-error': errors.room,
-              }"
-              @ionBlur="validateField('room')"
-            >
-              <ion-icon
-                :icon="homeOutline"
-                slot="start"
-                class="input-icon"
-              ></ion-icon>
-            </ion-input>
-            <div v-if="errors.room" class="error-message">
-              <ion-icon :icon="alertCircleOutline"></ion-icon>
-              {{ errors.room }}
-            </div>
-          </div>
         </div>
 
         <div class="action-buttons">
@@ -212,8 +135,6 @@ import {
   createOutline,
   textOutline,
   documentTextOutline,
-  businessOutline,
-  layersOutline,
   alertCircleOutline,
   informationCircleOutline,
   checkmarkCircleOutline,
@@ -221,7 +142,6 @@ import {
   trashOutline,
   timeOutline,
   refreshOutline,
-  homeOutline,
 } from "ionicons/icons";
 import { ref, computed, watch, onMounted, nextTick } from "vue";
 import { useRouter, useRoute } from "vue-router";
@@ -236,18 +156,12 @@ const location = ref<Location>({
   id: 0,
   name: "",
   description: "",
-  building: "",
-  floor: "",
-  room: "",
   createdAt: "",
-  updatedAt: "",
 });
 
 const errors = ref({
   name: "",
-  building: "",
-  floor: "",
-  room: "",
+  description: "",
 });
 
 const isLoading = ref(false);
@@ -276,9 +190,6 @@ const isValid = computed(() => {
   try {
     return (
       location.value?.name?.trim() !== "" &&
-      location.value?.building?.trim() !== "" &&
-      location.value?.floor?.trim() !== "" &&
-      location.value?.room?.trim() !== "" &&
       Object.values(errors.value).every(error => error === "")
     );
   } catch (error) {
@@ -332,27 +243,6 @@ const validateField = (fieldName: keyof typeof errors.value) => {
           errors.value.name = "";
         }
         break;
-      case "building":
-        if (!value) {
-          errors.value.building = "Building is required";
-        } else {
-          errors.value.building = "";
-        }
-        break;
-      case "floor":
-        if (!value) {
-          errors.value.floor = "Floor is required";
-        } else {
-          errors.value.floor = "";
-        }
-        break;
-      case "room":
-        if (!value) {
-          errors.value.room = "Room is required";
-        } else {
-          errors.value.room = "";
-        }
-        break;
     }
   } catch (error) {
     console.error("Error validating field:", fieldName, error);
@@ -362,9 +252,6 @@ const validateField = (fieldName: keyof typeof errors.value) => {
 const validateAllFields = () => {
   try {
     validateField("name");
-    validateField("building");
-    validateField("floor");
-    validateField("room");
   } catch (error) {
     console.error("Error validating all fields:", error);
   }
@@ -421,9 +308,6 @@ const handleSave = async () => {
     const updateData = {
       name: location.value.name.trim(),
       description: location.value.description?.trim() || "",
-      building: location.value.building.trim(),
-      floor: location.value.floor.trim(),
-      room: location.value.room.trim(),
     };
 
     await locationStore.updateLocation(location.value.id, updateData);
@@ -458,45 +342,6 @@ watch(
       }
     } catch (error) {
       console.error("Error in name watcher:", error);
-    }
-  }
-);
-
-watch(
-  () => location.value?.building,
-  newBuilding => {
-    try {
-      if (newBuilding && errors.value.building) {
-        errors.value.building = "";
-      }
-    } catch (error) {
-      console.error("Error in building watcher:", error);
-    }
-  }
-);
-
-watch(
-  () => location.value?.floor,
-  newFloor => {
-    try {
-      if (newFloor && errors.value.floor) {
-        errors.value.floor = "";
-      }
-    } catch (error) {
-      console.error("Error in floor watcher:", error);
-    }
-  }
-);
-
-watch(
-  () => location.value?.room,
-  newRoom => {
-    try {
-      if (newRoom && errors.value.room) {
-        errors.value.room = "";
-      }
-    } catch (error) {
-      console.error("Error in room watcher:", error);
     }
   }
 );

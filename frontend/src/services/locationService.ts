@@ -9,11 +9,9 @@ import { Item } from "@/models/item";
 const API_URL = `${import.meta.env.VITE_API_URL}/api/v1/locations`;
 
 export const locationService = {
-    async getAllLocations(building?: string): Promise<Location[]> {
+    async getAllLocations(): Promise<Location[]> {
         try {
-            const response = await axios.get<Location[]>(API_URL, {
-                params: { building },
-            });
+            const response = await axios.get<Location[]>(API_URL, {});
             return response.data;
         } catch (error) {
             console.error("Error fetching locations:", error);
@@ -34,7 +32,7 @@ export const locationService = {
     async getItemsByLocation(locationId: number): Promise<Item[]> {
         try {
             const response = await axios.get<Item[]>(
-                `${API_URL}/${locationId}/items`,
+                `${API_URL}/${locationId}/items`
             );
             return response.data;
         } catch (error) {
@@ -55,12 +53,12 @@ export const locationService = {
 
     async updateLocation(
         id: number,
-        locationData: LocationUpdateData,
+        locationData: LocationUpdateData
     ): Promise<Location> {
         try {
             const response = await axios.put<Location>(
                 `${API_URL}/${id}`,
-                locationData,
+                locationData
             );
             return response.data;
         } catch (error) {

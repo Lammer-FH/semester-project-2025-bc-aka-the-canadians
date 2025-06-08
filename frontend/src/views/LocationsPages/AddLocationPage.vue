@@ -61,7 +61,7 @@
               'textarea-filled': location.description,
             }"
             :auto-grow="true"
-            rows="3"
+            :rows="3"
           >
             <ion-icon
               :icon="documentTextOutline"
@@ -69,83 +69,6 @@
               class="input-icon"
             ></ion-icon>
           </ion-textarea>
-        </div>
-
-        <div class="input-group">
-          <ion-input
-            v-model="location.building"
-            label="Building *"
-            label-placement="stacked"
-            placeholder="e.g. Main Building, New Building, Laboratory"
-            class="modern-input"
-            :class="{
-              'input-filled': location.building,
-              'input-error': errors.building,
-            }"
-            @ionBlur="validateField('building')"
-          >
-            <ion-icon
-              :icon="businessOutline"
-              slot="start"
-              class="input-icon"
-            ></ion-icon>
-          </ion-input>
-          <div v-if="errors.building" class="error-message">
-            <ion-icon :icon="alertCircleOutline"></ion-icon>
-            {{ errors.building }}
-          </div>
-        </div>
-
-        <div class="input-row">
-          <div class="input-group half-width">
-            <ion-input
-              v-model="location.floor"
-              label="Floor *"
-              label-placement="stacked"
-              placeholder="e.g. GF, 1, 2, B1"
-              class="modern-input"
-              :class="{
-                'input-filled': location.floor,
-                'input-error': errors.floor,
-              }"
-              @ionBlur="validateField('floor')"
-            >
-              <ion-icon
-                :icon="layersOutline"
-                slot="start"
-                class="input-icon"
-              ></ion-icon>
-            </ion-input>
-            <div v-if="errors.floor" class="error-message">
-              <ion-icon :icon="alertCircleOutline"></ion-icon>
-              {{ errors.floor }}
-            </div>
-          </div>
-
-          <div class="input-group half-width">
-            <ion-input
-              v-model="location.room"
-              label="Room *"
-              label-placement="stacked"
-              placeholder="e.g. 101, A-15, Foyer"
-              class="modern-input"
-              :class="{
-                'input-filled': location.room,
-                'input-error': errors.room,
-              }"
-              @ionBlur="validateField('room')"
-            >
-              <ion-icon
-                :icon="homeOutline"
-                slot="start"
-                class="input-icon"
-              ></ion-icon>
-            </ion-input>
-            <div v-if="errors.room" class="error-message">
-              <ion-icon :icon="alertCircleOutline"></ion-icon>
-              {{ errors.room }}
-            </div>
-          </div>
         </div>
 
         <div class="form-footer-info">
@@ -176,13 +99,10 @@ import {
   locationOutline,
   textOutline,
   documentTextOutline,
-  businessOutline,
-  layersOutline,
   alertCircleOutline,
   informationCircleOutline,
   checkmarkCircleOutline,
   closeCircleOutline,
-  homeOutline,
 } from "ionicons/icons";
 import { ref, computed, watch } from "vue";
 import { useRouter } from "vue-router";
@@ -195,16 +115,10 @@ const locationStore = useLocationStore();
 const location = ref<LocationCreateData>({
   name: "",
   description: "",
-  building: "",
-  floor: "",
-  room: "",
 });
 
 const errors = ref({
   name: "",
-  building: "",
-  floor: "",
-  room: "",
 });
 
 const isLoading = computed(() => locationStore.isLoading);
@@ -227,9 +141,12 @@ const rightFooterButton = computed(() => ({
 }));
 
 const completionProgress = computed(() => {
-  const fields = ["name", "building", "floor", "room"];
+  const fields = ["name", "description"];
   const filledFields = fields.filter(
-    field => location.value[field as keyof typeof location.value].trim() !== ""
+    field => {
+      const value = location.value[field as keyof typeof location.value];
+      return value ? value.trim() !== "" : false;
+    }
   );
   return filledFields.length / fields.length;
 });
@@ -237,15 +154,13 @@ const completionProgress = computed(() => {
 const isValid = computed(() => {
   return (
     location.value.name.trim() !== "" &&
-    location.value.building.trim() !== "" &&
-    location.value.floor.trim() !== "" &&
-    location.value.room.trim() !== "" &&
     Object.values(errors.value).every(error => error === "")
   );
 });
 
 const validateField = (fieldName: keyof typeof errors.value) => {
-  const value = location.value[fieldName as keyof typeof location.value].trim();
+  const fieldValue = location.value[fieldName as keyof typeof location.value];
+  const value = fieldValue ? fieldValue.trim() : "";
 
   switch (fieldName) {
     case "name":
@@ -257,35 +172,11 @@ const validateField = (fieldName: keyof typeof errors.value) => {
         errors.value.name = "";
       }
       break;
-    case "building":
-      if (!value) {
-        errors.value.building = "Building is required";
-      } else {
-        errors.value.building = "";
-      }
-      break;
-    case "floor":
-      if (!value) {
-        errors.value.floor = "Floor is required";
-      } else {
-        errors.value.floor = "";
-      }
-      break;
-    case "room":
-      if (!value) {
-        errors.value.room = "Room is required";
-      } else {
-        errors.value.room = "";
-      }
-      break;
   }
 };
 
 const validateAllFields = () => {
   validateField("name");
-  validateField("building");
-  validateField("floor");
-  validateField("room");
 };
 
 const handleCancel = () => {
@@ -299,12 +190,10 @@ const handleSave = async () => {
   }
 
   try {
+    const trimmedDescription = location.value.description?.trim();
     const newLocation = await locationStore.createLocation({
       name: location.value.name.trim(),
-      description: location.value.description.trim(),
-      building: location.value.building.trim(),
-      floor: location.value.floor.trim(),
-      room: location.value.room.trim(),
+      description: trimmedDescription || undefined,
     });
 
     if (newLocation) {
@@ -321,27 +210,6 @@ watch(
   () => location.value.name,
   () => {
     if (errors.value.name) errors.value.name = "";
-  }
-);
-
-watch(
-  () => location.value.building,
-  () => {
-    if (errors.value.building) errors.value.building = "";
-  }
-);
-
-watch(
-  () => location.value.floor,
-  () => {
-    if (errors.value.floor) errors.value.floor = "";
-  }
-);
-
-watch(
-  () => location.value.room,
-  () => {
-    if (errors.value.room) errors.value.room = "";
   }
 );
 </script>

@@ -19,11 +19,11 @@ export const useLocationStore = defineStore("location", () => {
     const isLoading = computed(() => loading.value);
     const getError = computed(() => error.value);
 
-    const fetchLocations = async (building?: string) => {
+    const fetchLocations = async () => {
         try {
             loading.value = true;
             error.value = null;
-            const response = await locationService.getAllLocations(building);
+            const response = await locationService.getAllLocations();
             locations.value = Array.isArray(response) ? response : [];
         } catch (err) {
             error.value =
@@ -44,7 +44,7 @@ export const useLocationStore = defineStore("location", () => {
             const location = await locationService.getLocationById(id);
             currentLocation.value = location;
 
-            const index = locations.value.findIndex((loc) => loc.id === id);
+            const index = locations.value.findIndex(loc => loc.id === id);
             if (index >= 0) {
                 locations.value[index] = location;
             } else {
@@ -62,7 +62,7 @@ export const useLocationStore = defineStore("location", () => {
     };
 
     const fetchItemsByLocation = async (
-        locationId: number,
+        locationId: number
     ): Promise<Item[]> => {
         try {
             loading.value = true;
@@ -82,7 +82,7 @@ export const useLocationStore = defineStore("location", () => {
     };
 
     const createLocation = async (
-        locationData: LocationCreateData,
+        locationData: LocationCreateData
     ): Promise<Location | null> => {
         try {
             loading.value = true;
@@ -105,17 +105,17 @@ export const useLocationStore = defineStore("location", () => {
 
     const updateLocation = async (
         id: number,
-        locationData: LocationUpdateData,
+        locationData: LocationUpdateData
     ): Promise<Location | null> => {
         try {
             loading.value = true;
             error.value = null;
             const updatedLocation = await locationService.updateLocation(
                 id,
-                locationData,
+                locationData
             );
             const index = locations.value.findIndex(
-                (location) => location.id === id,
+                location => location.id === id
             );
             if (index >= 0) {
                 locations.value[index] = updatedLocation;
@@ -142,7 +142,7 @@ export const useLocationStore = defineStore("location", () => {
             error.value = null;
             await locationService.deleteLocation(id);
             locations.value = locations.value.filter(
-                (location) => location.id !== id,
+                location => location.id !== id
             );
             if (currentLocation.value?.id === id) {
                 currentLocation.value = null;
@@ -169,11 +169,11 @@ export const useLocationStore = defineStore("location", () => {
         currentLocation,
         loading,
         error,
+        fetchLocations,
         getLocations,
         getCurrentLocation,
         isLoading,
         getError,
-        fetchLocations,
         fetchLocationById,
         fetchItemsByLocation,
         createLocation,

@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class ReportService {
-
     private final ReportRepository reportRepository;
     private final UserService userService;
     private final LocationService locationService;
@@ -38,11 +37,7 @@ public class ReportService {
         return reportRepository.save(report);
     }
 
-    public Report createReportFromIds(
-        Long userId,
-        Long locationId,
-        Boolean status
-    ) {
+    public Report createReportFromIds(Long userId, Long locationId, Boolean status) {
         if (userId == null) {
             throw new IllegalArgumentException("User ID cannot be null");
         }
@@ -53,21 +48,12 @@ public class ReportService {
             throw new IllegalArgumentException("Status cannot be null");
         }
 
-        User user = userService
-            .getUserById(userId)
-            .orElseThrow(() ->
-                new IllegalArgumentException(
-                    "User not found with id: " + userId
-                )
-            );
+        User user = userService.getUserById(userId).orElseThrow(
+            () -> new IllegalArgumentException("User not found with id: " + userId));
 
-        Location location = locationService
-            .getLocationById(locationId)
-            .orElseThrow(() ->
-                new IllegalArgumentException(
-                    "Location not found with id: " + locationId
-                )
-            );
+        Location location =
+            locationService.getLocationById(locationId)
+                .orElseThrow(() -> new IllegalArgumentException("Location not found with id: " + locationId));
 
         Report report = new Report();
         report.setUser(user);
@@ -75,6 +61,24 @@ public class ReportService {
         report.setStatus(status);
 
         return reportRepository.save(report);
+    }
+
+    public Report updateReport(Long reportId, Long locationId, Boolean status) {
+        Report existingReport = reportRepository.findById(reportId).orElseThrow(
+            () -> new IllegalArgumentException("Report not found with id: " + reportId));
+
+        if (locationId != null) {
+            Location location =
+                locationService.getLocationById(locationId)
+                    .orElseThrow(() -> new IllegalArgumentException("Location not found with id: " + locationId));
+            existingReport.setLocation(location);
+        }
+
+        if (status != null) {
+            existingReport.setStatus(status);
+        }
+
+        return reportRepository.save(existingReport);
     }
 
     public void deleteReport(Long id) {

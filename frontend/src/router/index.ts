@@ -3,6 +3,7 @@ import HomePage from "@/views/HomePage/HomePage.vue";
 import ItemsOverviewPage from "@/views/ItemPages/ItemsOverviewPage.vue";
 import ReportsOverviewPage from "@/views/ReportPages/ReportsOverviewPage.vue";
 import ReportDetailsPage from "@/views/ReportPages/ReportDetailsPage.vue";
+import EditReportPage from "@/views/ReportPages/EditReportPage.vue";
 import LocationsOverviewPage from "@/views/LocationsPages/LocationsOverviewPage.vue";
 import ReportItemPage from "@/views/ItemPages/ReportItemPage.vue";
 import ItemDetailsPage from "@/views/ItemPages/ItemDetailsPage.vue";
@@ -55,6 +56,11 @@ const routes: RouteRecordRaw[] = [
         path: "/reports/:id",
         name: "report-details",
         component: ReportDetailsPage,
+    },
+    {
+        path: "/reports/:id/edit",
+        name: "edit-report",
+        component: EditReportPage,
     },
     {
         path: "/locations",

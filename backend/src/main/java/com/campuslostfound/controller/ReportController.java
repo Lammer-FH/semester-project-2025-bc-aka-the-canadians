@@ -56,13 +56,17 @@ public class ReportController {
     @PutMapping("/{id}")
     public ResponseEntity<ReportDTO> updateReport(
             @PathVariable Long id, @RequestBody ReportDTO reportDTO) {
-        if (reportService.getReportById(id).isEmpty()) {
+        try {
+            Report updatedReport = reportService.updateReport(
+                id,
+                reportDTO.getLocationId(),
+                reportDTO.getStatus()
+            );
+
+            return ResponseEntity.ok(reportMapper.toDTO(updatedReport));
+        } catch (IllegalArgumentException e) {
             return ResponseEntity.notFound().build();
         }
-        reportDTO.setId(id);
-        Report updatedReport = reportService.saveReport(reportMapper.toEntity(reportDTO));
-
-        return ResponseEntity.ok(reportMapper.toDTO(updatedReport));
     }
 
     @DeleteMapping("/{id}")

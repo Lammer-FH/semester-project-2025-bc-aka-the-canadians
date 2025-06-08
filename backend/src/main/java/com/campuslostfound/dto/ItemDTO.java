@@ -1,10 +1,10 @@
 package com.campuslostfound.dto;
 
-import java.sql.Timestamp;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.sql.Timestamp;
 
 @Data
 @AllArgsConstructor
@@ -16,4 +16,6 @@ public class ItemDTO {
     private Long reportId;
     private Long claimedByUserId;
     private Timestamp createdAt;
+
+    private ReportDTO report;
 }

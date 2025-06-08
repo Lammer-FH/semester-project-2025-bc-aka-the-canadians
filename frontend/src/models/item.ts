@@ -8,6 +8,11 @@ export interface Item {
     reportId: number;
     claimedByUserId?: number;
     createdAt: string;
+    locationId?: number;
+    locationName?: string;
+    reportStatus?: boolean;
+    reporterUserId?: number;
+    reporterUserName?: string;
     report?: Report;
     claimedByUser?: User;
 }

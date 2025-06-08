@@ -279,8 +279,7 @@ interface VirtualReport {
   description: string;
   status: string;
   location: string;
-  dateCreated: string;
-  imageUrl?: string;
+  createdAt: string;
   reporterName?: string;
 }
 
@@ -303,7 +302,7 @@ const reports = computed((): VirtualReport[] => {
     description: report.items?.[0]?.description || "No description available",
     status: report.status ? "RESOLVED" : "OPEN",
     location: report.location?.name || "Unknown Location",
-    dateCreated: report.createdAt,
+    createdAt: report.createdAt,
     reporterName: report.user?.name || "Unknown Reporter",
   }));
 });

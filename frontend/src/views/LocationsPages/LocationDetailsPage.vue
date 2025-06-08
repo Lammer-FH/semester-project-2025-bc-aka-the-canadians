@@ -28,23 +28,6 @@
             <ion-icon :icon="locationOutline" class="location-icon"></ion-icon>
             <div class="header-text">
               <h1>{{ location.name }}</h1>
-              <div class="location-info">
-                <div class="info-item">
-                  <ion-icon
-                    :icon="businessOutline"
-                    class="info-icon"
-                  ></ion-icon>
-                  {{ location.building }}
-                </div>
-                <div class="info-item">
-                  <ion-icon :icon="layersOutline" class="info-icon"></ion-icon>
-                  Floor {{ location.floor }}
-                </div>
-                <div class="info-item">
-                  <ion-icon :icon="homeOutline" class="info-icon"></ion-icon>
-                  Room {{ location.room }}
-                </div>
-              </div>
             </div>
           </div>
           <div class="quick-actions">
@@ -57,45 +40,6 @@
         <div v-if="location.description" class="description-section">
           <h3>Description</h3>
           <p>{{ location.description }}</p>
-        </div>
-
-        <div class="metadata-section">
-          <h3>Location Details</h3>
-          <div class="metadata-grid">
-            <div class="metadata-item">
-              <ion-icon
-                :icon="businessOutline"
-                class="metadata-icon"
-              ></ion-icon>
-              <div class="metadata-content">
-                <span class="metadata-label">Building</span>
-                <span class="metadata-value">{{ location.building }}</span>
-              </div>
-            </div>
-            <div class="metadata-item">
-              <ion-icon :icon="layersOutline" class="metadata-icon"></ion-icon>
-              <div class="metadata-content">
-                <span class="metadata-label">Floor</span>
-                <span class="metadata-value">{{ location.floor }}</span>
-              </div>
-            </div>
-            <div class="metadata-item">
-              <ion-icon :icon="homeOutline" class="metadata-icon"></ion-icon>
-              <div class="metadata-content">
-                <span class="metadata-label">Room</span>
-                <span class="metadata-value">{{ location.room }}</span>
-              </div>
-            </div>
-            <div class="metadata-item">
-              <ion-icon :icon="timeOutline" class="metadata-icon"></ion-icon>
-              <div class="metadata-content">
-                <span class="metadata-label">Created on</span>
-                <span class="metadata-value">{{
-                  formatDate(location.createdAt)
-                }}</span>
-              </div>
-            </div>
-          </div>
         </div>
 
         <div class="items-section">
@@ -135,16 +79,6 @@
                   <ion-card-title class="item-name">{{
                     item.name
                   }}</ion-card-title>
-                  <ion-chip
-                    :color="getStatusColor(item.status)"
-                    class="status-chip"
-                  >
-                    <ion-icon
-                      :icon="getStatusIcon(item.status)"
-                      class="chip-icon"
-                    ></ion-icon>
-                    {{ getStatusText(item.status) }}
-                  </ion-chip>
                 </div>
               </ion-card-header>
               <ion-card-content>
@@ -202,8 +136,6 @@ import {
 } from "@ionic/vue";
 import {
   locationOutline,
-  businessOutline,
-  layersOutline,
   createOutline,
   trashOutline,
   timeOutline,
@@ -212,10 +144,6 @@ import {
   addOutline,
   eyeOutline,
   alertCircleOutline,
-  eyeOffOutline,
-  flagOutline,
-  checkmarkOutline,
-  homeOutline,
 } from "ionicons/icons";
 import { ref, computed, onMounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
@@ -269,45 +197,6 @@ const formatDate = (dateString: string) => {
     hour: "2-digit",
     minute: "2-digit",
   });
-};
-
-const getStatusColor = (status: string) => {
-  switch (status.toUpperCase()) {
-    case "FOUND":
-      return "success";
-    case "CLAIMED":
-      return "medium";
-    case "LOST":
-      return "warning";
-    default:
-      return "primary";
-  }
-};
-
-const getStatusIcon = (status: string) => {
-  switch (status.toUpperCase()) {
-    case "LOST":
-      return eyeOffOutline;
-    case "FOUND":
-      return eyeOutline;
-    case "CLAIMED":
-      return checkmarkOutline;
-    default:
-      return flagOutline;
-  }
-};
-
-const getStatusText = (status: string) => {
-  switch (status.toUpperCase()) {
-    case "FOUND":
-      return "Found";
-    case "CLAIMED":
-      return "Picked Up";
-    case "LOST":
-      return "Lost";
-    default:
-      return status;
-  }
 };
 
 const loadLocation = async () => {

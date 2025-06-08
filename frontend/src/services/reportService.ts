@@ -1,9 +1,5 @@
 import axios from "axios";
-import {
-    Report,
-    ReportCreateData,
-    ReportUpdateData,
-} from "@/models/report";
+import { Report, ReportCreateData, ReportUpdateData } from "@/models/report";
 
 const API_URL = `${import.meta.env.VITE_API_URL}/api/v1/reports`;
 
@@ -27,11 +23,22 @@ export const reportService = {
         id: number,
         reportData: ReportUpdateData
     ): Promise<Report> {
-        const response = await axios.put<Report>(
-            `${API_URL}/${id}`,
-            reportData
-        );
-        return response.data;
+        try {
+            // Prepare data in the format expected by backend
+            const payload = {
+                locationId: reportData.locationId,
+                status: reportData.status,
+            };
+
+            const response = await axios.put<Report>(
+                `${API_URL}/${id}`,
+                payload
+            );
+            return response.data;
+        } catch (error) {
+            console.error("Error updating report:", error);
+            throw error;
+        }
     },
 
     async deleteReport(id: number): Promise<void> {

@@ -5,13 +5,10 @@ import com.campuslostfound.model.Report;
 import com.campuslostfound.model.ReportStatus;
 import com.campuslostfound.model.User;
 import com.campuslostfound.repository.ReportRepository;
-
-import lombok.RequiredArgsConstructor;
-
-import org.springframework.stereotype.Service;
-
 import java.util.List;
 import java.util.Optional;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
@@ -41,7 +38,11 @@ public class ReportService {
         return reportRepository.save(report);
     }
 
-    public Report createReportFromIds(Long userId, Long locationId, Boolean status) {
+    public Report createReportFromIds(
+        Long userId,
+        Long locationId,
+        Boolean status
+    ) {
         if (userId == null) {
             throw new IllegalArgumentException("User ID cannot be null");
         }
@@ -52,21 +53,21 @@ public class ReportService {
             throw new IllegalArgumentException("Status cannot be null");
         }
 
-        User user =
-                userService
-                        .getUserById(userId)
-                        .orElseThrow(
-                                () ->
-                                        new IllegalArgumentException(
-                                                "User not found with id: " + userId));
+        User user = userService
+            .getUserById(userId)
+            .orElseThrow(() ->
+                new IllegalArgumentException(
+                    "User not found with id: " + userId
+                )
+            );
 
-        Location location =
-                locationService
-                        .getLocationById(locationId)
-                        .orElseThrow(
-                                () ->
-                                        new IllegalArgumentException(
-                                                "Location not found with id: " + locationId));
+        Location location = locationService
+            .getLocationById(locationId)
+            .orElseThrow(() ->
+                new IllegalArgumentException(
+                    "Location not found with id: " + locationId
+                )
+            );
 
         Report report = new Report();
         report.setUser(user);

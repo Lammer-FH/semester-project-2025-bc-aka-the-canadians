@@ -9,13 +9,11 @@ import org.mapstruct.Named;
 
 import java.util.List;
 
-@Mapper(componentModel = "spring", uses = {LocationMapper.class, UserMapper.class})
+@Mapper(componentModel = "spring")
 public interface ReportMapper {
     @Mapping(target = "userId", source = "user.id")
     @Mapping(target = "locationId", source = "location.id")
-    @Mapping(target = "itemIds", source = "items", qualifiedByName = "reportItemListToIdList")
-    @Mapping(target = "location", source = "location")
-    @Mapping(target = "user", source = "user")
+    @Mapping(target = "itemIds", source = "items", qualifiedByName = "itemListToIdList")
     ReportDTO toDTO(Report report);
 
     @Mapping(target = "user", ignore = true)
@@ -23,7 +21,7 @@ public interface ReportMapper {
     @Mapping(target = "items", ignore = true)
     Report toEntity(ReportDTO dto);
 
-    @Named("reportItemListToIdList")
+    @Named("itemListToIdList")
     public static java.util.List<Long> itemListToIdList(
             java.util.List<com.campuslostfound.model.Item> items) {
         if (items == null) return null;

@@ -37,17 +37,10 @@ public class ItemController {
 
     @PostMapping
     public ResponseEntity<ItemDTO> createItem(@RequestBody ItemDTO itemDTO) {
-        try {
-            Item savedItem = itemService.createItemFromReportId(
-                itemDTO.getName(),
-                itemDTO.getDescription(),
-                itemDTO.getReportId()
-            );
+        Item item = itemMapper.toEntity(itemDTO);
+        Item savedItem = itemService.saveItem(item);
 
-            return ResponseEntity.status(HttpStatus.CREATED).body(itemMapper.toDTO(savedItem));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().build();
-        }
+        return ResponseEntity.status(HttpStatus.CREATED).body(itemMapper.toDTO(savedItem));
     }
 
     @PutMapping("/{id}")

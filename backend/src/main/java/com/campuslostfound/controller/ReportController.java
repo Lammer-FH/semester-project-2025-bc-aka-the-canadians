@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/v1/reports")
+@RequestMapping("/api/reports")
 @RequiredArgsConstructor
 public class ReportController {
 
@@ -40,17 +40,10 @@ public class ReportController {
 
     @PostMapping
     public ResponseEntity<ReportDTO> createReport(@RequestBody ReportDTO reportDTO) {
-        try {
-            Report savedReport = reportService.createReportFromIds(
-                reportDTO.getUserId(),
-                reportDTO.getLocationId(),
-                reportDTO.getStatus()
-            );
+        Report report = reportMapper.toEntity(reportDTO);
+        Report savedReport = reportService.saveReport(report);
 
-            return ResponseEntity.status(HttpStatus.CREATED).body(reportMapper.toDTO(savedReport));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().build();
-        }
+        return ResponseEntity.status(HttpStatus.CREATED).body(reportMapper.toDTO(savedReport));
     }
 
     @PutMapping("/{id}")

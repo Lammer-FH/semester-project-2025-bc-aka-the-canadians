@@ -4,18 +4,14 @@ import com.campuslostfound.model.Item;
 import com.campuslostfound.model.Location;
 import com.campuslostfound.model.Report;
 import com.campuslostfound.repository.ItemRepository;
-
-import lombok.RequiredArgsConstructor;
-
-import org.springframework.stereotype.Service;
-
 import java.util.List;
 import java.util.Optional;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
 public class ItemService {
-
     private final ItemRepository itemRepository;
     private final ReportService reportService;
 
@@ -35,11 +31,19 @@ public class ItemService {
         return itemRepository.save(item);
     }
 
+    public Item updateItem(Long itemId, String name, String description) {
+        Item existingItem = itemRepository.findById(itemId).orElseThrow(
+            () -> new IllegalArgumentException("Item not found with id: " + itemId));
+
+        existingItem.setName(name);
+        existingItem.setDescription(description);
+
+        return itemRepository.save(existingItem);
+    }
+
     public Item createItemFromReportId(String name, String description, Long reportId) {
-        Report report =
-                reportService
-                        .getReportById(reportId)
-                        .orElseThrow(() -> new IllegalArgumentException("Report not found with id: " + reportId));
+        Report report = reportService.getReportById(reportId).orElseThrow(
+            () -> new IllegalArgumentException("Report not found with id: " + reportId));
 
         Item item = new Item();
         item.setName(name);

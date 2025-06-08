@@ -6,6 +6,7 @@ export interface Item {
     name: string;
     description?: string;
     reportId: number;
+    claimedByUserId?: number;
     createdAt: string;
     report?: Report;
     claimedByUser?: User;

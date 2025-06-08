@@ -26,12 +26,16 @@ export const itemService = {
         }
     },
 
-    async createItem(
-        itemData: Omit<Item, "id" | "createdAt">,
-    ): Promise<Item> {
+    async createItem(itemData: Omit<Item, "id" | "createdAt">): Promise<Item> {
         try {
-            // Remove image handling for now - backend doesn't support it yet
-            const response = await axios.post<Item>(API_URL, itemData);
+            // Prepare data in the format expected by backend
+            const payload = {
+                name: itemData.name,
+                description: itemData.description || "",
+                reportId: itemData.reportId,
+            };
+
+            const response = await axios.post<Item>(API_URL, payload);
             return response.data;
         } catch (error) {
             console.error("Error creating item:", error);
@@ -41,15 +45,12 @@ export const itemService = {
 
     async updateItem(id: number, itemData: Partial<Item>): Promise<Item> {
         try {
-            const {
-                id: _itemId,
-                createdAt: _createdAt,
-                ...updateData
-            } = itemData;
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const {id: itemId, createdAt: createdAt, report: report, claimedByUser: claimedByUser, ...updateData} = itemData;
 
             const response = await axios.put<Item>(
                 `${API_URL}/${id}`,
-                updateData,
+                updateData
             );
             return response.data;
         } catch (error) {

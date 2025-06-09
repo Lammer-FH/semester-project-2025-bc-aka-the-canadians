@@ -14,6 +14,20 @@ export const useReportStore = defineStore("report", () => {
     const isLoading = computed(() => loading.value);
     const getError = computed(() => error.value);
 
+    // Derived/computed reports
+    const getResolvedReports = computed(() =>
+        reports.value.filter(report =>
+            report.items && report.items.length > 0 &&
+            report.items.every(item => item.claimedByUserId !== null && item.claimedByUserId !== undefined)
+        )
+    );
+    const getOpenReports = computed(() =>
+        reports.value.filter(report =>
+            !report.items || report.items.length === 0 ||
+            report.items.some(item => item.claimedByUserId === null || item.claimedByUserId === undefined)
+        )
+    );
+
     const fetchReports = async () => {
         try {
             loading.value = true;
@@ -106,5 +120,7 @@ export const useReportStore = defineStore("report", () => {
         createReport,
         updateReport,
         deleteReport,
+        getResolvedReports,
+        getOpenReports,
     };
 });

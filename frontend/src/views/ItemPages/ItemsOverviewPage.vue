@@ -17,32 +17,14 @@
           class="custom-searchbar"
         ></ion-searchbar>
 
-        <ion-button
-          fill="outline"
-          size="small"
-          class="filter-button"
-          @click="toggleFilterModal"
-        >
-          <ion-icon :icon="funnelOutline" slot="start"></ion-icon>
-          Filter
-          <ion-badge v-if="activeFiltersCount > 0" class="filter-badge">
-            {{ activeFiltersCount }}
-          </ion-badge>
-        </ion-button>
-      </div>
-
-      <div v-if="activeFiltersCount > 0" class="filter-chips">
-        <ion-chip
-          v-if="selectedClaimedStatus !== null"
-          class="filter-chip"
-          @click="clearClaimedStatusFilter"
-        >
-          <ion-icon :icon="personOutline"></ion-icon>
-          <ion-label>{{
-            getClaimedStatusText(selectedClaimedStatus)
-          }}</ion-label>
-          <ion-icon :icon="closeOutline"></ion-icon>
-        </ion-chip>
+        <Filter
+          modal-title="Filter Items"
+          :filter-configs="itemFilterConfigs"
+          :filters="filters"
+          @update-filter="updateFilter"
+          @clear-filter="clearFilter"
+          @apply-filters="applyFilters"
+        />
       </div>
 
       <div class="stats-summary">
@@ -180,47 +162,6 @@
         </ion-card>
       </div>
 
-      <ion-modal
-        :is-open="showFilterModal"
-        @didDismiss="handleFilterModalDismiss"
-        :backdrop-dismiss="true"
-      >
-        <ion-header>
-          <ion-toolbar>
-            <ion-title>Filter Items</ion-title>
-            <ion-button
-              slot="end"
-              fill="clear"
-              @click="handleFilterModalDismiss"
-            >
-              <ion-icon :icon="closeOutline"></ion-icon>
-            </ion-button>
-          </ion-toolbar>
-        </ion-header>
-        <ion-content class="filter-modal-content">
-          <div class="filter-section">
-            <h3>Claim Status</h3>
-            <ion-radio-group v-model="selectedClaimedStatus">
-              <div class="radio-item">
-                <ion-radio :value="null">All Items</ion-radio>
-              </div>
-              <div class="radio-item">
-                <ion-radio :value="false">Unclaimed Items</ion-radio>
-              </div>
-              <div class="radio-item">
-                <ion-radio :value="true">Claimed Items</ion-radio>
-              </div>
-            </ion-radio-group>
-          </div>
-
-          <div class="filter-actions">
-            <ion-button expand="block" @click="applyFilters">
-              Apply Filters
-            </ion-button>
-          </div>
-        </ion-content>
-      </ion-modal>
-
       <ion-modal :is-open="showClaimModalOpen" @did-dismiss="closeClaimModal">
         <ion-header>
           <ion-toolbar>
@@ -316,24 +257,17 @@ import {
   IonButton,
   IonIcon,
   IonSearchbar,
-  IonBadge,
-  IonChip,
-  IonLabel,
   IonSpinner,
   IonModal,
   IonHeader,
   IonToolbar,
   IonTitle,
   IonContent,
-  IonRadioGroup,
-  IonRadio,
   IonTextarea,
   IonCheckbox,
 } from "@ionic/vue";
 import {
-  funnelOutline,
   personOutline,
-  closeOutline,
   cubeOutline,
   checkmarkCircleOutline,
   searchOutline,
@@ -345,23 +279,49 @@ import {
   calendarOutline,
   createOutline,
   handRightOutline,
+  closeOutline,
 } from "ionicons/icons";
 import { useItemStore } from "@/stores/itemStore";
 import { Item } from "@/models/item";
 import TemplatePage from "@/components/TemplatePage.vue";
 import NavigationTabs from "@/components/NavigationTabs.vue";
+import Filter from "@/components/Filter.vue";
 
 const router = useRouter();
 const itemStore = useItemStore();
 
 const activeTab = ref("items");
 const searchTerm = ref("");
-const showFilterModal = ref(false);
-const selectedClaimedStatus = ref<boolean | null>(null);
+
+const filters = ref({
+  claimedStatus: null as boolean | null,
+});
+
+const itemFilterConfigs = computed(() => [
+  {
+    key: "claimedStatus",
+    title: "Claim Status",
+    type: "radio" as const,
+    icon: personOutline,
+    getLabel: (value: boolean) => (value ? "Claimed" : "Unclaimed"),
+    options: [
+      { value: null, label: "All Items" },
+      { value: false, label: "Unclaimed Items" },
+      { value: true, label: "Claimed Items" },
+    ],
+  },
+]);
 
 const items = computed(() => itemStore.getItems);
 const isLoading = computed(() => itemStore.isLoading);
 const error = computed(() => itemStore.getError);
+
+const activeFiltersCount = computed(() => {
+  return Object.entries(filters.value).filter(([key, value]) => {
+    if (value === null || value === undefined || value === "") return false;
+    return true;
+  }).length;
+});
 
 const filteredItems = computed(() => {
   let filtered = items.value;
@@ -377,8 +337,8 @@ const filteredItems = computed(() => {
     );
   }
 
-  if (selectedClaimedStatus.value !== null) {
-    if (selectedClaimedStatus.value) {
+  if (filters.value.claimedStatus !== null) {
+    if (filters.value.claimedStatus) {
       filtered = filtered.filter(item => item.claimedByUserId !== null);
     } else {
       filtered = filtered.filter(item => item.claimedByUserId === null);
@@ -396,11 +356,18 @@ const unclaimedItemsCount = computed(
   () => items.value.filter(item => item.claimedByUserId === null).length
 );
 
-const activeFiltersCount = computed(() => {
-  let count = 0;
-  if (selectedClaimedStatus.value !== null) count++;
-  return count;
-});
+const updateFilter = (key: string, value: any): void => {
+  filters.value[key as keyof typeof filters.value] = value;
+};
+
+const clearFilter = (key: string): void => {
+  filters.value[key as keyof typeof filters.value] =
+    key === "claimedStatus" ? null : "";
+};
+
+const applyFilters = (): void => {
+  console.log("Filters applied");
+};
 
 const showClaimModalOpen = ref(false);
 const selectedItemToClaim = ref<Item | null>(null);
@@ -468,22 +435,6 @@ const truncateDescription = (
   return description.substring(0, maxLength) + "...";
 };
 
-const toggleFilterModal = (): void => {
-  showFilterModal.value = !showFilterModal.value;
-};
-
-const clearClaimedStatusFilter = (): void => {
-  selectedClaimedStatus.value = null;
-};
-
-const applyFilters = (): void => {
-  showFilterModal.value = false;
-};
-
-const handleFilterModalDismiss = (): void => {
-  showFilterModal.value = false;
-};
-
 const navigateToItem = (itemId: number): void => {
   router.push(`/items/${itemId}`);
 };
@@ -536,8 +487,6 @@ const submitClaim = async (): Promise<void> => {
   try {
     isSubmittingClaim.value = true;
 
-    // For now, we'll simulate claiming by updating the item
-    // In a real implementation, you'd call a proper claim API
     const updatedItem = await itemStore.updateItem(
       selectedItemToClaim.value.id,
       {
@@ -579,32 +528,6 @@ onMounted(async () => {
   flex: 1;
   --background: var(--ion-color-light);
   --border-radius: 12px;
-}
-
-.filter-button {
-  --border-radius: 12px;
-  position: relative;
-}
-
-.filter-badge {
-  position: absolute;
-  top: -4px;
-  right: -4px;
-  min-width: 18px;
-  height: 18px;
-  font-size: 10px;
-}
-
-.filter-chips {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 16px;
-  flex-wrap: wrap;
-}
-
-.filter-chip {
-  --background: var(--ion-color-primary-tint);
-  cursor: pointer;
 }
 
 .stats-summary {
@@ -729,7 +652,7 @@ onMounted(async () => {
 
 .description p {
   margin: 0;
-  color: var(--ion-color-dark);
+  color: var(--ion-color-medium);
   font-size: 14px;
   line-height: 1.4;
 }
@@ -780,48 +703,10 @@ onMounted(async () => {
   justify-content: space-between;
   align-items: center;
   padding: 0 16px 16px;
+  gap: 8px;
 }
 
-.filter-modal-content {
-  padding: 16px;
-}
-
-.filter-section {
-  margin-bottom: 24px;
-  padding: 16px;
-}
-
-.filter-section h3 {
-  margin: 0 0 16px 0;
-  font-size: 18px;
-  font-weight: 600;
-}
-
-.radio-item {
-  display: flex;
-  align-items: center;
-  padding: 12px 0;
-  border-bottom: 1px solid var(--ion-color-light);
-}
-
-.radio-item:last-child {
-  border-bottom: none;
-}
-
-ion-radio {
-  margin-right: 12px;
-  font-size: 16px;
-  font-weight: 500;
-}
-
-.filter-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-top: 32px;
-  padding: 16px;
-}
-
+/* Claim Modal Styles */
 .claim-modal-content {
   padding: 16px;
 }
@@ -830,24 +715,19 @@ ion-radio {
   display: flex;
   flex-direction: column;
   gap: 24px;
-  padding: 16px;
-}
-
-.item-info-section {
-  padding: 16px;
-  background: var(--ion-color-light);
-  border-radius: 12px;
 }
 
 .item-info-section h2 {
-  margin: 0 0 8px 0;
+  margin: 0 0 12px 0;
   color: var(--ion-color-dark);
+  font-weight: 600;
 }
 
 .item-description {
-  margin: 8px 0;
+  margin: 0 0 16px 0;
   color: var(--ion-color-medium);
   font-size: 14px;
+  line-height: 1.4;
 }
 
 .item-details {
@@ -857,15 +737,15 @@ ion-radio {
 }
 
 .detail-row {
-  display: flex;
-  gap: 8px;
   font-size: 14px;
+  color: var(--ion-color-medium);
 }
 
 .claim-form-section h3 {
   margin: 0 0 8px 0;
   font-size: 18px;
   font-weight: 600;
+  color: var(--ion-color-dark);
 }
 
 .form-description {
@@ -879,58 +759,49 @@ ion-radio {
 }
 
 .custom-textarea {
+  --background: var(--ion-color-light-tint);
   --border-radius: 12px;
-  --padding-start: 16px;
-  --padding-end: 16px;
-  --background: var(--ion-color-light);
-  margin-bottom: 8px;
+  border: 2px solid var(--ion-color-light-shade);
+  border-radius: 12px;
+  transition: all 0.3s ease;
 }
 
 .custom-textarea.textarea-filled {
-  --background: var(--ion-color-light-tint);
+  border-color: var(--ion-color-primary-tint);
+  --background: rgba(var(--ion-color-primary-rgb), 0.05);
 }
 
 .custom-textarea.textarea-error {
-  --border-color: var(--ion-color-danger);
-}
-
-.custom-textarea:focus-within {
-  --background: var(--ion-color-light-shade);
+  border-color: var(--ion-color-danger);
+  --background: rgba(var(--ion-color-danger-rgb), 0.05);
 }
 
 .error-message {
-  color: var(--ion-color-danger);
-  font-size: 12px;
-  margin-top: 4px;
-  padding-left: 16px;
   display: flex;
   align-items: center;
-  gap: 4px;
-}
-
-.verification-section {
-  padding: 16px;
-  background: var(--ion-color-light);
-  border-radius: 12px;
+  gap: 6px;
+  color: var(--ion-color-danger);
+  font-size: 0.85em;
+  margin-top: 4px;
+  padding-left: 4px;
 }
 
 .verification-section h4 {
   margin: 0 0 12px 0;
   font-size: 16px;
   font-weight: 600;
+  color: var(--ion-color-dark);
 }
 
 .checklist {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
 }
 
 .modal-actions {
   display: flex;
-  flex-direction: column;
   gap: 12px;
-  margin-top: 24px;
 }
 
 .spinner {
@@ -951,10 +822,6 @@ ion-radio {
     align-items: stretch;
   }
 
-  .filter-button {
-    align-self: flex-end;
-  }
-
   .stats-summary {
     flex-direction: column;
     gap: 12px;
@@ -963,14 +830,6 @@ ion-radio {
   .card-actions {
     flex-direction: column;
     gap: 8px;
-  }
-
-  .claim-modal-content {
-    padding: 12px;
-  }
-
-  .modal-actions {
-    margin-top: 16px;
   }
 }
 

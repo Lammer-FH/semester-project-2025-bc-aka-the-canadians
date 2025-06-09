@@ -286,32 +286,11 @@ const navigateToReport = () => {
   color: white;
   padding: 60px 20px;
   text-align: center;
-  position: relative;
-  overflow: hidden;
-}
-
-.hero-section::before {
-  content: "";
-  position: absolute;
-  top: -50%;
-  right: -50%;
-  width: 100%;
-  height: 200%;
-  background: linear-gradient(
-    45deg,
-    transparent,
-    rgba(255, 255, 255, 0.1),
-    transparent
-  );
-  transform: rotate(45deg);
-  animation: shimmer 3s infinite;
 }
 
 .hero-content {
   max-width: 600px;
   margin: 0 auto;
-  position: relative;
-  z-index: 1;
 }
 
 .hero-icon {
@@ -561,15 +540,6 @@ const navigateToReport = () => {
 .cta-buttons ion-button:last-child {
   --border-color: rgba(255, 255, 255, 0.5);
   --color: white;
-}
-
-@keyframes shimmer {
-  0% {
-    transform: rotate(45deg) translateX(-100%);
-  }
-  100% {
-    transform: rotate(45deg) translateX(100%);
-  }
 }
 
 @media (max-width: 768px) {

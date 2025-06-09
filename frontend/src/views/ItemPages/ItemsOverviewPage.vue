@@ -43,14 +43,6 @@
           }}</ion-label>
           <ion-icon :icon="closeOutline"></ion-icon>
         </ion-chip>
-        <ion-button
-          fill="clear"
-          size="small"
-          class="clear-all-button"
-          @click="clearAllFilters"
-        >
-          Clear All Filters
-        </ion-button>
       </div>
 
       <div class="stats-summary">
@@ -191,11 +183,19 @@
         </ion-card>
       </div>
 
-      <ion-modal :is-open="showFilterModal" @did-dismiss="toggleFilterModal">
+      <ion-modal
+        :is-open="showFilterModal"
+        @didDismiss="handleFilterModalDismiss"
+        :backdrop-dismiss="true"
+      >
         <ion-header>
           <ion-toolbar>
             <ion-title>Filter Items</ion-title>
-            <ion-button slot="end" fill="clear" @click="toggleFilterModal">
+            <ion-button
+              slot="end"
+              fill="clear"
+              @click="handleFilterModalDismiss"
+            >
               <ion-icon :icon="closeOutline"></ion-icon>
             </ion-button>
           </ion-toolbar>
@@ -217,12 +217,9 @@
           </div>
 
           <div class="filter-actions">
-            <ion-button expand="block" @click="applyFilters"
-              >Apply Filters</ion-button
-            >
-            <ion-button expand="block" fill="clear" @click="clearAllFilters"
-              >Clear All</ion-button
-            >
+            <ion-button expand="block" @click="applyFilters">
+              Apply Filters
+            </ion-button>
           </div>
         </ion-content>
       </ion-modal>
@@ -490,12 +487,11 @@ const clearClaimedStatusFilter = (): void => {
   selectedClaimedStatus.value = null;
 };
 
-const clearAllFilters = (): void => {
-  selectedClaimedStatus.value = null;
-  searchTerm.value = "";
+const applyFilters = (): void => {
+  showFilterModal.value = false;
 };
 
-const applyFilters = (): void => {
+const handleFilterModalDismiss = (): void => {
   showFilterModal.value = false;
 };
 

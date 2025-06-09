@@ -48,10 +48,6 @@
             <div class="user-info">
               <h1>{{ getFullName(user) }}</h1>
               <p>{{ user.email }}</p>
-              <ion-chip color="primary" outline>
-                <ion-icon :icon="timeOutline" class="chip-icon"></ion-icon>
-                Member since {{ formatDate(user.createdAt) }}
-              </ion-chip>
             </div>
           </div>
         </div>
@@ -205,63 +201,6 @@
           </div>
         </div>
 
-        <div class="account-actions">
-          <h3>Account Settings</h3>
-
-          <ion-list class="action-list">
-            <ion-item button @click="changePassword" class="action-item">
-              <ion-icon
-                :icon="lockClosedOutline"
-                slot="start"
-                color="primary"
-              ></ion-icon>
-              <ion-label>
-                <h4>Change Password</h4>
-                <p>Update your password for better security</p>
-              </ion-label>
-              <ion-icon
-                :icon="chevronForwardOutline"
-                slot="end"
-                color="medium"
-              ></ion-icon>
-            </ion-item>
-
-            <ion-item button @click="notificationSettings" class="action-item">
-              <ion-icon
-                :icon="notificationsOutline"
-                slot="start"
-                color="primary"
-              ></ion-icon>
-              <ion-label>
-                <h4>Notifications</h4>
-                <p>Manage email and push notifications</p>
-              </ion-label>
-              <ion-icon
-                :icon="chevronForwardOutline"
-                slot="end"
-                color="medium"
-              ></ion-icon>
-            </ion-item>
-
-            <ion-item button @click="privacySettings" class="action-item">
-              <ion-icon
-                :icon="shieldCheckmarkOutline"
-                slot="start"
-                color="primary"
-              ></ion-icon>
-              <ion-label>
-                <h4>Privacy</h4>
-                <p>Manage your privacy settings</p>
-              </ion-label>
-              <ion-icon
-                :icon="chevronForwardOutline"
-                slot="end"
-                color="medium"
-              ></ion-icon>
-            </ion-item>
-          </ion-list>
-        </div>
-
         <div class="statistics-section">
           <h3>Your Activity</h3>
           <div class="stats-grid">
@@ -329,7 +268,6 @@ import {
   IonChip,
   IonSpinner,
   IonAlert,
-  IonList,
   IonNote,
 } from "@ionic/vue";
 import {
@@ -340,10 +278,6 @@ import {
   checkmarkOutline,
   mailOutline,
   alertCircleOutline,
-  lockClosedOutline,
-  notificationsOutline,
-  shieldCheckmarkOutline,
-  chevronForwardOutline,
   bagOutline,
   checkmarkCircleOutline,
   trophyOutline,
@@ -536,18 +470,6 @@ const handleAvatarEdit = () => {
   console.log("Avatar edit clicked");
 };
 
-const changePassword = () => {
-  console.log("Change password clicked");
-};
-
-const notificationSettings = () => {
-  console.log("Notification settings clicked");
-};
-
-const privacySettings = () => {
-  console.log("Privacy settings clicked");
-};
-
 const deleteAccount = () => {
   showDeleteAlert.value = true;
 };
@@ -573,7 +495,7 @@ watch(
         hasFirstNameChanged || hasLastNameChanged || hasEmailChanged;
     }
   },
-  { deep: true },
+  { deep: true }
 );
 </script>
 
@@ -776,34 +698,6 @@ watch(
   margin-top: 4px;
   padding-left: 4px;
   animation: shake 0.3s ease-in-out;
-}
-
-.action-list {
-  background: transparent;
-}
-
-.action-item {
-  --background: var(--ion-color-light-tint);
-  --border-radius: 8px;
-  margin-bottom: 8px;
-  border-radius: 8px;
-  transition: all 0.3s ease;
-}
-
-.action-item:hover {
-  transform: translateX(4px);
-}
-
-.action-item h4 {
-  margin: 0 0 4px 0;
-  color: var(--ion-color-dark);
-  font-weight: 600;
-}
-
-.action-item p {
-  margin: 0;
-  color: var(--ion-color-medium);
-  font-size: 0.9em;
 }
 
 .stats-grid {

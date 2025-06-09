@@ -191,7 +191,6 @@
         </ion-card>
       </div>
 
-      <!-- Filter Modal -->
       <ion-modal :is-open="showFilterModal" @did-dismiss="toggleFilterModal">
         <ion-header>
           <ion-toolbar>
@@ -231,7 +230,6 @@
         </ion-content>
       </ion-modal>
 
-      <!-- Claim Modal -->
       <ion-modal :is-open="showClaimModalOpen" @did-dismiss="closeClaimModal">
         <ion-header>
           <ion-toolbar>
@@ -377,13 +375,11 @@ import NavigationTabs from "@/components/NavigationTabs.vue";
 const router = useRouter();
 const itemStore = useItemStore();
 
-// Reactive data
 const activeTab = ref("items");
 const searchTerm = ref("");
 const showFilterModal = ref(false);
 const selectedClaimedStatus = ref<boolean | null>(null);
 
-// Computed properties
 const items = computed(() => itemStore.getItems);
 const isLoading = computed(() => itemStore.isLoading);
 const error = computed(() => itemStore.getError);
@@ -391,7 +387,6 @@ const error = computed(() => itemStore.getError);
 const filteredItems = computed(() => {
   let filtered = items.value;
 
-  // Filter by search term
   if (searchTerm.value.trim()) {
     const search = searchTerm.value.toLowerCase();
     filtered = filtered.filter(
@@ -403,7 +398,6 @@ const filteredItems = computed(() => {
     );
   }
 
-  // Filter by claimed status
   if (selectedClaimedStatus.value !== null) {
     if (selectedClaimedStatus.value) {
       filtered = filtered.filter(item => item.claimedByUserId !== null);
@@ -429,7 +423,6 @@ const activeFiltersCount = computed(() => {
   return count;
 });
 
-// Claim modal data
 const showClaimModalOpen = ref(false);
 const selectedItemToClaim = ref<Item | null>(null);
 const isSubmittingClaim = ref(false);
@@ -451,7 +444,6 @@ const isClaimFormValid = computed(() => {
   );
 });
 
-// Methods
 const getClaimedStatusText = (isClaimed: boolean): string => {
   return isClaimed ? "Claimed" : "Unclaimed";
 };
@@ -536,7 +528,6 @@ const loadItems = async (): Promise<void> => {
   }
 };
 
-// Claim modal methods
 const showClaimModal = (item: Item): void => {
   selectedItemToClaim.value = item;
   claimData.value = {
@@ -578,24 +569,21 @@ const submitClaim = async (): Promise<void> => {
     const updatedItem = await itemStore.updateItem(
       selectedItemToClaim.value.id,
       {
-        claimedByUserId: 1, // This should be the current user's ID
+        claimedByUserId: 1,
       }
     );
 
     if (updatedItem) {
       closeClaimModal();
-      // You might want to show a success toast here
       console.log("Item claimed successfully");
     }
   } catch (error) {
     console.error("Error claiming item:", error);
-    // You might want to show an error toast here
   } finally {
     isSubmittingClaim.value = false;
   }
 };
 
-// Lifecycle
 onMounted(async () => {
   await loadItems();
 });
@@ -736,23 +724,6 @@ onMounted(async () => {
   overflow: hidden;
 }
 
-.card-header::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 100px;
-  height: 100px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 50%;
-  transform: translate(30px, -30px);
-  transition: transform 0.3s ease;
-}
-
-.item-card:hover .card-header::before {
-  transform: translate(25px, -25px);
-}
-
 .header-content {
   display: flex;
   justify-content: space-between;
@@ -769,6 +740,11 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   gap: 4px;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
 }
 
 .chip-icon {

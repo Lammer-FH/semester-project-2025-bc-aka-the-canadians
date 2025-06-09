@@ -546,6 +546,23 @@ const navigateToReport = () => {
   margin: 0 auto;
 }
 
+.cta-buttons ion-button {
+  font-weight: 600;
+}
+
+.cta-buttons ion-button:first-child {
+  --background: rgba(255, 255, 255, 0.15);
+  --color: white;
+  --border-color: rgba(255, 255, 255, 0.3);
+  --border-width: 2px;
+  --border-style: solid;
+}
+
+.cta-buttons ion-button:last-child {
+  --border-color: rgba(255, 255, 255, 0.5);
+  --color: white;
+}
+
 @keyframes shimmer {
   0% {
     transform: rotate(45deg) translateX(-100%);

@@ -788,6 +788,7 @@ onMounted(async () => {
 
 .filter-section {
   margin-bottom: 24px;
+  padding: 16px;
 }
 
 .filter-section h3 {
@@ -818,6 +819,7 @@ ion-radio {
   flex-direction: column;
   gap: 12px;
   margin-top: 32px;
+  padding: 16px;
 }
 
 .claim-modal-content {
@@ -828,6 +830,7 @@ ion-radio {
   display: flex;
   flex-direction: column;
   gap: 24px;
+  padding: 16px;
 }
 
 .item-info-section {

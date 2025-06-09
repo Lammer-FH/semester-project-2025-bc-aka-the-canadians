@@ -241,10 +241,11 @@ import {
 } from "ionicons/icons";
 import { useReportStore } from "@/stores/reportStore";
 import { Item } from "@/models/item";
-import TemplatePage from "@/components/TemplatePage.vue";
+import { ReportStatus } from "@/models/report";
+const ReportStatusEnum = ReportStatus;
 
-const route = useRoute();
 const router = useRouter();
+const route = useRoute();
 const reportStore = useReportStore();
 
 // Reactive data
@@ -256,16 +257,37 @@ const isLoading = computed(() => reportStore.isLoading);
 const error = computed(() => reportStore.getError);
 
 // Methods
-const getStatusText = (status: boolean): string => {
-  return status ? "Active" : "Closed";
+const getStatusText = (status: ReportStatus): string => {
+  switch (status) {
+    case ReportStatusEnum.OPEN:
+      return "Open";
+    case ReportStatusEnum.RESOLVED:
+      return "Resolved";
+    default:
+      return "Unknown";
+  }
 };
 
-const getStatusIcon = (status: boolean): string => {
-  return status ? checkmarkCircleOutline : searchOutline;
+const getStatusIcon = (status: ReportStatus): string => {
+  switch (status) {
+    case ReportStatusEnum.OPEN:
+      return searchOutline;
+    case ReportStatusEnum.RESOLVED:
+      return checkmarkCircleOutline;
+    default:
+      return alertCircleOutline;
+  }
 };
 
-const getStatusClass = (status: boolean): string => {
-  return status ? "status-active" : "status-closed";
+const getStatusClass = (status: ReportStatus): string => {
+  switch (status) {
+    case ReportStatusEnum.OPEN:
+      return "status-open";
+    case ReportStatusEnum.RESOLVED:
+      return "status-resolved";
+    default:
+      return "status-unknown";
+  }
 };
 
 const getTimeAgo = (dateString: string): string => {

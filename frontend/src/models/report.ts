@@ -7,7 +7,7 @@ export interface Report {
     userId: number;
     locationId: number;
     createdAt: string;
-    status: boolean;
+    status: ReportStatus;
     itemIds?: number[];
     user?: User;
     location?: Location;
@@ -17,27 +17,25 @@ export interface Report {
 export interface ReportCreateData {
     userId: number;
     locationId: number;
-    status?: boolean;
+    status?: ReportStatus;
 }
 
 export interface ReportUpdateData {
     userId?: number;
     locationId?: number;
-    status?: boolean;
+    status?: ReportStatus;
 }
 
 export interface ReportFilters {
     userId?: number;
     locationId?: number;
-    status?: boolean;
+    status?: ReportStatus;
 }
 
 // Enum for report status - matches backend but converted to TypeScript
 export enum ReportStatus {
     OPEN = "OPEN",
-    IN_PROGRESS = "IN_PROGRESS",
-    RESOLVED = "RESOLVED",
-    CLOSED = "CLOSED",
+    RESOLVED = "RESOLVED"
 }
 
 // Helper type for display purposes

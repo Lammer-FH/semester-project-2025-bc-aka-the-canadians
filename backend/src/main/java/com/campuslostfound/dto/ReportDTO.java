@@ -1,5 +1,6 @@
 package com.campuslostfound.dto;
 
+import com.campuslostfound.model.ReportStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -15,7 +16,7 @@ public class ReportDTO {
     private Long userId;
     private Long locationId;
     private Timestamp createdAt;
-    private Boolean status;
+    private ReportStatus status;
     private List<Long> itemIds;
 
     private LocationDTO location;

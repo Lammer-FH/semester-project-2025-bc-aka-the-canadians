@@ -218,11 +218,17 @@
                 <ion-label>All Reports</ion-label>
               </ion-item>
               <ion-item>
-                <ion-radio slot="start" :value="true"></ion-radio>
+                <ion-radio
+                  slot="start"
+                  :value="ReportStatusEnum.OPEN"
+                ></ion-radio>
                 <ion-label>Active Reports</ion-label>
               </ion-item>
               <ion-item>
-                <ion-radio slot="start" :value="false"></ion-radio>
+                <ion-radio
+                  slot="start"
+                  :value="ReportStatusEnum.CLOSED"
+                ></ion-radio>
                 <ion-label>Closed Reports</ion-label>
               </ion-item>
             </ion-radio-group>
@@ -301,11 +307,10 @@ import {
   createOutline,
 } from "ionicons/icons";
 import { useReportStore } from "@/stores/reportStore";
+import { ReportStatus } from "@/models/report";
+const ReportStatusEnum = ReportStatus;
 import TemplatePage from "@/components/TemplatePage.vue";
 import NavigationTabs from "@/components/NavigationTabs.vue";
-
-const router = useRouter();
-const reportStore = useReportStore();
 
 // Reactive data
 const activeTab = ref("reports");
@@ -363,11 +368,15 @@ const uniqueLocations = computed(() => {
 });
 
 const activeReportsCount = computed(
-  () => reports.value.filter(report => report.status === true).length
+  () =>
+    reports.value.filter(report => report.status === ReportStatusEnum.OPEN)
+      .length
 );
 
 const closedReportsCount = computed(
-  () => reports.value.filter(report => report.status === false).length
+  () =>
+    reports.value.filter(report => report.status === ReportStatusEnum.CLOSED)
+      .length
 );
 
 const activeFiltersCount = computed(() => {
@@ -378,16 +387,49 @@ const activeFiltersCount = computed(() => {
 });
 
 // Methods
-const getStatusText = (status: boolean): string => {
-  return status ? "Active" : "Closed";
+const getStatusText = (status: ReportStatus): string => {
+  switch (status) {
+    case ReportStatus.OPEN:
+      return "Open";
+    case ReportStatus.IN_PROGRESS:
+      return "In Progress";
+    case ReportStatus.RESOLVED:
+      return "Resolved";
+    case ReportStatus.CLOSED:
+      return "Closed";
+    default:
+      return "Unknown";
+  }
 };
 
-const getStatusIcon = (status: boolean): string => {
-  return status ? checkmarkCircleOutline : closeCircleOutline;
+const getStatusIcon = (status: ReportStatus): string => {
+  switch (status) {
+    case ReportStatus.OPEN:
+      return searchOutline;
+    case ReportStatus.IN_PROGRESS:
+      return timeOutline;
+    case ReportStatus.RESOLVED:
+      return checkmarkCircleOutline;
+    case ReportStatus.CLOSED:
+      return closeCircleOutline;
+    default:
+      return alertCircleOutline;
+  }
 };
 
-const getStatusClass = (status: boolean): string => {
-  return status ? "status-active" : "status-closed";
+const getStatusClass = (status: ReportStatus): string => {
+  switch (status) {
+    case ReportStatus.OPEN:
+      return "status-open";
+    case ReportStatus.IN_PROGRESS:
+      return "status-progress";
+    case ReportStatus.RESOLVED:
+      return "status-resolved";
+    case ReportStatus.CLOSED:
+      return "status-closed";
+    default:
+      return "status-unknown";
+  }
 };
 
 const getTimeAgo = (dateString: string): string => {

@@ -39,7 +39,9 @@
             <ion-icon :icon="createOutline" class="section-icon"></ion-icon>
             Editable Report Fields
           </h3>
-          <p class="section-description">These report-specific fields can be edited:</p>
+          <p class="section-description">
+            These report-specific fields can be edited:
+          </p>
         </div>
 
         <div class="input-group">
@@ -67,7 +69,10 @@
               :value="location.id"
             >
               <div class="select-option">
-                <ion-icon :icon="businessOutline" class="option-icon"></ion-icon>
+                <ion-icon
+                  :icon="businessOutline"
+                  class="option-icon"
+                ></ion-icon>
                 <span>{{ location.name }}</span>
               </div>
             </ion-select-option>
@@ -81,9 +86,9 @@
         <div class="input-group">
           <ion-select
             v-model="report.status"
-            label="Report Type *"
+            label="Report Status *"
             label-placement="stacked"
-            placeholder="Choose report type"
+            placeholder="Choose report status"
             interface="popover"
             class="modern-select"
             :class="{
@@ -97,21 +102,27 @@
               slot="start"
               class="input-icon"
             ></ion-icon>
-            <ion-select-option :value="false">
+            <ion-select-option :value="ReportStatusEnum.OPEN">
               <div class="select-option">
                 <ion-icon :icon="searchOutline" class="option-icon"></ion-icon>
                 <div>
-                  <strong>Lost Item Report</strong>
-                  <p>I lost an item</p>
+                  <strong>Open</strong>
+                  <p>Items still available</p>
                 </div>
               </div>
             </ion-select-option>
-            <ion-select-option :value="true">
+            <ion-select-option
+              :value="ReportStatusEnum.RESOLVED"
+              :disabled="!canBeResolved"
+            >
               <div class="select-option">
-                <ion-icon :icon="eyeOutline" class="option-icon"></ion-icon>
+                <ion-icon
+                  :icon="checkmarkCircleOutline"
+                  class="option-icon"
+                ></ion-icon>
                 <div>
-                  <strong>Found Item Report</strong>
-                  <p>I found an item</p>
+                  <strong>Resolved</strong>
+                  <p>All items have been claimed</p>
                 </div>
               </div>
             </ion-select-option>
@@ -124,14 +135,17 @@
 
         <!-- Report Context Information (Read-Only) -->
         <div class="divider"></div>
-        
+
         <div class="context-section">
           <h3 class="context-title">
-            <ion-icon :icon="informationCircleOutline" class="section-icon"></ion-icon>
+            <ion-icon
+              :icon="informationCircleOutline"
+              class="section-icon"
+            ></ion-icon>
             Report Context (Read-Only)
           </h3>
           <p class="context-description">This information cannot be edited:</p>
-          
+
           <div class="context-grid">
             <div class="context-item">
               <ion-icon :icon="documentOutline" class="context-icon"></ion-icon>
@@ -145,7 +159,7 @@
               <ion-icon :icon="personOutline" class="context-icon"></ion-icon>
               <div class="context-content">
                 <label>Reporter</label>
-                <span>{{ report.user?.name || 'Unknown' }}</span>
+                <span>{{ report.user?.name || "Unknown" }}</span>
               </div>
             </div>
 
@@ -157,7 +171,10 @@
               </div>
             </div>
 
-            <div v-if="report.items && report.items.length > 0" class="context-item">
+            <div
+              v-if="report.items && report.items.length > 0"
+              class="context-item"
+            >
               <ion-icon :icon="cubeOutline" class="context-icon"></ion-icon>
               <div class="context-content">
                 <label>Items Count</label>
@@ -227,7 +244,10 @@ import { useRouter, useRoute } from "vue-router";
 import { useReportStore } from "@/stores/reportStore";
 import { useLocationStore } from "@/stores/locationStore";
 import type { Report } from "@/models/report";
+import { ReportStatus } from "@/models/report";
 import type { Location } from "@/models/location";
+
+const ReportStatusEnum = ReportStatus;
 
 const router = useRouter();
 const route = useRoute();
@@ -240,7 +260,7 @@ const report = ref<Report>({
   userId: 0,
   locationId: 0,
   createdAt: "",
-  status: false,
+  status: ReportStatusEnum.OPEN,
 });
 
 const errors = ref({
@@ -276,6 +296,13 @@ const isValid = computed(() => {
     report.value?.locationId > 0 &&
     report.value?.status !== undefined &&
     Object.values(errors.value).every(error => error === "")
+  );
+});
+
+const canBeResolved = computed(() => {
+  return (
+    report.value.items?.length > 0 &&
+    report.value.items.every(item => item.claimedBy !== null)
   );
 });
 
@@ -320,7 +347,7 @@ const validateField = (fieldName: keyof typeof errors.value) => {
         break;
       case "status":
         if (report.value.status === undefined || report.value.status === null) {
-          errors.value.status = "Report type is required";
+          errors.value.status = "Report status is required";
         } else {
           errors.value.status = "";
         }

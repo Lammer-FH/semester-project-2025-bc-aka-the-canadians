@@ -30,8 +30,9 @@ public class Report {
     @Column(name = "created_at", nullable = false, updatable = false, insertable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private Timestamp createdAt;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Boolean status;
+    private ReportStatus status;
 
     @OneToMany(mappedBy = "report", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Item> items;

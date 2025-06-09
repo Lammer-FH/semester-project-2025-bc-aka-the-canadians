@@ -44,14 +44,12 @@
               'input-filled': location.name,
               'input-error': errors.name,
             }"
+            autocomplete="off"
+            autocorrect="off"
+            autocapitalize="words"
+            spellcheck="false"
             @ionBlur="validateField('name')"
-          >
-            <ion-icon
-              :icon="textOutline"
-              slot="start"
-              class="input-icon"
-            ></ion-icon>
-          </ion-input>
+          ></ion-input>
           <div v-if="errors.name" class="error-message">
             <ion-icon :icon="alertCircleOutline"></ion-icon>
             {{ errors.name }}
@@ -70,13 +68,10 @@
             }"
             :auto-grow="true"
             :rows="3"
-          >
-            <ion-icon
-              :icon="documentTextOutline"
-              slot="start"
-              class="input-icon"
-            ></ion-icon>
-          </ion-textarea>
+            autocomplete="off"
+            autocorrect="off"
+            spellcheck="false"
+          ></ion-textarea>
         </div>
 
         <div class="action-buttons">
@@ -452,7 +447,7 @@ onMounted(async () => {
 .modern-textarea {
   --background: var(--ion-color-light-tint);
   --border-radius: 12px;
-  --padding-start: 48px;
+  --padding-start: 16px;
   --padding-end: 16px;
   --padding-top: 12px;
   --padding-bottom: 12px;
@@ -478,17 +473,7 @@ onMounted(async () => {
 
 .modern-textarea {
   min-height: 80px;
-  --padding-start: 48px;
-}
-
-.input-icon {
-  position: absolute;
-  left: 16px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--ion-color-primary);
-  font-size: 18px;
-  z-index: 10;
+  --padding-start: 16px;
 }
 
 .error-message {

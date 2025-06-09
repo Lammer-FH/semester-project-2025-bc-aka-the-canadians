@@ -607,8 +607,13 @@ const navigateToReport = () => {
   }
 
   .step {
-    flex-direction: column;
-    text-align: center;
+    gap: 16px;
+  }
+
+  .step-number {
+    width: 40px;
+    height: 40px;
+    font-size: 1em;
   }
 }
 

@@ -97,10 +97,7 @@
           class="item-card"
           @click="navigateToItem(item.id)"
         >
-          <div
-            class="card-header"
-            :class="getClaimedStatusClass(item.claimedByUserId)"
-          >
+          <div class="card-header">
             <div class="header-content">
               <h3 class="item-title">{{ item.name }}</h3>
               <div class="status-chip">
@@ -330,7 +327,6 @@ import {
   IonContent,
   IonRadioGroup,
   IonRadio,
-  IonItem,
   IonTextarea,
   IonCheckbox,
 } from "@ionic/vue";
@@ -349,7 +345,6 @@ import {
   calendarOutline,
   createOutline,
   handRightOutline,
-  chatbubbleOutline,
 } from "ionicons/icons";
 import { useItemStore } from "@/stores/itemStore";
 import { Item } from "@/models/item";
@@ -436,12 +431,6 @@ const getClaimedStatusIcon = (
   claimedByUserId: number | null | undefined
 ): string => {
   return claimedByUserId ? checkmarkCircleOutline : searchOutline;
-};
-
-const getClaimedStatusClass = (
-  claimedByUserId: number | null | undefined
-): string => {
-  return claimedByUserId ? "status-claimed" : "status-unclaimed";
 };
 
 const getTimeAgo = (dateString: string): string => {
@@ -616,10 +605,6 @@ onMounted(async () => {
 .filter-chip {
   --background: var(--ion-color-primary-tint);
   cursor: pointer;
-}
-
-.clear-all-button {
-  --color: var(--ion-color-medium);
 }
 
 .stats-summary {

@@ -270,6 +270,7 @@ import { ref, computed, watch, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useLocationStore } from "@/stores/locationStore";
 import { useReportStore } from "@/stores/reportStore";
+import { isReportResolved, ReportStatus } from "@/models/report";
 import type { Location } from "@/models/location";
 import type { Report } from "@/models/report";
 
@@ -340,37 +341,32 @@ const filteredLocations = computed(() => {
 });
 
 const totalOpenReports = computed(() => {
-  return reports.value.filter(report => report.status.toUpperCase() === "OPEN")
-    .length;
+  return reportStore.getOpenReports.length;
 });
 
 const totalResolvedReports = computed(() => {
-  return reports.value.filter(
-    report => report.status.toUpperCase() === "RESOLVED"
-  ).length;
+  return reportStore.getResolvedReports.length;
 });
 
 const totalReports = computed(() => {
-  return reports.value.length;
+  return reportStore.getReports.length;
 });
 
-const getReportsForLocation = (location: Location): VirtualReport[] => {
-  return reports.value.filter(
-    report =>
-      reportStore.getReports.find(r => r.id === report.id)?.locationId ===
-      location.id
+const getReportsForLocation = (location: Location): Report[] => {
+  return reportStore.getReports.filter(
+    report => report.locationId === location.id
   );
 };
 
 const getOpenReportsCount = (location: Location): number => {
-  return getReportsForLocation(location).filter(
-    report => report.status.toUpperCase() === "OPEN"
+  return reportStore.getOpenReports.filter(
+    report => report.locationId === location.id
   ).length;
 };
 
 const getResolvedReportsCount = (location: Location): number => {
-  return getReportsForLocation(location).filter(
-    report => report.status.toUpperCase() === "RESOLVED"
+  return reportStore.getResolvedReports.filter(
+    report => report.locationId === location.id
   ).length;
 };
 
@@ -378,11 +374,11 @@ const getTotalReportsCount = (location: Location): number => {
   return getReportsForLocation(location).length;
 };
 
-const getRecentReportsForLocation = (location: Location): VirtualReport[] => {
+const getRecentReportsForLocation = (location: Location): Report[] => {
   return getReportsForLocation(location)
     .sort(
       (a, b) =>
-        new Date(b.dateCreated).getTime() - new Date(a.dateCreated).getTime()
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     )
     .slice(0, 3);
 };

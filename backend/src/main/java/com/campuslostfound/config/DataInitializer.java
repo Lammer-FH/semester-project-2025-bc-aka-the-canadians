@@ -1,9 +1,6 @@
 package com.campuslostfound.config;
 
-import com.campuslostfound.model.Item;
-import com.campuslostfound.model.Location;
-import com.campuslostfound.model.Report;
-import com.campuslostfound.model.User;
+import com.campuslostfound.model.*;
 import com.campuslostfound.repository.ItemRepository;
 import com.campuslostfound.repository.LocationRepository;
 import com.campuslostfound.repository.ReportRepository;
@@ -35,6 +32,9 @@ public class DataInitializer {
                 userRepository.save(alice);
                 userRepository.save(bob);
                 userRepository.save(charlie);
+                // Flush to ensure IDs are generated
+                userRepository.flush();
+
                 // Create locations
                 Location library = new Location(null, "Library", "Main campus library", null, null);
                 Location cafeteria =
@@ -44,11 +44,15 @@ public class DataInitializer {
                 locationRepository.save(cafeteria);
                 locationRepository.save(lab);
 
+                // Flush to ensure IDs are generated
+                locationRepository.flush();
+
+
                 // Create reports
-                Report lostBookReport = new Report(null, alice, library, null, true, null);
-                Report foundPhoneReport = new Report(null, bob, cafeteria, null, true, null);
-                Report lostElectronicsReport = new Report(null, alice, lab, null, false, null);
-                Report foundUSBReport = new Report(null, charlie, library, null, true, null);
+                Report lostBookReport = new Report(null, alice, library, null, ReportStatus.OPEN, null);
+                Report foundPhoneReport = new Report(null, bob, cafeteria, null, ReportStatus.RESOLVED, null);
+                Report lostElectronicsReport = new Report(null, alice, lab, null, ReportStatus.OPEN, null);
+                Report foundUSBReport = new Report(null, charlie, library, null, ReportStatus.RESOLVED, null);
                 reportRepository.save(lostBookReport);
                 reportRepository.save(foundPhoneReport);
                 reportRepository.save(lostElectronicsReport);

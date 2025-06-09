@@ -37,7 +37,7 @@ public class ReportService {
         return reportRepository.save(report);
     }
 
-    public Report createReportFromIds(Long userId, Long locationId, Boolean status) {
+    public Report createReportFromIds(Long userId, Long locationId, ReportStatus status) {
         if (userId == null) {
             throw new IllegalArgumentException("User ID cannot be null");
         }
@@ -63,7 +63,7 @@ public class ReportService {
         return reportRepository.save(report);
     }
 
-    public Report updateReport(Long reportId, Long locationId, Boolean status) {
+    public Report updateReport(Long reportId, Long locationId, ReportStatus status) {
         Report existingReport = reportRepository.findById(reportId).orElseThrow(
             () -> new IllegalArgumentException("Report not found with id: " + reportId));
 

@@ -1,6 +1,8 @@
 package com.campuslostfound.dto;
 
 import java.sql.Timestamp;
+
+import com.campuslostfound.model.ReportStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -17,7 +19,7 @@ public class ItemDTO {
     private Timestamp createdAt;
     private Long locationId;
     private String locationName;
-    private Boolean reportStatus;
+    private ReportStatus reportStatus;
     private Long reporterUserId;
     private String reporterUserName;
 }

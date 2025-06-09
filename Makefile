@@ -1,51 +1,50 @@
 DOCKER_COMPOSE_PATH = docker-compose.yml
 BACKEND_PATH = backend
 FRONTEND_PATH = frontend
-DATABASE_PATH = db
 
-.PHONY: backend frontend infra network infra-restart backend-docker frontend-docker
+.PHONY: backend backend-dev-profile backend-docker frontend lint-frontend fix-frontend check-frontend frontend-docker run-all restart-all help
 
-backend:
-	@echo "Building and running application (locally):"
+backend: # Building and running backend (locally)
+	@echo "Building and running backend (locally):"
 	cd $(BACKEND_PATH) && mvn spring-boot:run
 
-backend-dev-profile:
-	@echo "Building and running application (locally) with the dev profile:"
+backend-dev-profile: # Building and running backend (locally) with dev profile
+	@echo "Building and running backend (locally) with the dev profile:"
 	cd $(BACKEND_PATH) && mvn spring-boot:run -Dspring-boot.run.profiles=dev
 
-backend-docker:
+backend-docker: # Building and running backend (with Docker)
 	@echo "Building and running backend (with Docker):"
 	cd $(BACKEND_PATH) && docker compose -f ../$(DOCKER_COMPOSE_PATH) up backend --build
 
-frontend:
+frontend: # Installing frontend dependencies and running application locally
 	@echo "Installing frontend dependencies and running application (locally):"
 	cd $(FRONTEND_PATH) && npm install && npm run dev
 
-lint-frontend:
+lint-frontend: # Linting frontend code
 	@echo "Linting frontend code:"
 	cd $(FRONTEND_PATH) && npm run lint:check
 
-fix-frontend:
+fix-frontend: # Fixing frontend code issues
 	@echo "Fixing frontend code issues:"
 	cd $(FRONTEND_PATH) && npm run fix
 
-check-frontend:
+check-frontend: # Running full frontend code quality check:
 	@echo "Running full frontend code quality check:"
 	cd $(FRONTEND_PATH) && npm run check
 
-frontend-docker:
+frontend-docker: # Building and running frontend (with Docker)
 	@echo "Building and running frontend (with Docker):"
 	cd $(FRONTEND_PATH) && docker compose -f ../$(DOCKER_COMPOSE_PATH) up frontend --build
 
-network:
-	@echo "Creating Docker network ('campus-network'):"
-	docker network create campus-network
+run-all: # Running all services
+	@echo "Running all services:"
+	docker compose -f $(DOCKER_COMPOSE_PATH) up
 
-infra:
-	@echo "Running infrastructure services (MinIO and MySQL):"
-	docker compose -f $(DOCKER_COMPOSE_PATH) up minio mysql mysql-dashboard
+restart-all: # Removing volumes, rebuilding images and starting all services
+	@echo "Removing volumes, rebuilding images and starting all services"
+	docker compose -f $(DOCKER_COMPOSE_PATH) down -v
+	docker compose -f $(DOCKER_COMPOSE_PATH) up --build
 
-infra-restart:
-	@echo "Cleaning up Docker containers and images:"
-	docker compose -f $(DOCKER_COMPOSE_PATH) down minio mysql mysql-dashboard -v
-	make infra
+help: # Show this help message
+	@echo "Available make commands:"
+	@awk 'BEGIN {FS = ":.*?#"} /^[a-zA-Z_-]+:.*?#/ { printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2 }' $(MAKEFILE_LIST)

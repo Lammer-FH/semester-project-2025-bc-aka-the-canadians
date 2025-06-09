@@ -17,39 +17,14 @@
           class="custom-searchbar"
         ></ion-searchbar>
 
-        <ion-button
-          fill="outline"
-          size="small"
-          class="filter-button"
-          @click="toggleFilterModal"
-        >
-          <ion-icon :icon="funnelOutline" slot="start"></ion-icon>
-          Filter
-          <ion-badge v-if="activeFiltersCount > 0" class="filter-badge">
-            {{ activeFiltersCount }}
-          </ion-badge>
-        </ion-button>
-      </div>
-
-      <div v-if="activeFiltersCount > 0" class="filter-chips">
-        <ion-chip
-          v-if="selectedStatus !== null"
-          class="filter-chip"
-          @click="clearStatusFilter"
-        >
-          <ion-icon :icon="flagOutline"></ion-icon>
-          <ion-label>{{ getStatusText(selectedStatus) }}</ion-label>
-          <ion-icon :icon="closeOutline"></ion-icon>
-        </ion-chip>
-        <ion-chip
-          v-if="selectedLocation"
-          class="filter-chip"
-          @click="clearLocationFilter"
-        >
-          <ion-icon :icon="locationOutline"></ion-icon>
-          <ion-label>{{ selectedLocation }}</ion-label>
-          <ion-icon :icon="closeOutline"></ion-icon>
-        </ion-chip>
+        <Filter
+          modal-title="Filter Reports"
+          :filter-configs="reportFilterConfigs"
+          :filters="filters"
+          @update-filter="updateFilter"
+          @clear-filter="clearFilter"
+          @apply-filters="applyFilters"
+        />
       </div>
 
       <div class="stats-summary">
@@ -190,72 +165,12 @@
           </div>
         </ion-card>
       </div>
-
-      <!-- Filter Modal -->
-      <ion-modal
-        :is-open="showFilterModal"
-        @didDismiss="handleFilterModalDismiss"
-        :backdrop-dismiss="true"
-      >
-        <ion-header>
-          <ion-toolbar>
-            <ion-title>Filter Reports</ion-title>
-            <ion-button
-              slot="end"
-              fill="clear"
-              @click="handleFilterModalDismiss"
-            >
-              <ion-icon :icon="closeOutline"></ion-icon>
-            </ion-button>
-          </ion-toolbar>
-        </ion-header>
-        <ion-content class="filter-modal-content">
-          <div class="filter-section">
-            <h3>Status</h3>
-            <ion-radio-group v-model="selectedStatus">
-              <div class="radio-item">
-                <ion-radio :value="null">All Reports</ion-radio>
-              </div>
-              <div class="radio-item">
-                <ion-radio :value="ReportStatusEnum.OPEN">Open Reports</ion-radio>
-              </div>
-              <div class="radio-item">
-                <ion-radio :value="ReportStatusEnum.RESOLVED">Resolved Reports</ion-radio>
-              </div>
-            </ion-radio-group>
-          </div>
-
-          <div class="filter-section">
-            <h3>Location</h3>
-            <ion-select
-              v-model="selectedLocation"
-              placeholder="Select Location"
-              interface="action-sheet"
-              class="custom-select"
-            >
-              <ion-select-option value="">All Locations</ion-select-option>
-              <ion-select-option
-                v-for="location in uniqueLocations"
-                :key="location"
-                :value="location"
-              >
-                {{ location }}
-              </ion-select-option>
-            </ion-select>
-          </div>
-
-          <div class="filter-actions">
-            <ion-button expand="block" @click="applyFilters">
-              Apply Filters
-            </ion-button>
-          </div>
-        </ion-content>
-      </ion-modal>
     </div>
   </template-page>
 </template>
 
 <script setup lang="ts">
+// filepath: frontend/src/views/ReportPages/ReportsOverviewPage.vue
 import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import {
@@ -264,25 +179,11 @@ import {
   IonButton,
   IonIcon,
   IonSearchbar,
-  IonBadge,
-  IonChip,
-  IonLabel,
   IonSpinner,
-  IonModal,
-  IonHeader,
-  IonToolbar,
-  IonTitle,
-  IonContent,
-  IonRadioGroup,
-  IonRadio,
-  IonSelect,
-  IonSelectOption,
 } from "@ionic/vue";
 import {
-  funnelOutline,
   flagOutline,
   locationOutline,
-  closeOutline,
   documentTextOutline,
   checkmarkCircleOutline,
   alertCircleOutline,
@@ -299,27 +200,79 @@ import { ReportStatus } from "@/models/report";
 const ReportStatusEnum = ReportStatus;
 import TemplatePage from "@/components/TemplatePage.vue";
 import NavigationTabs from "@/components/NavigationTabs.vue";
+import Filter from "@/components/Filter.vue";
 
 // Initialize store and router
 const reportStore = useReportStore();
 const router = useRouter();
 
-// Reactive data
 const activeTab = ref("reports");
 const searchTerm = ref("");
-const showFilterModal = ref(false);
-const selectedStatus = ref<ReportStatus | null>(null);
-const selectedLocation = ref<string>("");
 
-// Computed properties
+const filters = ref({
+  status: null as ReportStatus | null,
+  location: "" as string,
+});
+
 const reports = computed(() => reportStore.getReports);
 const isLoading = computed(() => reportStore.isLoading);
 const error = computed(() => reportStore.getError);
 
+const uniqueLocations = computed(() => {
+  const locations = reports.value
+    .map(report => report.location?.name)
+    .filter((location): location is string => Boolean(location));
+  return [...new Set(locations)].sort();
+});
+
+const reportFilterConfigs = computed(() => [
+  {
+    key: "status",
+    title: "Status",
+    type: "radio" as const,
+    icon: flagOutline,
+    getLabel: (value: ReportStatus) => getStatusText(value),
+    options: [
+      { value: null, label: "All Reports" },
+      { value: ReportStatusEnum.OPEN, label: "Open Reports" },
+      { value: ReportStatusEnum.RESOLVED, label: "Resolved Reports" },
+    ],
+  },
+  {
+    key: "location",
+    title: "Location",
+    type: "select" as const,
+    placeholder: "Select Location",
+    icon: locationOutline,
+    getLabel: (value: string) => value,
+    options: [
+      { value: "", label: "All Locations" },
+      ...uniqueLocations.value.map(location => ({
+        value: location,
+        label: location,
+      })),
+    ],
+  },
+]);
+
+const activeFiltersCount = computed(() => {
+  return Object.values(filters.value).filter(value => {
+    if (value === null || value === undefined || value === "") return false;
+    return true;
+  }).length;
+});
+
+const activeReportsCount = computed(
+  () => reports.value.filter(report => report.status === ReportStatusEnum.OPEN).length
+);
+
+const resolvedReportsCount = computed(
+  () => reports.value.filter(report => report.status === ReportStatusEnum.RESOLVED).length
+);
+
 const filteredReports = computed(() => {
   let filtered = reports.value;
 
-  // Filter by search term
   if (searchTerm.value.trim()) {
     const search = searchTerm.value.toLowerCase();
     filtered = filtered.filter(
@@ -335,48 +288,40 @@ const filteredReports = computed(() => {
     );
   }
 
-  // Filter by status
-  if (selectedStatus.value !== null) {
+  if (filters.value.status !== null) {
     filtered = filtered.filter(
-      report => report.status === selectedStatus.value
+      report => report.status === filters.value.status
     );
   }
 
-  // Filter by location
-  if (selectedLocation.value) {
+  if (filters.value.location) {
     filtered = filtered.filter(
-      report => report.location?.name === selectedLocation.value
+      report => report.location?.name === filters.value.location
     );
   }
 
   return filtered;
 });
 
-const uniqueLocations = computed(() => {
-  const locations = reports.value
-    .map(report => report.location?.name)
-    .filter(Boolean) as string[];
-  return [...new Set(locations)].sort();
-});
+const updateFilter = (key: string, value: ReportStatus | string | null): void => {
+  if (key === "status") {
+    filters.value.status = value as ReportStatus | null;
+  } else if (key === "location") {
+    filters.value.location = value as string;
+  }
+};
 
-const activeReportsCount = computed(
-  () =>
-    reports.value.filter(report => report.status === ReportStatusEnum.OPEN)
-      .length
-);
+const clearFilter = (_key: string): void => {
+  if (_key === "status") {
+    filters.value.status = null;
+  } else if (_key === "location") {
+    filters.value.location = "";
+  }
+};
 
-const resolvedReportsCount = computed(
-  () =>
-    reports.value.filter(report => report.status === ReportStatusEnum.RESOLVED)
-      .length
-);
-
-const activeFiltersCount = computed(() => {
-  let count = 0;
-  if (selectedStatus.value !== null) count++;
-  if (selectedLocation.value) count++;
-  return count;
-});
+const applyFilters = (): void => {
+  console.log("Filters applied");
+};
 
 // Methods
 const getStatusText = (status: ReportStatus): string => {
@@ -439,22 +384,6 @@ const formatDate = (dateString: string): string => {
   });
 };
 
-const toggleFilterModal = (): void => {
-  showFilterModal.value = !showFilterModal.value;
-};
-
-const clearStatusFilter = (): void => {
-  selectedStatus.value = null;
-};
-
-const clearLocationFilter = (): void => {
-  selectedLocation.value = "";
-};
-
-const applyFilters = (): void => {
-  showFilterModal.value = false;
-};
-
 const navigateToReport = (reportId: number): void => {
   router.push(`/reports/${reportId}`);
 };
@@ -471,11 +400,6 @@ const loadReports = async (): Promise<void> => {
   }
 };
 
-const handleFilterModalDismiss = (): void => {
-  showFilterModal.value = false;
-};
-
-// Lifecycle
 onMounted(async () => {
   await loadReports();
 });
@@ -499,32 +423,6 @@ onMounted(async () => {
   flex: 1;
   --background: var(--ion-color-light);
   --border-radius: 12px;
-}
-
-.filter-button {
-  --border-radius: 12px;
-  position: relative;
-}
-
-.filter-badge {
-  position: absolute;
-  top: -4px;
-  right: -4px;
-  min-width: 18px;
-  height: 18px;
-  font-size: 10px;
-}
-
-.filter-chips {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 16px;
-  flex-wrap: wrap;
-}
-
-.filter-chip {
-  --background: var(--ion-color-primary-tint);
-  cursor: pointer;
 }
 
 .stats-summary {
@@ -731,54 +629,6 @@ onMounted(async () => {
   padding: 0 16px 16px;
 }
 
-.filter-modal-content {
-  padding: 16px;
-}
-
-.filter-section {
-  margin-bottom: 24px;
-  padding: 16px;
-}
-
-.filter-section h3 {
-  margin: 0 0 16px 0;
-  font-size: 18px;
-  font-weight: 600;
-}
-
-.radio-item {
-  display: flex;
-  align-items: center;
-  padding: 12px 0;
-  border-bottom: 1px solid var(--ion-color-light);
-}
-
-.radio-item:last-child {
-  border-bottom: none;
-}
-
-ion-radio {
-  margin-right: 12px;
-  font-size: 16px;
-  font-weight: 500;
-}
-
-.custom-select {
-  --background: var(--ion-color-light);
-  --border-radius: 12px;
-  --padding-start: 16px;
-  --padding-end: 16px;
-  width: 100%;
-}
-
-.filter-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-top: 32px;
-  padding: 16px;
-}
-
 @media (max-width: 768px) {
   .reports-grid {
     grid-template-columns: 1fr;
@@ -791,10 +641,6 @@ ion-radio {
   .search-and-filter {
     flex-direction: column;
     align-items: stretch;
-  }
-
-  .filter-button {
-    align-self: flex-end;
   }
 
   .stats-summary {

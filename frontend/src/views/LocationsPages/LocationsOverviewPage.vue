@@ -69,189 +69,28 @@
       </div>
 
       <div v-else class="locations-grid">
-        <ion-card
+        <UniversalCard
           v-for="(location, index) in filteredLocations"
           :key="location.id"
-          class="location-card"
-          :style="{ '--animation-delay': `${index * 0.1}s` }"
-          @click="navigateToLocation(location.id)"
-        >
-          <ion-card-header class="card-header">
-            <div class="header-content">
-              <ion-card-title class="location-name">{{
-                location.name
-              }}</ion-card-title>
-            </div>
-          </ion-card-header>
-
-          <ion-card-content class="card-content">
-            <div class="reports-at-location">
-              <h4>
-                <ion-icon :icon="flagOutline" class="section-icon"></ion-icon>
-                Reports at this Location
-              </h4>
-
-              <div
-                v-if="getReportsForLocation(location).length === 0"
-                class="no-reports"
-              >
-                <ion-icon
-                  :icon="checkmarkCircleOutline"
-                  class="no-reports-icon"
-                ></ion-icon>
-                <span>No active reports</span>
-              </div>
-
-              <div v-else class="reports-stats">
-                <div
-                  class="report-stat-item"
-                  v-if="getOpenReportsCount(location) > 0"
-                >
-                  <ion-chip color="warning" class="report-chip">
-                    <ion-icon
-                      :icon="alertCircleOutline"
-                      class="chip-icon"
-                    ></ion-icon>
-                    {{ getOpenReportsCount(location) }} Open
-                  </ion-chip>
-                </div>
-                <div
-                  class="report-stat-item"
-                  v-if="getResolvedReportsCount(location) > 0"
-                >
-                  <ion-chip color="success" class="report-chip">
-                    <ion-icon
-                      :icon="checkmarkOutline"
-                      class="chip-icon"
-                    ></ion-icon>
-                    {{ getResolvedReportsCount(location) }} Resolved
-                  </ion-chip>
-                </div>
-                <div
-                  class="report-stat-item"
-                  v-if="getTotalReportsCount(location) > 0"
-                >
-                  <ion-chip color="primary" class="report-chip">
-                    <ion-icon
-                      :icon="documentTextOutline"
-                      class="chip-icon"
-                    ></ion-icon>
-                    {{ getTotalReportsCount(location) }} Total
-                  </ion-chip>
-                </div>
-              </div>
-
-              <div
-                v-if="getRecentReportsForLocation(location).length > 0"
-                class="recent-reports"
-              >
-                <div class="recent-reports-header">
-                  <span>Latest Reports:</span>
-                  <ion-button
-                    fill="clear"
-                    size="small"
-                    @click.stop="viewAllReportsAtLocation(location.name)"
-                  >
-                    View All
-                  </ion-button>
-                </div>
-                <div class="recent-reports-list">
-                  <div
-                    v-for="report in getRecentReportsForLocation(
-                      location
-                    ).slice(0, 2)"
-                    :key="report.id"
-                    class="recent-report-item"
-                    @click.stop="navigateToReport(report.id)"
-                  >
-                    <div class="report-info">
-                      <ion-icon
-                        :icon="getStatusIcon(report.status)"
-                        :color="getStatusColor(report.status)"
-                        class="report-icon"
-                      ></ion-icon>
-                      <div class="report-text">
-                        <span class="report-title">{{ report.title }}</span>
-                        <span class="report-time">{{
-                          getTimeAgo(report.dateCreated)
-                        }}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div v-if="location.description" class="description">
-              <h4>
-                <ion-icon
-                  :icon="documentTextOutline"
-                  class="section-icon"
-                ></ion-icon>
-                Description
-              </h4>
-              <p>{{ location.description }}</p>
-            </div>
-
-            <div class="metadata">
-              <div class="metadata-item">
-                <ion-icon
-                  :icon="calendarOutline"
-                  class="metadata-icon"
-                ></ion-icon>
-                <span class="metadata-text"
-                  >Created {{ formatDate(location.createdAt) }}</span
-                >
-              </div>
-            </div>
-          </ion-card-content>
-
-          <div class="card-actions">
-            <ion-button
-              fill="clear"
-              size="small"
-              @click.stop="navigateToLocation(location.id)"
-            >
-              <ion-icon :icon="eyeOutline" slot="start"></ion-icon>
-              View Location
-            </ion-button>
-            <ion-button
-              fill="clear"
-              size="small"
-              @click.stop="viewAllReportsAtLocation(location.name)"
-            >
-              <ion-icon :icon="flagOutline" slot="start"></ion-icon>
-              Reports ({{ getReportsForLocation(location).length }})
-            </ion-button>
-            <ion-button
-              fill="clear"
-              size="small"
-              @click.stop="editLocation(location.id)"
-            >
-              <ion-icon :icon="createOutline" slot="start"></ion-icon>
-              Edit
-            </ion-button>
-          </div>
-        </ion-card>
+          :title="location.name"
+          :description="location.description"
+          :content-sections="getLocationContentSections(location)"
+          :metadata="getLocationMetadata(location)"
+          :actions="getLocationActions(location)"
+          card-type="location"
+          :animation-delay="index * 0.1"
+          @card-click="navigateToLocation(location.id)"
+          @list-item-click="handleLocationListClick"
+        />
       </div>
     </div>
   </template-page>
 </template>
 
 <script setup lang="ts">
-import TemplatePage from "@/components/TemplatePage.vue";
-import NavigationTabs from "@/components/NavigationTabs.vue";
-import {
-  IonSearchbar,
-  IonCard,
-  IonCardHeader,
-  IonCardTitle,
-  IonCardContent,
-  IonButton,
-  IonIcon,
-  IonChip,
-  IonSpinner,
-} from "@ionic/vue";
+import { ref, computed, onMounted } from "vue";
+import { useRouter } from "vue-router";
+import { IonSearchbar, IonButton, IonIcon, IonSpinner } from "@ionic/vue";
 import {
   locationOutline,
   addOutline,
@@ -263,26 +102,16 @@ import {
   calendarOutline,
   flagOutline,
   checkmarkCircleOutline,
-  searchOutline,
   checkmarkOutline,
 } from "ionicons/icons";
-import { ref, computed, watch, onMounted } from "vue";
-import { useRouter } from "vue-router";
 import { useLocationStore } from "@/stores/locationStore";
 import { useReportStore } from "@/stores/reportStore";
-import { isReportResolved, ReportStatus } from "@/models/report";
+import { ReportStatus } from "@/models/report";
+import TemplatePage from "@/components/TemplatePage.vue";
+import NavigationTabs from "@/components/NavigationTabs.vue";
+import UniversalCard from "@/components/OverviewCard.vue";
 import type { Location } from "@/models/location";
 import type { Report } from "@/models/report";
-
-interface VirtualReport {
-  id: number;
-  title: string;
-  description: string;
-  status: string;
-  location: string;
-  createdAt: string;
-  reporterName?: string;
-}
 
 const router = useRouter();
 const locationStore = useLocationStore();
@@ -296,17 +125,7 @@ const isLoading = computed(
 );
 const error = computed(() => locationStore.getError);
 
-const reports = computed((): VirtualReport[] => {
-  return reportStore.getReports.map((report: Report) => ({
-    id: report.id,
-    title: report.items?.[0]?.name || "Unknown Item",
-    description: report.items?.[0]?.description || "No description available",
-    status: report.status ? "RESOLVED" : "OPEN",
-    location: report.location?.name || "Unknown Location",
-    createdAt: report.createdAt,
-    reporterName: report.user?.name || "Unknown Reporter",
-  }));
-});
+const reports = computed(() => reportStore.getReports || []);
 
 onMounted(async () => {
   await loadLocations();
@@ -341,11 +160,11 @@ const filteredLocations = computed(() => {
 });
 
 const totalOpenReports = computed(() => {
-  return reportStore.getOpenReports.length;
+  return reports.value.filter(report => report.status === ReportStatus.OPEN).length;
 });
 
 const totalResolvedReports = computed(() => {
-  return reportStore.getResolvedReports.length;
+  return reports.value.filter(report => report.status === ReportStatus.RESOLVED).length;
 });
 
 const totalReports = computed(() => {
@@ -353,20 +172,18 @@ const totalReports = computed(() => {
 });
 
 const getReportsForLocation = (location: Location): Report[] => {
-  return reportStore.getReports.filter(
-    report => report.locationId === location.id
-  );
+  return reports.value.filter(report => report.locationId === location.id);
 };
 
 const getOpenReportsCount = (location: Location): number => {
-  return reportStore.getOpenReports.filter(
-    report => report.locationId === location.id
+  return getReportsForLocation(location).filter(
+    report => report.status === ReportStatus.OPEN
   ).length;
 };
 
 const getResolvedReportsCount = (location: Location): number => {
-  return reportStore.getResolvedReports.filter(
-    report => report.locationId === location.id
+  return getReportsForLocation(location).filter(
+    report => report.status === ReportStatus.RESOLVED
   ).length;
 };
 
@@ -383,34 +200,12 @@ const getRecentReportsForLocation = (location: Location): Report[] => {
     .slice(0, 3);
 };
 
-const getStatusColor = (status: string) => {
-  switch (status.toUpperCase()) {
-    case "FOUND":
-      return "success";
-    case "LOST":
-      return "warning";
-    case "CLAIMED":
-      return "medium";
-    case "RETURNED":
-      return "success";
-    default:
-      return "primary";
-  }
+const getStatusColor = (status: ReportStatus) => {
+  return status === ReportStatus.RESOLVED ? "success" : "warning";
 };
 
-const getStatusIcon = (status: string) => {
-  switch (status.toUpperCase()) {
-    case "FOUND":
-      return eyeOutline;
-    case "LOST":
-      return searchOutline;
-    case "CLAIMED":
-      return checkmarkOutline;
-    case "RETURNED":
-      return checkmarkCircleOutline;
-    default:
-      return flagOutline;
-  }
+const getStatusIcon = (status: ReportStatus) => {
+  return status === ReportStatus.RESOLVED ? checkmarkCircleOutline : alertCircleOutline;
 };
 
 const getTimeAgo = (dateString: string) => {
@@ -451,10 +246,6 @@ const navigateToAddLocation = () => {
   router.push("/locations/add");
 };
 
-const navigateToReport = (reportId: number) => {
-  router.push(`/items/${reportId}`);
-};
-
 const viewAllReportsAtLocation = (locationName: string) => {
   router.push({
     path: "/items/overview",
@@ -462,11 +253,107 @@ const viewAllReportsAtLocation = (locationName: string) => {
   });
 };
 
-watch(activeTab, tab => {
-  if (tab === "items") {
-    router.push("/items/overview");
+const handleLocationListClick = (item: { data?: Report; title: string; subtitle?: string }, sectionKey: string) => {
+  if (sectionKey === "recentReports" && item.data) {
+    router.push(`/reports/${item.data.id}`);
   }
-});
+};
+
+const getLocationContentSections = (location: Location) => {
+  const sections = [];
+
+  const statsData = [];
+  const openCount = getOpenReportsCount(location);
+  const resolvedCount = getResolvedReportsCount(location);
+  const totalCount = getTotalReportsCount(location);
+
+  if (openCount > 0) {
+    statsData.push({
+      key: "open",
+      icon: alertCircleOutline,
+      color: "warning",
+      value: openCount,
+      label: "Open",
+    });
+  }
+
+  if (resolvedCount > 0) {
+    statsData.push({
+      key: "resolved",
+      icon: checkmarkOutline,
+      color: "success",
+      value: resolvedCount,
+      label: "Resolved",
+    });
+  }
+
+  statsData.push({
+    key: "total",
+    icon: documentTextOutline,
+    color: "primary",
+    value: totalCount,
+    label: "Total",
+  });
+
+  sections.push({
+    key: "reports",
+    title: "Reports at this Location",
+    icon: flagOutline,
+    type: "stats" as const,
+    data: statsData,
+  });
+
+  const recentReports = getRecentReportsForLocation(location);
+  if (recentReports.length > 0) {
+    sections.push({
+      key: "recentReports",
+      title: "Latest Reports",
+      type: "list" as const,
+      maxItems: 2,
+      data: recentReports.slice(0, 2).map(report => ({
+        title: report.items?.[0]?.name || `Report #${report.id}`,
+        subtitle: getTimeAgo(report.createdAt),
+        icon: getStatusIcon(report.status),
+        color: getStatusColor(report.status),
+        data: report,
+      })),
+    });
+  }
+
+  return sections;
+};
+
+const getLocationMetadata = (location: Location) => [
+  {
+    key: "created",
+    icon: calendarOutline,
+    value: `Created ${formatDate(location.createdAt)}`,
+  },
+];
+
+const getLocationActions = (location: Location) => [
+  {
+    key: "view",
+    label: "View Location",
+    icon: eyeOutline,
+    fill: "clear" as const,
+    handler: () => navigateToLocation(location.id),
+  },
+  {
+    key: "reports",
+    label: `Reports (${getReportsForLocation(location).length})`,
+    icon: flagOutline,
+    fill: "clear" as const,
+    handler: () => viewAllReportsAtLocation(location.name),
+  },
+  {
+    key: "edit",
+    label: "Edit",
+    icon: createOutline,
+    fill: "clear" as const,
+    handler: () => editLocation(location.id),
+  },
+];
 </script>
 
 <style scoped>
@@ -570,283 +457,10 @@ watch(activeTab, tab => {
   animation: fadeInUp 0.6s ease-out;
 }
 
-.location-card {
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  cursor: pointer;
-  overflow: hidden;
-  border: 1px solid var(--ion-color-light-shade);
-  animation: slideInUp 0.6s ease-out;
-  animation-delay: var(--animation-delay);
-  animation-fill-mode: backwards;
-}
-
-.location-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
-}
-
-.card-header {
-  background: linear-gradient(
-    135deg,
-    var(--ion-color-primary),
-    var(--ion-color-primary-shade)
-  );
-  color: white;
-  position: relative;
-  overflow: hidden;
-}
-
-.card-header::before {
-  content: "";
-  position: absolute;
-  top: -50%;
-  right: -50%;
-  width: 100%;
-  height: 200%;
-  background: linear-gradient(
-    45deg,
-    transparent,
-    rgba(255, 255, 255, 0.1),
-    transparent
-  );
-  transform: rotate(45deg);
-  transition: all 0.6s ease;
-}
-
-.location-card:hover .card-header::before {
-  transform: rotate(45deg) translateX(100%);
-}
-
-.header-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 8px;
-}
-
-.location-name {
-  color: white;
-  font-size: 1.2em;
-  font-weight: 600;
-  flex: 1;
-  margin: 0 12px 0 0;
-}
-
-.chip-icon {
-  font-size: 14px;
-  margin-right: 4px;
-}
-
-.location-details {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  color: rgba(255, 255, 255, 0.9);
-}
-
-.detail-item {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.9em;
-}
-
-.detail-icon {
-  font-size: 16px;
-  opacity: 0.8;
-}
-
-.card-content {
-  padding: 16px;
-}
-
-.reports-at-location {
-  margin-bottom: 16px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid var(--ion-color-light-shade);
-}
-
-.reports-at-location h4 {
-  color: var(--ion-color-dark);
-  margin: 0 0 12px 0;
-  font-size: 1em;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.section-icon {
-  font-size: 16px;
-  color: var(--ion-color-primary);
-}
-
-.no-reports {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: var(--ion-color-medium);
-  font-size: 0.9em;
-  padding: 8px 12px;
-  background: var(--ion-color-light-tint);
-  border-radius: 8px;
-}
-
-.no-reports-icon {
-  font-size: 16px;
-}
-
-.reports-stats {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 12px;
-}
-
-.report-chip {
-  --background: rgba(var(--ion-color-rgb), 0.1);
-  font-size: 0.8em;
-}
-
-.recent-reports {
-  margin-top: 12px;
-}
-
-.recent-reports-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-  font-size: 0.9em;
-  color: var(--ion-color-medium);
-  font-weight: 500;
-}
-
-.recent-reports-list {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.recent-report-item {
-  display: flex;
-  align-items: center;
-  padding: 8px;
-  background: var(--ion-color-light-tint);
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background 0.2s ease;
-}
-
-.recent-report-item:hover {
-  background: var(--ion-color-light-shade);
-}
-
-.report-info {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex: 1;
-}
-
-.report-icon {
-  font-size: 14px;
-}
-
-.report-text {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.report-title {
-  font-size: 0.85em;
-  font-weight: 500;
-  color: var(--ion-color-dark);
-}
-
-.report-time {
-  font-size: 0.75em;
-  color: var(--ion-color-medium);
-}
-
-.description {
-  margin-bottom: 16px;
-}
-
-.description h4 {
-  color: var(--ion-color-dark);
-  margin: 0 0 8px 0;
-  font-size: 1em;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.description p {
-  color: var(--ion-color-medium-shade);
-  line-height: 1.4;
-  margin: 0;
-  font-size: 0.9em;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.metadata {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-top: 16px;
-  padding-top: 16px;
-  border-top: 1px solid var(--ion-color-light-shade);
-}
-
-.metadata-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.metadata-icon {
-  font-size: 14px;
-  color: var(--ion-color-medium);
-  flex-shrink: 0;
-}
-
-.metadata-text {
-  font-size: 0.8em;
-  color: var(--ion-color-medium);
-}
-
-.card-actions {
-  display: flex;
-  justify-content: space-between;
-  padding: 8px 12px 12px;
-  border-top: 1px solid var(--ion-color-light-shade);
-  background: var(--ion-color-light-tint);
-  gap: 8px;
-}
-
 @keyframes fadeInUp {
   from {
     opacity: 0;
     transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes slideInUp {
-  from {
-    opacity: 0;
-    transform: translateY(40px);
   }
   to {
     opacity: 1;
@@ -869,16 +483,6 @@ watch(activeTab, tab => {
 
   .stat-item {
     justify-content: flex-start;
-  }
-
-  .card-actions {
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .header-content {
-    flex-direction: column;
-    gap: 8px;
   }
 }
 

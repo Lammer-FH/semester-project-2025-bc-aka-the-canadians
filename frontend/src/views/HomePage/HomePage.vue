@@ -6,7 +6,7 @@
           <ion-icon :icon="searchOutline" class="hero-icon"></ion-icon>
           <h1>Campus Lost & Found</h1>
           <p class="hero-subtitle">
-            Help others find their lost items or report a found item
+            Find your lost items or report items you've found on campus.
           </p>
           <div class="hero-buttons">
             <ion-button
@@ -67,8 +67,7 @@
             ></ion-icon>
             <h3>Pickup</h3>
             <p>
-              Found what you're looking for? Mark the item as claimed and close
-              the case.
+              Found what you're looking for? Claim the item and close the case.
             </p>
           </div>
         </div>
@@ -245,9 +244,9 @@ onMounted(async () => {
     stats.value = {
       totalReports: items.length,
       itemsReturned: items.filter(
-        (item) =>
+        item =>
           item.status?.toUpperCase() === "CLAIMED" ||
-          item.status?.toUpperCase() === "RETURNED",
+          item.status?.toUpperCase() === "RETURNED"
       ).length,
       activeUsers: Math.max(1, Math.floor(items.length * 0.7)),
       locations: locations.length,
@@ -392,14 +391,6 @@ const navigateToReport = () => {
   padding: 30px;
   text-align: center;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-  transition:
-    transform 0.3s ease,
-    box-shadow 0.3s ease;
-}
-
-.feature-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
 }
 
 .feature-icon {

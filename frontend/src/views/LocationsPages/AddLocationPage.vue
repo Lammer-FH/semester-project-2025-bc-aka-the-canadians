@@ -36,14 +36,12 @@
               'input-filled': location.name,
               'input-error': errors.name,
             }"
+            autocomplete="off"
+            autocorrect="off"
+            autocapitalize="words"
+            spellcheck="false"
             @ionBlur="validateField('name')"
-          >
-            <ion-icon
-              :icon="textOutline"
-              slot="start"
-              class="input-icon"
-            ></ion-icon>
-          </ion-input>
+          ></ion-input>
           <div v-if="errors.name" class="error-message">
             <ion-icon :icon="alertCircleOutline"></ion-icon>
             {{ errors.name }}
@@ -62,13 +60,10 @@
             }"
             :auto-grow="true"
             :rows="3"
-          >
-            <ion-icon
-              :icon="documentTextOutline"
-              slot="start"
-              class="input-icon"
-            ></ion-icon>
-          </ion-textarea>
+            autocomplete="off"
+            autocorrect="off"
+            spellcheck="false"
+          ></ion-textarea>
         </div>
 
         <div class="form-footer-info">
@@ -142,12 +137,10 @@ const rightFooterButton = computed(() => ({
 
 const completionProgress = computed(() => {
   const fields = ["name", "description"];
-  const filledFields = fields.filter(
-    field => {
-      const value = location.value[field as keyof typeof location.value];
-      return value ? value.trim() !== "" : false;
-    }
-  );
+  const filledFields = fields.filter(field => {
+    const value = location.value[field as keyof typeof location.value];
+    return value ? value.trim() !== "" : false;
+  });
   return filledFields.length / fields.length;
 });
 
@@ -273,20 +266,11 @@ watch(
   margin-bottom: 24px;
 }
 
-.input-row {
-  display: flex;
-  gap: 16px;
-}
-
-.half-width {
-  flex: 1;
-}
-
 .modern-input,
 .modern-textarea {
   --background: var(--ion-color-light-tint);
   --border-radius: 12px;
-  --padding-start: 48px;
+  --padding-start: 16px;
   --padding-end: 16px;
   --padding-top: 12px;
   --padding-bottom: 12px;
@@ -294,7 +278,6 @@ watch(
   border-radius: 12px;
   margin-bottom: 8px;
   transition: all 0.3s ease;
-  position: relative;
 }
 
 .modern-input.input-filled,
@@ -312,17 +295,6 @@ watch(
 
 .modern-textarea {
   min-height: 80px;
-  --padding-start: 48px;
-}
-
-.input-icon {
-  position: absolute;
-  left: 16px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--ion-color-primary);
-  font-size: 18px;
-  z-index: 10;
 }
 
 .error-message {

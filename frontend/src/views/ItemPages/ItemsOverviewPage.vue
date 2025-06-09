@@ -73,93 +73,20 @@
       </div>
 
       <div v-else class="items-grid">
-        <ion-card
-          v-for="item in filteredItems"
+        <UniversalCard
+          v-for="(item, index) in filteredItems"
           :key="item.id"
-          class="item-card"
-          @click="navigateToItem(item.id)"
-        >
-          <div class="card-header">
-            <div class="header-content">
-              <h3 class="item-title">{{ item.name }}</h3>
-              <div class="status-chip">
-                <ion-icon
-                  :icon="getClaimedStatusIcon(item.claimedByUserId)"
-                  class="chip-icon"
-                ></ion-icon>
-                <span>{{
-                  getClaimedStatusText(item.claimedByUserId !== null)
-                }}</span>
-              </div>
-            </div>
-          </div>
-
-          <ion-card-content class="card-content">
-            <div v-if="item.description" class="description">
-              <p>{{ truncateDescription(item.description) }}</p>
-            </div>
-
-            <div class="item-details">
-              <div class="detail-item">
-                <ion-icon
-                  :icon="documentTextOutline"
-                  class="detail-icon"
-                ></ion-icon>
-                <span>Report #{{ item.reportId }}</span>
-              </div>
-              <div v-if="item.claimedByUser" class="detail-item">
-                <ion-icon :icon="personOutline" class="detail-icon"></ion-icon>
-                <span
-                  >Claimed by {{ item.claimedByUser.name || "Unknown" }}</span
-                >
-              </div>
-              <div class="detail-item">
-                <ion-icon :icon="timeOutline" class="detail-icon"></ion-icon>
-                <span>{{ formatDate(item.createdAt) }}</span>
-              </div>
-            </div>
-
-            <div class="metadata">
-              <div class="metadata-item">
-                <ion-icon
-                  :icon="calendarOutline"
-                  class="metadata-icon"
-                ></ion-icon>
-                <span class="metadata-text">{{
-                  getTimeAgo(item.createdAt)
-                }}</span>
-              </div>
-            </div>
-          </ion-card-content>
-
-          <div class="card-actions">
-            <ion-button
-              fill="clear"
-              size="small"
-              @click.stop="editItem(item.id)"
-            >
-              <ion-icon :icon="createOutline" slot="icon-only"></ion-icon>
-            </ion-button>
-            <ion-button
-              v-if="!item.claimedByUserId"
-              fill="solid"
-              size="small"
-              color="success"
-              @click.stop="showClaimModal(item)"
-            >
-              <ion-icon :icon="handRightOutline" slot="start"></ion-icon>
-              Claim Item
-            </ion-button>
-            <ion-button
-              fill="clear"
-              size="small"
-              color="primary"
-              @click.stop="navigateToItem(item.id)"
-            >
-              View Details
-            </ion-button>
-          </div>
-        </ion-card>
+          :title="item.name"
+          :description="item.description"
+          :status="item.claimedByUserId ? 'claimed' : 'unclaimed'"
+          :details="getItemDetails(item)"
+          :metadata="getItemMetadata(item)"
+          :actions="getItemActions(item)"
+          card-type="item"
+          :animation-delay="index * 0.1"
+          @card-click="navigateToItem(item.id)"
+          @action-click="handleItemAction"
+        />
       </div>
 
       <ion-modal :is-open="showClaimModalOpen" @did-dismiss="closeClaimModal">
@@ -252,8 +179,6 @@
 import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import {
-  IonCard,
-  IonCardContent,
   IonButton,
   IonIcon,
   IonSearchbar,
@@ -286,6 +211,7 @@ import { Item } from "@/models/item";
 import TemplatePage from "@/components/TemplatePage.vue";
 import NavigationTabs from "@/components/NavigationTabs.vue";
 import Filter from "@/components/Filter.vue";
+import UniversalCard from "@/components/OverviewCard.vue";
 
 const router = useRouter();
 const itemStore = useItemStore();
@@ -356,6 +282,66 @@ const unclaimedItemsCount = computed(
   () => items.value.filter(item => item.claimedByUserId === null).length
 );
 
+const getItemDetails = (item: Item) => [
+  {
+    key: "report",
+    icon: documentTextOutline,
+    value: `Report #${item.reportId}`,
+  },
+  ...(item.claimedByUser
+    ? [
+        {
+          key: "claimedBy",
+          icon: personOutline,
+          value: `Claimed by ${item.claimedByUser.name || "Unknown"}`,
+        },
+      ]
+    : []),
+  {
+    key: "created",
+    icon: timeOutline,
+    value: formatDate(item.createdAt),
+  },
+];
+
+const getItemMetadata = (item: Item) => [
+  {
+    key: "timeAgo",
+    icon: calendarOutline,
+    value: getTimeAgo(item.createdAt),
+  },
+];
+
+const getItemActions = (item: Item) => [
+  {
+    key: "edit",
+    label: "",
+    icon: createOutline,
+    iconSlot: "icon-only" as const,
+    fill: "clear" as const,
+    handler: () => editItem(item.id),
+  },
+  ...(item.claimedByUserId
+    ? []
+    : [
+        {
+          key: "claim",
+          label: "Claim Item",
+          icon: handRightOutline,
+          fill: "solid" as const,
+          color: "success",
+          handler: () => showClaimModal(item),
+        },
+      ]),
+  {
+    key: "view",
+    label: "View Details",
+    fill: "clear" as const,
+    color: "primary",
+    handler: () => navigateToItem(item.id),
+  },
+];
+
 const updateFilter = (key: string, value: any): void => {
   filters.value[key as keyof typeof filters.value] = value;
 };
@@ -367,37 +353,6 @@ const clearFilter = (key: string): void => {
 
 const applyFilters = (): void => {
   console.log("Filters applied");
-};
-
-const showClaimModalOpen = ref(false);
-const selectedItemToClaim = ref<Item | null>(null);
-const isSubmittingClaim = ref(false);
-
-const claimData = ref({
-  description: "",
-  hasProof: false,
-});
-
-const claimErrors = ref({
-  description: "",
-});
-
-const isClaimFormValid = computed(() => {
-  return (
-    claimData.value.description.trim().length >= 10 &&
-    claimData.value.hasProof &&
-    !Object.values(claimErrors.value).some(error => error)
-  );
-});
-
-const getClaimedStatusText = (isClaimed: boolean): string => {
-  return isClaimed ? "Claimed" : "Unclaimed";
-};
-
-const getClaimedStatusIcon = (
-  claimedByUserId: number | null | undefined
-): string => {
-  return claimedByUserId ? checkmarkCircleOutline : searchOutline;
 };
 
 const getTimeAgo = (dateString: string): string => {
@@ -427,20 +382,16 @@ const formatDate = (dateString: string): string => {
   });
 };
 
-const truncateDescription = (
-  description: string,
-  maxLength: number = 120
-): string => {
-  if (description.length <= maxLength) return description;
-  return description.substring(0, maxLength) + "...";
-};
-
 const navigateToItem = (itemId: number): void => {
   router.push(`/items/${itemId}`);
 };
 
 const editItem = (itemId: number): void => {
   router.push(`/items/${itemId}/edit`);
+};
+
+const handleItemAction = (action: any): void => {
+  console.log("Item action clicked:", action.key);
 };
 
 const loadItems = async (): Promise<void> => {
@@ -450,6 +401,27 @@ const loadItems = async (): Promise<void> => {
     console.error("Error loading items:", error);
   }
 };
+
+const showClaimModalOpen = ref(false);
+const selectedItemToClaim = ref<Item | null>(null);
+const isSubmittingClaim = ref(false);
+
+const claimData = ref({
+  description: "",
+  hasProof: false,
+});
+
+const claimErrors = ref({
+  description: "",
+});
+
+const isClaimFormValid = computed(() => {
+  return (
+    claimData.value.description.trim().length >= 10 &&
+    claimData.value.hasProof &&
+    !Object.values(claimErrors.value).some(error => error)
+  );
+});
 
 const showClaimModal = (item: Item): void => {
   selectedItemToClaim.value = item;
@@ -590,224 +562,6 @@ onMounted(async () => {
   gap: 16px;
 }
 
-.item-card {
-  cursor: pointer;
-  transition: all 0.2s ease;
-  border-radius: 16px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.item-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-}
-
-.card-header {
-  padding: 16px;
-  background: linear-gradient(
-    135deg,
-    var(--ion-color-primary) 0%,
-    var(--ion-color-primary-shade) 100%
-  );
-  color: white;
-  position: relative;
-  overflow: hidden;
-}
-
-.header-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-}
-
-.item-title {
-  margin: 0;
-  font-size: 18px;
-  font-weight: 600;
-}
-
-.status-chip {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  background: rgba(255, 255, 255, 0.2);
-  padding: 4px 8px;
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: 500;
-}
-
-.chip-icon {
-  font-size: 16px;
-}
-
-.card-content {
-  padding: 16px;
-}
-
-.description {
-  margin-bottom: 16px;
-}
-
-.description p {
-  margin: 0;
-  color: var(--ion-color-medium);
-  font-size: 14px;
-  line-height: 1.4;
-}
-
-.item-details {
-  margin-bottom: 16px;
-}
-
-.detail-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 8px;
-  font-size: 14px;
-}
-
-.detail-icon {
-  font-size: 16px;
-  color: var(--ion-color-medium);
-}
-
-.metadata {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 12px;
-  color: var(--ion-color-medium);
-  border-top: 1px solid var(--ion-color-light);
-  padding-top: 12px;
-}
-
-.metadata-item {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.metadata-icon {
-  font-size: 14px;
-}
-
-.metadata-text {
-  font-size: 12px;
-}
-
-.card-actions {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0 16px 16px;
-  gap: 8px;
-}
-
-/* Claim Modal Styles */
-.claim-modal-content {
-  padding: 16px;
-}
-
-.claim-form {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
-
-.item-info-section h2 {
-  margin: 0 0 12px 0;
-  color: var(--ion-color-dark);
-  font-weight: 600;
-}
-
-.item-description {
-  margin: 0 0 16px 0;
-  color: var(--ion-color-medium);
-  font-size: 14px;
-  line-height: 1.4;
-}
-
-.item-details {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.detail-row {
-  font-size: 14px;
-  color: var(--ion-color-medium);
-}
-
-.claim-form-section h3 {
-  margin: 0 0 8px 0;
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--ion-color-dark);
-}
-
-.form-description {
-  margin: 0 0 16px 0;
-  color: var(--ion-color-medium);
-  font-size: 14px;
-}
-
-.input-group {
-  margin-bottom: 16px;
-}
-
-.custom-textarea {
-  --background: var(--ion-color-light-tint);
-  --border-radius: 12px;
-  border: 2px solid var(--ion-color-light-shade);
-  border-radius: 12px;
-  transition: all 0.3s ease;
-}
-
-.custom-textarea.textarea-filled {
-  border-color: var(--ion-color-primary-tint);
-  --background: rgba(var(--ion-color-primary-rgb), 0.05);
-}
-
-.custom-textarea.textarea-error {
-  border-color: var(--ion-color-danger);
-  --background: rgba(var(--ion-color-danger-rgb), 0.05);
-}
-
-.error-message {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  color: var(--ion-color-danger);
-  font-size: 0.85em;
-  margin-top: 4px;
-  padding-left: 4px;
-}
-
-.verification-section h4 {
-  margin: 0 0 12px 0;
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--ion-color-dark);
-}
-
-.checklist {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.modal-actions {
-  display: flex;
-  gap: 12px;
-}
-
-.spinner {
-  margin-right: 8px;
-}
-
 @media (max-width: 768px) {
   .items-grid {
     grid-template-columns: 1fr;
@@ -825,11 +579,6 @@ onMounted(async () => {
   .stats-summary {
     flex-direction: column;
     gap: 12px;
-  }
-
-  .card-actions {
-    flex-direction: column;
-    gap: 8px;
   }
 }
 

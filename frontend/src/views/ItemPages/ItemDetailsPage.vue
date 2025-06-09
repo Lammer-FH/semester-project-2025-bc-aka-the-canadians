@@ -44,10 +44,6 @@
               </div>
             </div>
             <div class="header-right">
-              <div class="view-count">
-                <ion-icon :icon="eyeOutline" class="view-icon"></ion-icon>
-                <span>{{ viewCount }} Views</span>
-              </div>
               <div class="days-since">
                 <ion-icon :icon="timeOutline" class="time-icon"></ion-icon>
                 <span>{{ daysSinceReported }} Days Ago</span>
@@ -55,8 +51,6 @@
             </div>
           </div>
         </div>
-
-        <!-- Image functionality removed - not available in current schema -->
 
         <div class="info-card main-info">
           <div class="card-header">
@@ -216,71 +210,12 @@
                 }}</span>
               </div>
             </div>
-            <!-- Status update timeline removed - updatedAt not available in schema -->
             <div v-if="item.claimedByUserId" class="timeline-item">
               <div class="timeline-marker claimed"></div>
               <div class="timeline-content">
                 <h4>Pickup Requested</h4>
                 <p>Waiting for confirmation</p>
               </div>
-            </div>
-          </div>
-        </div>
-
-        <div v-if="showStatistics" class="info-card stats-info">
-          <h3>
-            <ion-icon :icon="statsChartOutline" class="section-icon"></ion-icon>
-            Statistics
-          </h3>
-          <div class="stats-grid">
-            <div class="stat-item">
-              <div class="stat-number">{{ viewCount }}</div>
-              <div class="stat-label">Views</div>
-            </div>
-            <div class="stat-item">
-              <div class="stat-number">{{ daysSinceReported }}</div>
-              <div class="stat-label">Days Old</div>
-            </div>
-            <div class="stat-item">
-              <div class="stat-number">{{ getLocationReportsCount() }}</div>
-              <div class="stat-label">Reports at Location</div>
-            </div>
-          </div>
-        </div>
-
-        <div v-if="relatedReports.length > 0" class="info-card related-reports">
-          <h3>
-            <ion-icon :icon="layersOutline" class="section-icon"></ion-icon>
-            Similar Reports
-          </h3>
-          <div class="related-list">
-            <div
-              v-for="related in relatedReports"
-              :key="related.id"
-              class="related-item"
-              @click="navigateToReport(related.id)"
-            >
-              <div class="related-content">
-                <ion-chip
-                  :color="getStatusColor(related.report?.status ?? false)"
-                  class="related-status"
-                >
-                  <ion-icon
-                    :icon="getStatusIcon(related.report?.status ?? false)"
-                    class="chip-icon"
-                  ></ion-icon>
-                  {{ getStatusText(related.report?.status ?? false) }}
-                </ion-chip>
-                <h4>{{ related.name || "Unknown Item" }}</h4>
-                <p>
-                  {{ related.report?.location?.name || "Unknown Location" }} •
-                  {{ getTimeAgo(related.createdAt || "") }}
-                </p>
-              </div>
-              <ion-icon
-                :icon="chevronForwardOutline"
-                class="chevron-icon"
-              ></ion-icon>
             </div>
           </div>
         </div>
@@ -318,16 +253,6 @@
             <ion-button
               expand="block"
               fill="outline"
-              color="medium"
-              @click="toggleStatistics"
-            >
-              <ion-icon :icon="statsChartOutline" slot="start"></ion-icon>
-              {{ showStatistics ? "Hide Statistics" : "Show Statistics" }}
-            </ion-button>
-
-            <ion-button
-              expand="block"
-              fill="outline"
               color="danger"
               @click="showDeleteConfirmation"
             >
@@ -338,8 +263,6 @@
         </div>
       </div>
     </div>
-
-    <!-- Image modal removed - imageUrl not available in schema -->
 
     <ion-alert
       :is-open="showClaimAlert"
@@ -373,7 +296,6 @@ import {
   timeOutline,
   shareOutline,
   trashOutline,
-  statsChartOutline,
   eyeOutline,
   flagOutline,
   handRightOutline,
@@ -381,8 +303,6 @@ import {
   megaphoneOutline,
   checkmarkCircleOutline,
   personOutline,
-  layersOutline,
-  chevronForwardOutline,
 } from "ionicons/icons";
 import { ref, computed, onMounted, nextTick } from "vue";
 import { useRouter, useRoute } from "vue-router";
@@ -394,26 +314,17 @@ const route = useRoute();
 const itemStore = useItemStore();
 
 const item = ref<Item | null>(null);
-const relatedReports = ref<Item[]>([]);
-// Image functionality removed - not available in current schema
-const showDeleteAlert = ref(false);
-const showClaimAlert = ref(false);
-const showStatistics = ref(false);
-const viewCount = ref(0);
 const isLoading = ref(false);
 const error = ref<string | null>(null);
+const showClaimAlert = ref(false);
+const showDeleteAlert = ref(false);
 
 const daysSinceReported = computed(() => {
-  try {
-    if (!item.value?.createdAt) return 0;
-    const reportDate = new Date(item.value.createdAt);
-    const now = new Date();
-    const diffTime = Math.abs(now.getTime() - reportDate.getTime());
-    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  } catch (error) {
-    console.error("Error calculating days since reported:", error);
-    return 0;
-  }
+  if (!item.value?.createdAt) return 0;
+  const reportDate = new Date(item.value.createdAt);
+  const now = new Date();
+  const diffTime = Math.abs(now.getTime() - reportDate.getTime());
+  return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 });
 
 const leftFooterButton = computed(() => ({
@@ -442,27 +353,20 @@ const deleteAlertButtons = [
 ];
 
 const claimAlertMessage = computed(() => {
-  try {
-    if (!item.value) return "Loading...";
+  if (!item.value) return "Loading...";
 
-    return `
-            <div style="text-align: left; padding: 8px;">
-                <p><strong>Item:</strong> ${item.value.name || "Unknown"}</p>
-                <p><strong>Location:</strong> ${
-                  item.value.report?.location?.name || "Unknown"
-                }</p>
-                <br>
-                <p>Do you want to request this item for pickup?</p>
-                <p style="color: #666; font-size: 0.9em;">
-                    The finder will be notified and can contact you
-                    to coordinate the pickup.
-                </p>
-            </div>
-        `;
-  } catch (error) {
-    console.error("Error generating claim alert message:", error);
-    return "Error loading message.";
-  }
+  return `
+    <div style="text-align: left; padding: 8px;">
+        <p><strong>Item:</strong> ${item.value.name || "Unknown"}</p>
+        <p><strong>Location:</strong> ${item.value.locationName || "Unknown"}</p>
+        <br>
+        <p>Do you want to request this item for pickup?</p>
+        <p style="color: #666; font-size: 0.9em;">
+            The finder will be notified and can contact you
+            to coordinate the pickup.
+        </p>
+    </div>
+  `;
 });
 
 const claimAlertButtons = [
@@ -494,8 +398,6 @@ const loadItem = async () => {
     if (fetchedItem) {
       await nextTick();
       item.value = { ...fetchedItem };
-      await loadRelatedReports();
-      await loadItemStatistics();
     } else {
       throw new Error("Item not found");
     }
@@ -510,212 +412,87 @@ const loadItem = async () => {
   }
 };
 
-const loadRelatedReports = async () => {
-  if (!item.value) return;
-
-  try {
-    await itemStore.fetchItems();
-    const allItems = itemStore.getItems || [];
-
-    relatedReports.value = allItems
-      .filter(
-        i =>
-          i.id !== item.value!.id &&
-          i.report?.locationId === item.value!.report?.locationId &&
-          !i.claimedByUserId
-      )
-      .slice(0, 3);
-  } catch (error) {
-    console.error("Error loading related reports:", error);
-    relatedReports.value = [];
-  }
-};
-
-const loadItemStatistics = async () => {
-  try {
-    viewCount.value = Math.floor(Math.random() * 50) + 5;
-  } catch (error) {
-    console.error("Error loading statistics:", error);
-    viewCount.value = 0;
-  }
-};
-
 const getStatusColor = (status: boolean): string => {
-  try {
-    return status ? "success" : "warning";
-  } catch (error) {
-    console.error("Error getting status color:", error);
-    return "primary";
-  }
+  return status ? "success" : "warning";
 };
 
 const getStatusIcon = (status: boolean): string => {
-  try {
-    return status ? eyeOutline : searchOutline;
-  } catch (error) {
-    console.error("Error getting status icon:", error);
-    return flagOutline;
-  }
+  return status ? eyeOutline : searchOutline;
 };
 
 const getStatusText = (status: boolean): string => {
-  try {
-    return status ? "Found" : "Lost";
-  } catch (error) {
-    console.error("Error getting status text:", error);
-    return "Unknown";
-  }
+  return status ? "Found" : "Lost";
 };
 
 const getReportType = (status: boolean): string => {
-  try {
-    return status ? "Found Report" : "Lost Report";
-  } catch (error) {
-    console.error("Error getting report type:", error);
-    return "Report";
-  }
+  return status ? "Found Report" : "Lost Report";
 };
 
 const formatDate = (dateString: string) => {
-  try {
-    if (!dateString) return "Unknown Date";
-    return new Date(dateString).toLocaleDateString("en-US", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  } catch (error) {
-    console.error("Error formatting date:", error);
-    return "Invalid Date";
-  }
+  if (!dateString) return "Unknown Date";
+  return new Date(dateString).toLocaleDateString("en-US", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 };
 
 const formatDetailedDate = (dateString: string) => {
-  try {
-    if (!dateString) return "Unknown Date";
-    return new Date(dateString).toLocaleDateString("en-US", {
-      weekday: "long",
-      day: "2-digit",
-      month: "long",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  } catch (error) {
-    console.error("Error formatting detailed date:", error);
-    return "Invalid Date";
-  }
-};
-
-const getTimeAgo = (dateString: string) => {
-  try {
-    if (!dateString) return "Unknown";
-
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffInHours = Math.floor(
-      (now.getTime() - date.getTime()) / (1000 * 60 * 60)
-    );
-
-    if (diffInHours < 1) return "A few minutes ago";
-    if (diffInHours < 24) return `${diffInHours} hours ago`;
-
-    const diffInDays = Math.floor(diffInHours / 24);
-    if (diffInDays < 7) return `${diffInDays} days ago`;
-
-    return date.toLocaleDateString("en-US");
-  } catch (error) {
-    console.error("Error getting time ago:", error);
-    return "Unknown";
-  }
+  if (!dateString) return "Unknown Date";
+  return new Date(dateString).toLocaleDateString("en-US", {
+    weekday: "long",
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 };
 
 const getCleanDescription = (description: string): string => {
-  try {
-    if (!description) return "No description available.";
-    const parts = description.split("--- Report Information ---");
-    return parts[0]?.trim() || "No description available.";
-  } catch (error) {
-    console.error("Error getting clean description:", error);
-    return "No description available.";
-  }
+  if (!description) return "No description available.";
+  const parts = description.split("--- Report Information ---");
+  return parts[0]?.trim() || "No description available.";
 };
 
 const getReporterInfo = (
   description: string
 ): Record<string, string> | null => {
-  try {
-    if (!description) return null;
+  if (!description) return null;
 
-    const metadataMatch = description.match(
-      /--- Report Information ---([\s\S]*?)(?:--- |$)/
-    );
-    if (!metadataMatch) return null;
+  const metadataMatch = description.match(
+    /--- Report Information ---([\s\S]*?)(?:--- |$)/
+  );
+  if (!metadataMatch) return null;
 
-    const metadata = metadataMatch[1];
-    const info: Record<string, string> = {};
+  const metadata = metadataMatch[1];
+  const info: Record<string, string> = {};
 
-    const lines = metadata.split("\n").filter(line => line.trim());
-    lines.forEach(line => {
-      const [key, ...valueParts] = line.split(":");
-      if (key && valueParts.length > 0) {
-        info[key.trim()] = valueParts.join(":").trim();
-      }
-    });
+  const lines = metadata.split("\n").filter(line => line.trim());
+  lines.forEach(line => {
+    const [key, ...valueParts] = line.split(":");
+    if (key && valueParts.length > 0) {
+      info[key.trim()] = valueParts.join(":").trim();
+    }
+  });
 
-    return Object.keys(info).length > 0 ? info : null;
-  } catch (error) {
-    console.error("Error getting reporter info:", error);
-    return null;
-  }
-};
-
-const getLocationReportsCount = (): number => {
-  try {
-    return relatedReports.value.length + 1; // +1 for current item
-  } catch (error) {
-    console.error("Error getting location reports count:", error);
-    return 1;
-  }
-};
-
-const toggleStatistics = () => {
-  try {
-    showStatistics.value = !showStatistics.value;
-  } catch (error) {
-    console.error("Error toggling statistics:", error);
-  }
+  return Object.keys(info).length > 0 ? info : null;
 };
 
 const handleBack = () => {
-  try {
-    router.back();
-  } catch (error) {
-    console.error("Error navigating back:", error);
-    router.push("/items/overview");
-  }
+  router.back();
 };
 
 const handleEdit = () => {
-  try {
-    if (item.value?.id) {
-      router.push(`/items/${item.value.id}/edit`);
-    }
-  } catch (error) {
-    console.error("Error navigating to edit:", error);
+  if (item.value?.id) {
+    router.push(`/items/${item.value.id}/edit`);
   }
 };
 
-// Image modal functions removed - not available in current schema
-
 const showDeleteConfirmation = () => {
-  try {
-    showDeleteAlert.value = true;
-  } catch (error) {
-    console.error("Error showing delete confirmation:", error);
-  }
+  showDeleteAlert.value = true;
 };
 
 const confirmDelete = async () => {
@@ -732,11 +509,7 @@ const confirmDelete = async () => {
 };
 
 const showClaimDialog = () => {
-  try {
-    showClaimAlert.value = true;
-  } catch (error) {
-    console.error("Error showing claim dialog:", error);
-  }
+  showClaimAlert.value = true;
 };
 
 const processClaim = async () => {
@@ -768,19 +541,15 @@ const processClaim = async () => {
 };
 
 const reportFound = () => {
-  try {
-    if (!item.value) return;
-    router.push({
-      path: "/items/report",
-      query: {
-        type: "FOUND",
-        name: item.value.name || "",
-        location: item.value.report?.location?.name || "",
-      },
-    });
-  } catch (error) {
-    console.error("Error navigating to create found report:", error);
-  }
+  if (!item.value) return;
+  router.push({
+    path: "/items/report",
+    query: {
+      type: "FOUND",
+      name: item.value.name || "",
+      location: item.value.locationName || "",
+    },
+  });
 };
 
 const shareItem = async () => {
@@ -788,10 +557,10 @@ const shareItem = async () => {
 
   try {
     const shareData = {
-      title: `Lost & Found: ${item.value.name || "Unbekannt"}`,
-      text: `${getStatusText(item.value.report?.status ?? false)}: ${
+      title: `Lost & Found: ${item.value.name || "Unknown"}`,
+      text: `${getStatusText(item.value.reportStatus ?? false)}: ${
         item.value.name || "Unknown"
-      } at ${item.value.report?.location?.name || "Unknown"}`,
+      } at ${item.value.locationName || "Unknown"}`,
       url: window.location.href,
     };
 
@@ -807,32 +576,14 @@ const shareItem = async () => {
 };
 
 const viewLocationReports = () => {
-  try {
-    router.push({
-      path: "/items/overview",
-      query: { location: item.value?.locationName || "" },
-    });
-  } catch (error) {
-    console.error("Error navigating to location reports:", error);
-  }
-};
-
-const navigateToReport = (_reportId: number) => {
-  try {
-    if (_reportId) {
-      router.push(`/items/${_reportId}`);
-    }
-  } catch (error) {
-    console.error("Error navigating to report:", error);
-  }
+  router.push({
+    path: "/items/overview",
+    query: { location: item.value?.locationName || "" },
+  });
 };
 
 onMounted(async () => {
-  try {
-    await loadItem();
-  } catch (error) {
-    console.error("Error in onMounted:", error);
-  }
+  await loadItem();
 });
 </script>
 
@@ -903,9 +654,24 @@ onMounted(async () => {
 }
 
 .status-chip {
-  --background: rgba(255, 255, 255, 0.2);
-  --color: white;
+  --background: rgba(255, 255, 255, 0.95);
+  --color: var(--ion-color-dark);
   margin-bottom: 8px;
+  font-weight: 600;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.status-chip[color="success"] {
+  --background: var(--ion-color-success);
+  --color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.status-chip[color="warning"] {
+  --background: var(--ion-color-warning);
+  --color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .chip-icon {
@@ -938,7 +704,6 @@ onMounted(async () => {
   opacity: 0.9;
 }
 
-.view-count,
 .days-since {
   display: flex;
   align-items: center;
@@ -946,7 +711,6 @@ onMounted(async () => {
   justify-content: flex-end;
 }
 
-.view-icon,
 .time-icon {
   font-size: 14px;
 }
@@ -1006,6 +770,15 @@ onMounted(async () => {
     rgba(var(--ion-color-warning-rgb), 0.1)
   );
   border-left-color: var(--ion-color-warning);
+}
+
+.claimed-banner {
+  background: linear-gradient(
+    135deg,
+    var(--ion-color-light),
+    rgba(var(--ion-color-medium-rgb), 0.1)
+  );
+  border-left-color: var(--ion-color-medium);
 }
 
 .banner-content {
@@ -1203,79 +976,14 @@ onMounted(async () => {
   font-size: 0.9em;
 }
 
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-}
-
-.stat-item {
-  text-align: center;
-  background: var(--ion-color-light-tint);
-  padding: 16px;
-  border-radius: 8px;
-}
-
-.stat-number {
-  font-size: 1.8em;
-  font-weight: 700;
+.timeline-type {
   color: var(--ion-color-primary);
-  margin-bottom: 4px;
-}
-
-.stat-label {
-  color: var(--ion-color-medium);
-  font-size: 0.85em;
-  font-weight: 500;
-}
-
-.related-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.related-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px;
-  background: var(--ion-color-light-tint);
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.related-item:hover {
-  background: var(--ion-color-light-shade);
-  transform: translateX(4px);
-}
-
-.related-content {
-  flex: 1;
-}
-
-.related-status {
   font-size: 0.8em;
-  margin-bottom: 4px;
-}
-
-.related-content h4 {
-  color: var(--ion-color-dark);
-  margin: 0 0 4px 0;
-  font-weight: 600;
-  font-size: 0.95em;
-}
-
-.related-content p {
-  color: var(--ion-color-medium);
-  margin: 0;
-  font-size: 0.85em;
-}
-
-.chevron-icon {
-  color: var(--ion-color-medium);
-  font-size: 16px;
+  font-weight: 500;
+  background: var(--ion-color-primary-tint);
+  padding: 2px 8px;
+  border-radius: 12px;
+  display: inline-block;
 }
 
 .action-buttons {
@@ -1318,23 +1026,8 @@ onMounted(async () => {
     text-align: left;
   }
 
-  .view-count,
   .days-since {
     justify-content: flex-start;
-  }
-
-  .stats-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .secondary-actions {
-    grid-template-columns: 1fr;
-  }
-
-  .banner-content {
-    flex-direction: column;
-    gap: 12px;
-    text-align: center;
   }
 }
 
@@ -1366,7 +1059,10 @@ onMounted(async () => {
 
 @media (min-width: 768px) {
   .secondary-actions {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(
+      2,
+      1fr
+    ); /* Changed from 3 to 2 since there are only 2 buttons */
   }
 }
 </style>

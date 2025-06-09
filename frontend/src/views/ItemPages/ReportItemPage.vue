@@ -817,15 +817,11 @@ watch(
 }
 
 .tips-section {
-  background: linear-gradient(
-    135deg,
-    var(--ion-color-primary-tint),
-    rgba(var(--ion-color-primary-rgb), 0.1)
-  );
+  background: var(--ion-color-light-tint);
   border-radius: 12px;
   padding: 20px;
   margin-top: 32px;
-  border-left: 4px solid var(--ion-color-primary);
+  border: 1px solid var(--ion-color-light-shade);
 }
 
 .tips-title {
@@ -848,13 +844,23 @@ watch(
   display: flex;
   align-items: flex-start;
   gap: 12px;
+  background: white;
+  padding: 16px;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--ion-color-light);
 }
 
 .tip-text p {
   margin: 0;
-  color: var(--ion-color-medium-shade);
+  color: var(--ion-color-dark);
   font-size: 0.9em;
   line-height: 1.4;
+}
+
+.tip-text strong {
+  color: var(--ion-color-dark-shade);
+  font-weight: 600;
 }
 
 @keyframes slideInUp {

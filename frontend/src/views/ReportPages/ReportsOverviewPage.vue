@@ -50,14 +50,6 @@
           <ion-label>{{ selectedLocation }}</ion-label>
           <ion-icon :icon="closeOutline"></ion-icon>
         </ion-chip>
-        <ion-button
-          fill="clear"
-          size="small"
-          class="clear-all-button"
-          @click="clearAllFilters"
-        >
-          Clear All Filters
-        </ion-button>
       </div>
 
       <div class="stats-summary">
@@ -70,8 +62,8 @@
           <span>{{ activeReportsCount }} Active</span>
         </div>
         <div class="stat-item">
-          <ion-icon :icon="closeCircleOutline" color="medium"></ion-icon>
-          <span>{{ closedReportsCount }} Closed</span>
+          <ion-icon :icon="checkmarkCircleOutline" color="medium"></ion-icon>
+          <span>{{ resolvedReportsCount }} Resolved</span>
         </div>
       </div>
 
@@ -112,10 +104,10 @@
           class="report-card"
           @click="navigateToReport(report.id)"
         >
-          <div class="card-header" :class="getStatusClass(report.status)">
+          <div class="card-header">
             <div class="header-content">
               <h3 class="report-title">Report #{{ report.id }}</h3>
-              <div class="status-chip">
+              <div class="status-chip" :class="getStatusClass(report.status)">
                 <ion-icon
                   :icon="getStatusIcon(report.status)"
                   class="chip-icon"
@@ -200,11 +192,19 @@
       </div>
 
       <!-- Filter Modal -->
-      <ion-modal :is-open="showFilterModal" @did-dismiss="toggleFilterModal">
+      <ion-modal
+        :is-open="showFilterModal"
+        @didDismiss="handleFilterModalDismiss"
+        :backdrop-dismiss="true"
+      >
         <ion-header>
           <ion-toolbar>
             <ion-title>Filter Reports</ion-title>
-            <ion-button slot="end" fill="clear" @click="toggleFilterModal">
+            <ion-button
+              slot="end"
+              fill="clear"
+              @click="handleFilterModalDismiss"
+            >
               <ion-icon :icon="closeOutline"></ion-icon>
             </ion-button>
           </ion-toolbar>
@@ -213,24 +213,15 @@
           <div class="filter-section">
             <h3>Status</h3>
             <ion-radio-group v-model="selectedStatus">
-              <ion-item>
-                <ion-radio slot="start" :value="null"></ion-radio>
-                <ion-label>All Reports</ion-label>
-              </ion-item>
-              <ion-item>
-                <ion-radio
-                  slot="start"
-                  :value="ReportStatusEnum.OPEN"
-                ></ion-radio>
-                <ion-label>Active Reports</ion-label>
-              </ion-item>
-              <ion-item>
-                <ion-radio
-                  slot="start"
-                  :value="ReportStatusEnum.CLOSED"
-                ></ion-radio>
-                <ion-label>Closed Reports</ion-label>
-              </ion-item>
+              <div class="radio-item">
+                <ion-radio :value="null">All Reports</ion-radio>
+              </div>
+              <div class="radio-item">
+                <ion-radio :value="ReportStatusEnum.OPEN">Open Reports</ion-radio>
+              </div>
+              <div class="radio-item">
+                <ion-radio :value="ReportStatusEnum.RESOLVED">Resolved Reports</ion-radio>
+              </div>
             </ion-radio-group>
           </div>
 
@@ -239,6 +230,8 @@
             <ion-select
               v-model="selectedLocation"
               placeholder="Select Location"
+              interface="action-sheet"
+              class="custom-select"
             >
               <ion-select-option value="">All Locations</ion-select-option>
               <ion-select-option
@@ -252,12 +245,9 @@
           </div>
 
           <div class="filter-actions">
-            <ion-button expand="block" @click="applyFilters"
-              >Apply Filters</ion-button
-            >
-            <ion-button expand="block" fill="clear" @click="clearAllFilters"
-              >Clear All</ion-button
-            >
+            <ion-button expand="block" @click="applyFilters">
+              Apply Filters
+            </ion-button>
           </div>
         </ion-content>
       </ion-modal>
@@ -285,7 +275,6 @@ import {
   IonContent,
   IonRadioGroup,
   IonRadio,
-  IonItem,
   IonSelect,
   IonSelectOption,
 } from "@ionic/vue";
@@ -296,7 +285,6 @@ import {
   closeOutline,
   documentTextOutline,
   checkmarkCircleOutline,
-  closeCircleOutline,
   alertCircleOutline,
   refreshOutline,
   documentOutline,
@@ -312,11 +300,15 @@ const ReportStatusEnum = ReportStatus;
 import TemplatePage from "@/components/TemplatePage.vue";
 import NavigationTabs from "@/components/NavigationTabs.vue";
 
+// Initialize store and router
+const reportStore = useReportStore();
+const router = useRouter();
+
 // Reactive data
 const activeTab = ref("reports");
 const searchTerm = ref("");
 const showFilterModal = ref(false);
-const selectedStatus = ref<boolean | null>(null);
+const selectedStatus = ref<ReportStatus | null>(null);
 const selectedLocation = ref<string>("");
 
 // Computed properties
@@ -373,9 +365,9 @@ const activeReportsCount = computed(
       .length
 );
 
-const closedReportsCount = computed(
+const resolvedReportsCount = computed(
   () =>
-    reports.value.filter(report => report.status === ReportStatusEnum.CLOSED)
+    reports.value.filter(report => report.status === ReportStatusEnum.RESOLVED)
       .length
 );
 
@@ -391,12 +383,8 @@ const getStatusText = (status: ReportStatus): string => {
   switch (status) {
     case ReportStatus.OPEN:
       return "Open";
-    case ReportStatus.IN_PROGRESS:
-      return "In Progress";
     case ReportStatus.RESOLVED:
       return "Resolved";
-    case ReportStatus.CLOSED:
-      return "Closed";
     default:
       return "Unknown";
   }
@@ -405,13 +393,9 @@ const getStatusText = (status: ReportStatus): string => {
 const getStatusIcon = (status: ReportStatus): string => {
   switch (status) {
     case ReportStatus.OPEN:
-      return searchOutline;
-    case ReportStatus.IN_PROGRESS:
-      return timeOutline;
+      return documentTextOutline;
     case ReportStatus.RESOLVED:
       return checkmarkCircleOutline;
-    case ReportStatus.CLOSED:
-      return closeCircleOutline;
     default:
       return alertCircleOutline;
   }
@@ -421,12 +405,8 @@ const getStatusClass = (status: ReportStatus): string => {
   switch (status) {
     case ReportStatus.OPEN:
       return "status-open";
-    case ReportStatus.IN_PROGRESS:
-      return "status-progress";
     case ReportStatus.RESOLVED:
       return "status-resolved";
-    case ReportStatus.CLOSED:
-      return "status-closed";
     default:
       return "status-unknown";
   }
@@ -471,12 +451,6 @@ const clearLocationFilter = (): void => {
   selectedLocation.value = "";
 };
 
-const clearAllFilters = (): void => {
-  selectedStatus.value = null;
-  selectedLocation.value = "";
-  searchTerm.value = "";
-};
-
 const applyFilters = (): void => {
   showFilterModal.value = false;
 };
@@ -495,6 +469,10 @@ const loadReports = async (): Promise<void> => {
   } catch (error) {
     console.error("Error loading reports:", error);
   }
+};
+
+const handleFilterModalDismiss = (): void => {
+  showFilterModal.value = false;
 };
 
 // Lifecycle
@@ -547,10 +525,6 @@ onMounted(async () => {
 .filter-chip {
   --background: var(--ion-color-primary-tint);
   cursor: pointer;
-}
-
-.clear-all-button {
-  --color: var(--ion-color-medium);
 }
 
 .stats-summary {
@@ -638,23 +612,6 @@ onMounted(async () => {
   overflow: hidden;
 }
 
-.card-header::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 100px;
-  height: 100px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 50%;
-  transform: translate(30px, -30px);
-  transition: transform 0.3s ease;
-}
-
-.report-card:hover .card-header::before {
-  transform: translate(25px, -25px);
-}
-
 .header-content {
   display: flex;
   justify-content: space-between;
@@ -671,6 +628,26 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   gap: 4px;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.status-chip.status-open {
+  background: rgba(255, 193, 7, 0.2);
+  color: #ff9800;
+}
+
+.status-chip.status-resolved {
+  background: rgba(76, 175, 80, 0.2);
+  color: #4caf50;
+}
+
+.status-chip.status-unknown {
+  background: rgba(158, 158, 158, 0.2);
+  color: #9e9e9e;
 }
 
 .chip-icon {
@@ -760,6 +737,7 @@ onMounted(async () => {
 
 .filter-section {
   margin-bottom: 24px;
+  padding: 16px;
 }
 
 .filter-section h3 {
@@ -768,11 +746,37 @@ onMounted(async () => {
   font-weight: 600;
 }
 
+.radio-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--ion-color-light);
+}
+
+.radio-item:last-child {
+  border-bottom: none;
+}
+
+ion-radio {
+  margin-right: 12px;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.custom-select {
+  --background: var(--ion-color-light);
+  --border-radius: 12px;
+  --padding-start: 16px;
+  --padding-end: 16px;
+  width: 100%;
+}
+
 .filter-actions {
   display: flex;
   flex-direction: column;
   gap: 12px;
   margin-top: 32px;
+  padding: 16px;
 }
 
 @media (max-width: 768px) {

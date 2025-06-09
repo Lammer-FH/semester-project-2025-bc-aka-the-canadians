@@ -204,18 +204,15 @@
           <div class="filter-section">
             <h3>Claim Status</h3>
             <ion-radio-group v-model="selectedClaimedStatus">
-              <ion-item>
-                <ion-radio slot="start" :value="null"></ion-radio>
-                <ion-label>All Items</ion-label>
-              </ion-item>
-              <ion-item>
-                <ion-radio slot="start" :value="false"></ion-radio>
-                <ion-label>Unclaimed Items</ion-label>
-              </ion-item>
-              <ion-item>
-                <ion-radio slot="start" :value="true"></ion-radio>
-                <ion-label>Claimed Items</ion-label>
-              </ion-item>
+              <div class="radio-item">
+                <ion-radio :value="null">All Items</ion-radio>
+              </div>
+              <div class="radio-item">
+                <ion-radio :value="false">Unclaimed Items</ion-radio>
+              </div>
+              <div class="radio-item">
+                <ion-radio :value="true">Claimed Items</ion-radio>
+              </div>
             </ion-radio-group>
           </div>
 
@@ -268,28 +265,18 @@
               </p>
 
               <div class="input-group">
-                <ion-item
-                  class="modern-item"
+                <ion-textarea
+                  v-model="claimData.description"
+                  label="Description *"
+                  placeholder="Describe how you lost this item or provide identifying details..."
+                  :rows="4"
+                  class="custom-textarea"
+                  @blur="validateClaimField('description')"
                   :class="{
-                    'item-filled': claimData.description.trim(),
-                    'item-error': claimErrors.description,
+                    'textarea-filled': claimData.description.trim(),
+                    'textarea-error': claimErrors.description,
                   }"
-                >
-                  <ion-label class="custom-label" position="stacked">
-                    <ion-icon
-                      :icon="chatbubbleOutline"
-                      class="label-icon"
-                    ></ion-icon>
-                    Description *
-                  </ion-label>
-                  <ion-textarea
-                    v-model="claimData.description"
-                    placeholder="Describe how you lost this item or provide identifying details..."
-                    :rows="4"
-                    class="custom-textarea"
-                    @blur="validateClaimField('description')"
-                  ></ion-textarea>
-                </ion-item>
+                ></ion-textarea>
                 <div v-if="claimErrors.description" class="error-message">
                   {{ claimErrors.description }}
                 </div>
@@ -828,6 +815,23 @@ onMounted(async () => {
   font-weight: 600;
 }
 
+.radio-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--ion-color-light);
+}
+
+.radio-item:last-child {
+  border-bottom: none;
+}
+
+ion-radio {
+  margin-right: 12px;
+  font-size: 16px;
+  font-weight: 500;
+}
+
 .filter-actions {
   display: flex;
   flex-direction: column;
@@ -890,7 +894,7 @@ onMounted(async () => {
   margin-bottom: 16px;
 }
 
-.modern-item {
+.custom-textarea {
   --border-radius: 12px;
   --padding-start: 16px;
   --padding-end: 16px;
@@ -898,31 +902,16 @@ onMounted(async () => {
   margin-bottom: 8px;
 }
 
-.modern-item.item-filled {
+.custom-textarea.textarea-filled {
   --background: var(--ion-color-light-tint);
 }
 
-.modern-item.item-error {
+.custom-textarea.textarea-error {
   --border-color: var(--ion-color-danger);
 }
 
-.modern-item:focus-within {
+.custom-textarea:focus-within {
   --background: var(--ion-color-light-shade);
-}
-
-.custom-label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-weight: 500;
-}
-
-.label-icon {
-  font-size: 16px;
-}
-
-.custom-textarea {
-  width: 100%;
 }
 
 .error-message {

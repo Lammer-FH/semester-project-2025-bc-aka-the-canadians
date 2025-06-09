@@ -446,7 +446,6 @@ const handleSubmit = async () => {
   }
 
   try {
-    // First, find the location ID from the selected location name
     const selectedLocation = availableLocations.value.find(
       location => location.name === reportData.value.location
     );
@@ -456,7 +455,6 @@ const handleSubmit = async () => {
       return;
     }
 
-    // Create the report first
     const reportCreateData: ReportCreateData = {
       userId: CURRENT_USER_ID,
       locationId: selectedLocation.id,
@@ -470,7 +468,6 @@ const handleSubmit = async () => {
       return;
     }
 
-    // Create enhanced description with report information
     const enhancedDescription = [
       reportData.value.description,
       "",
@@ -487,7 +484,6 @@ const handleSubmit = async () => {
       .filter(Boolean)
       .join("\n");
 
-    // Now create the item with the report ID
     const itemData: Omit<Item, "id" | "createdAt"> = {
       name: reportData.value.itemName,
       description: enhancedDescription,

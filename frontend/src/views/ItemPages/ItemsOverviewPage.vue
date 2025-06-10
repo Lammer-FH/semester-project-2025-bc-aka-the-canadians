@@ -220,7 +220,7 @@ const activeTab = ref("items");
 const searchTerm = ref("");
 
 const filters = ref({
-  claimedStatus: null as boolean | null,
+  claimedStatus: null as ItemStatus | null,
 });
 
 const itemFilterConfigs = computed(() => [
@@ -243,8 +243,8 @@ const isLoading = computed(() => itemStore.isLoading);
 const error = computed(() => itemStore.getError);
 
 const activeFiltersCount = computed(() => {
-  return Object.entries(filters.value).filter(([key, value]) => {
-    if (value === null || value === undefined || value === "") return false;
+  return Object.entries(filters.value).filter(([value]) => {
+    if (value === null || value === undefined) return false;
     return true;
   }).length;
 });
@@ -275,11 +275,11 @@ const filteredItems = computed(() => {
 });
 
 const claimedItemsCount = computed(
-  () => items.value.filter(item => item.status === ItemStatus.CLAIMED).length
+  () => items.value.filter(item => item.claimedByUserId !== null).length
 );
 
 const unclaimedItemsCount = computed(
-  () => items.value.filter(item => item.status === ItemStatus.UNCLAIMED).length
+  () => items.value.filter(item => item.claimedByUserId === null).length
 );
 
 const getItemDetails = (item: Item) => [
@@ -346,9 +346,8 @@ const updateFilter = (key: string, value: any): void => {
   filters.value[key as keyof typeof filters.value] = value;
 };
 
-const clearFilter = (key: string): void => {
-  filters.value[key as keyof typeof filters.value] =
-    key === "claimedStatus" ? null : "";
+const clearFilter = (): void => {
+  filters.value.claimedStatus = null;
 };
 
 const applyFilters = (): void => {

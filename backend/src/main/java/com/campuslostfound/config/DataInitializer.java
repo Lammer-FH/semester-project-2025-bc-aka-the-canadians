@@ -23,6 +23,11 @@ public class DataInitializer {
     @Bean
     public CommandLineRunner initData() {
         return args -> {
+            // Überprüfe, ob bereits Daten existieren
+            if (userRepository.count() > 0) {
+                return;
+            }
+
             try {
                 // Create users
                 User alice = new User(null, "Alice", "alice@example.com", null, null, null);

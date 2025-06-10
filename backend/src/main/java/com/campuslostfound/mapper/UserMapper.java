@@ -2,28 +2,38 @@ package com.campuslostfound.mapper;
 
 import com.campuslostfound.dto.UserDTO;
 import com.campuslostfound.model.User;
+import com.campuslostfound.model.Report;
+import com.campuslostfound.model.Item;
 
 import org.mapstruct.*;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Mapper(componentModel = "spring")
-public interface UserMapper {
+public interface UserMapper extends GenericMapper<User, UserDTO> {
+    @Override
     @Mapping(target = "reportIds", source = "reports", qualifiedByName = "reportListToIdList")
     @Mapping(target = "claimedItemIds", source = "claimedItems", qualifiedByName = "itemListToIdList")
     UserDTO toDTO(User user);
 
+    @Override
     @Mapping(target = "reports", ignore = true)
     @Mapping(target = "claimedItems", ignore = true)
     User toEntity(UserDTO dto);
 
     @Named("reportListToIdList")
-    public static java.util.List<Long> reportListToIdList(java.util.List<com.campuslostfound.model.Report> reports) {
+    static List<Long> reportListToIdList(List<Report> reports) {
         if (reports == null) return null;
-        return reports.stream().map(com.campuslostfound.model.Report::getId).collect(java.util.stream.Collectors.toList());
+        return reports.stream()
+                .map(Report::getId)
+                .collect(Collectors.toList());
     }
 
     @Named("itemListToIdList")
-    public static java.util.List<Long> itemListToIdList(java.util.List<com.campuslostfound.model.Item> items) {
+    static List<Long> itemListToIdList(List<Item> items) {
         if (items == null) return null;
-        return items.stream().map(com.campuslostfound.model.Item::getId).collect(java.util.stream.Collectors.toList());
+        return items.stream()
+                .map(Item::getId)
+                .collect(Collectors.toList());
     }
 }

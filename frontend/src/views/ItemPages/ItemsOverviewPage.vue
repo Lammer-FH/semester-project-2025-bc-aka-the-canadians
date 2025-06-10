@@ -81,96 +81,11 @@
           :status="item.claimedByUserId ? 'claimed' : 'unclaimed'"
           :details="getItemDetails(item)"
           :metadata="getItemMetadata(item)"
-          :actions="getItemActions(item)"
           card-type="item"
           :animation-delay="index * 0.1"
           @card-click="navigateToItem(item.id)"
-          @action-click="handleItemAction"
         />
       </div>
-
-      <ion-modal :is-open="showClaimModalOpen" @did-dismiss="closeClaimModal">
-        <ion-header>
-          <ion-toolbar>
-            <ion-title>Claim Item</ion-title>
-            <ion-button slot="end" fill="clear" @click="closeClaimModal">
-              <ion-icon :icon="closeOutline"></ion-icon>
-            </ion-button>
-          </ion-toolbar>
-        </ion-header>
-        <ion-content class="claim-modal-content">
-          <div v-if="selectedItemToClaim" class="claim-form">
-            <div class="item-info-section">
-              <h2>{{ selectedItemToClaim.name }}</h2>
-              <p
-                v-if="selectedItemToClaim.description"
-                class="item-description"
-              >
-                {{ selectedItemToClaim.description }}
-              </p>
-              <div class="item-details">
-                <div class="detail-row">
-                  <strong>Report ID:</strong> {{ selectedItemToClaim.reportId }}
-                </div>
-                <div class="detail-row">
-                  <strong>Reported:</strong>
-                  {{ formatDate(selectedItemToClaim.createdAt) }}
-                </div>
-              </div>
-            </div>
-
-            <div class="claim-form-section">
-              <h3>Claim Information</h3>
-              <p class="form-description">
-                Please provide details about why you believe this item belongs
-                to you.
-              </p>
-
-              <div class="input-group">
-                <ion-textarea
-                  v-model="claimData.description"
-                  label="Description *"
-                  placeholder="Describe how you lost this item or provide identifying details..."
-                  :rows="4"
-                  class="custom-textarea"
-                  @blur="validateClaimField('description')"
-                  :class="{
-                    'textarea-filled': claimData.description.trim(),
-                    'textarea-error': claimErrors.description,
-                  }"
-                ></ion-textarea>
-                <div v-if="claimErrors.description" class="error-message">
-                  {{ claimErrors.description }}
-                </div>
-              </div>
-
-              <div class="verification-section">
-                <h4>Verification</h4>
-                <div class="checklist">
-                  <ion-checkbox v-model="claimData.hasProof">
-                    I have proof of ownership or identifying details
-                  </ion-checkbox>
-                </div>
-              </div>
-            </div>
-
-            <div class="modal-actions">
-              <ion-button
-                expand="block"
-                @click="submitClaim"
-                :disabled="!isClaimFormValid || isSubmittingClaim"
-              >
-                <ion-spinner
-                  v-if="isSubmittingClaim"
-                  name="crescent"
-                  class="spinner"
-                ></ion-spinner>
-                <span v-else>Submit Claim</span>
-              </ion-button>
-            </div>
-          </div>
-        </ion-content>
-      </ion-modal>
     </div>
   </template-page>
 </template>
@@ -178,19 +93,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
-import {
-  IonButton,
-  IonIcon,
-  IonSearchbar,
-  IonSpinner,
-  IonModal,
-  IonHeader,
-  IonToolbar,
-  IonTitle,
-  IonContent,
-  IonTextarea,
-  IonCheckbox,
-} from "@ionic/vue";
+import { IonButton, IonIcon, IonSearchbar, IonSpinner } from "@ionic/vue";
 import {
   personOutline,
   cubeOutline,
@@ -199,12 +102,8 @@ import {
   alertCircleOutline,
   refreshOutline,
   addOutline,
-  documentTextOutline,
   timeOutline,
   calendarOutline,
-  createOutline,
-  handRightOutline,
-  closeOutline,
 } from "ionicons/icons";
 import { useItemStore } from "@/stores/itemStore";
 import { Item, ItemStatus } from "@/models/item";
@@ -284,20 +183,6 @@ const unclaimedItemsCount = computed(
 
 const getItemDetails = (item: Item) => [
   {
-    key: "report",
-    icon: documentTextOutline,
-    value: `Report #${item.reportId}`,
-  },
-  ...(item.claimedByUser
-    ? [
-        {
-          key: "claimedBy",
-          icon: personOutline,
-          value: `Claimed by ${item.claimedByUser.name || "Unknown"}`,
-        },
-      ]
-    : []),
-  {
     key: "created",
     icon: timeOutline,
     value: formatDate(item.createdAt),
@@ -309,36 +194,6 @@ const getItemMetadata = (item: Item) => [
     key: "timeAgo",
     icon: calendarOutline,
     value: getTimeAgo(item.createdAt),
-  },
-];
-
-const getItemActions = (item: Item) => [
-  {
-    key: "edit",
-    label: "",
-    icon: createOutline,
-    iconSlot: "icon-only" as const,
-    fill: "clear" as const,
-    handler: () => editItem(item.id),
-  },
-  ...(item.claimedByUserId
-    ? []
-    : [
-        {
-          key: "claim",
-          label: "Claim Item",
-          icon: handRightOutline,
-          fill: "solid" as const,
-          color: "success",
-          handler: () => showClaimModal(item),
-        },
-      ]),
-  {
-    key: "view",
-    label: "View Details",
-    fill: "clear" as const,
-    color: "primary",
-    handler: () => navigateToItem(item.id),
   },
 ];
 
@@ -385,94 +240,11 @@ const navigateToItem = (itemId: number): void => {
   router.push(`/items/${itemId}`);
 };
 
-const editItem = (itemId: number): void => {
-  router.push(`/items/${itemId}/edit`);
-};
-
-const handleItemAction = (action: any): void => {
-  console.log("Item action clicked:", action.key);
-};
-
 const loadItems = async (): Promise<void> => {
   try {
     await itemStore.fetchItems();
   } catch (error) {
     console.error("Error loading items:", error);
-  }
-};
-
-const showClaimModalOpen = ref(false);
-const selectedItemToClaim = ref<Item | null>(null);
-const isSubmittingClaim = ref(false);
-
-const claimData = ref({
-  description: "",
-  hasProof: false,
-});
-
-const claimErrors = ref({
-  description: "",
-});
-
-const isClaimFormValid = computed(() => {
-  return (
-    claimData.value.description.trim().length >= 10 &&
-    claimData.value.hasProof &&
-    !Object.values(claimErrors.value).some(error => error)
-  );
-});
-
-const showClaimModal = (item: Item): void => {
-  selectedItemToClaim.value = item;
-  claimData.value = {
-    description: "",
-    hasProof: false,
-  };
-  claimErrors.value = {
-    description: "",
-  };
-  showClaimModalOpen.value = true;
-};
-
-const closeClaimModal = (): void => {
-  showClaimModalOpen.value = false;
-  selectedItemToClaim.value = null;
-};
-
-const validateClaimField = (field: string): void => {
-  switch (field) {
-    case "description":
-      if (claimData.value.description.trim().length < 10) {
-        claimErrors.value.description =
-          "Description must be at least 10 characters long";
-      } else {
-        claimErrors.value.description = "";
-      }
-      break;
-  }
-};
-
-const submitClaim = async (): Promise<void> => {
-  if (!selectedItemToClaim.value) return;
-
-  try {
-    isSubmittingClaim.value = true;
-
-    const updatedItem = await itemStore.updateItem(
-      selectedItemToClaim.value.id,
-      {
-        claimedByUserId: 1,
-      }
-    );
-
-    if (updatedItem) {
-      closeClaimModal();
-      console.log("Item claimed successfully");
-    }
-  } catch (error) {
-    console.error("Error claiming item:", error);
-  } finally {
-    isSubmittingClaim.value = false;
   }
 };
 

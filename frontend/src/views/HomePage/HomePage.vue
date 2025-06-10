@@ -176,29 +176,6 @@
           </div>
         </div>
       </div>
-
-      <div class="cta-section">
-        <h2>Ready to get started?</h2>
-        <p>
-          Become part of the Campus Lost & Found community and help return lost
-          items to their owners.
-        </p>
-        <div class="cta-buttons">
-          <ion-button expand="block" size="large" @click="navigateToReport">
-            <ion-icon :icon="addOutline" slot="start"></ion-icon>
-            Create First Report
-          </ion-button>
-          <ion-button
-            expand="block"
-            size="large"
-            fill="outline"
-            @click="navigateToItems"
-          >
-            <ion-icon :icon="listOutline" slot="start"></ion-icon>
-            Browse All Reports
-          </ion-button>
-        </div>
-      </div>
     </div>
   </template-page>
 </template>
@@ -215,8 +192,6 @@ import {
   locationOutline,
   peopleOutline,
   shieldCheckmarkOutline,
-  addOutline,
-  listOutline,
 } from "ionicons/icons";
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
@@ -254,10 +229,10 @@ onMounted(async () => {
   } catch (error) {
     console.error("Error loading statistics:", error);
     stats.value = {
-      totalReports: 156,
-      itemsReturned: 89,
-      activeUsers: 42,
-      locations: 15,
+      totalReports: 0,
+      itemsReturned: 0,
+      activeUsers: 0,
+      locations: 0,
     };
   }
 });

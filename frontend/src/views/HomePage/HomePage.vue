@@ -85,12 +85,8 @@
             <div class="stat-label">Items Returned</div>
           </div>
           <div class="stat-card">
-            <div class="stat-number">{{ stats.activeUsers }}</div>
-            <div class="stat-label">Active Users</div>
-          </div>
-          <div class="stat-card">
             <div class="stat-number">{{ stats.locations }}</div>
-            <div class="stat-label">Campus Locations</div>
+            <div class="stat-label">Known Locations</div>
           </div>
         </div>
       </div>
@@ -205,7 +201,6 @@ const locationStore = useLocationStore();
 const stats = ref({
   totalReports: 0,
   itemsReturned: 0,
-  activeUsers: 0,
   locations: 0,
 });
 
@@ -223,7 +218,6 @@ onMounted(async () => {
           item.status?.toUpperCase() === "CLAIMED" ||
           item.status?.toUpperCase() === "RETURNED"
       ).length,
-      activeUsers: Math.max(1, Math.floor(items.length * 0.7)),
       locations: locations.length,
     };
   } catch (error) {
@@ -231,7 +225,6 @@ onMounted(async () => {
     stats.value = {
       totalReports: 0,
       itemsReturned: 0,
-      activeUsers: 0,
       locations: 0,
     };
   }

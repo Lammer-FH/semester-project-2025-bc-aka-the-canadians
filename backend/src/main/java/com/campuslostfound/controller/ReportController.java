@@ -23,7 +23,7 @@ public class ReportController {
     private final ReportMapper reportMapper;
 
     @GetMapping
-    public ResponseEntity<List<ReportDTO>> getAllReports() {
+    public ResponseEntity<List<ReportDTO>> getReports() {
         List<Report> reports = reportService.getAllReports();
         List<ReportDTO> reportDTOs = reportMapper.toDTOList(reports);
 
@@ -35,7 +35,7 @@ public class ReportController {
         Optional<Report> report = reportService.getReportById(id);
 
         return report.map(r -> ResponseEntity.ok(reportMapper.toDTO(r)))
-                .orElse(ResponseEntity.notFound().build());
+            .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping
@@ -44,7 +44,7 @@ public class ReportController {
             Report savedReport = reportService.createReportFromIds(
                 reportDTO.getUserId(),
                 reportDTO.getLocationId(),
-                reportDTO.getStatus()
+                reportDTO.getType()
             );
 
             return ResponseEntity.status(HttpStatus.CREATED).body(reportMapper.toDTO(savedReport));
@@ -55,15 +55,25 @@ public class ReportController {
 
     @PutMapping("/{id}")
     public ResponseEntity<ReportDTO> updateReport(
-            @PathVariable Long id, @RequestBody ReportDTO reportDTO) {
+        @PathVariable Long id, @RequestBody ReportDTO reportDTO) {
         try {
-            Report updatedReport = reportService.updateReport(
+            Report updatedReport = reportService.updateReportById(
                 id,
                 reportDTO.getLocationId(),
                 reportDTO.getStatus()
             );
 
             return ResponseEntity.ok(reportMapper.toDTO(updatedReport));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<ReportDTO> resolveReport(@PathVariable Long id) {
+        try {
+            Report resolvedReport = reportService.resolveReportById(id);
+            return ResponseEntity.ok(reportMapper.toDTO(resolvedReport));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.notFound().build();
         }

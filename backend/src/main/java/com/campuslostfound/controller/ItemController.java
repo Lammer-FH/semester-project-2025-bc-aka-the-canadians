@@ -37,7 +37,7 @@ public class ItemController {
     @PostMapping
     public ResponseEntity<ItemDTO> createItem(@RequestBody ItemDTO itemDTO) {
         try {
-            Item savedItem = itemService.createItemFromReportId(itemDTO.getName(), itemDTO.getDescription(), itemDTO.getReportId());
+            Item savedItem = itemService.createItemFromReportId(itemDTO.getName(), itemDTO.getDescription(), itemDTO.getReportId(), itemDTO.getStatus());
 
             return ResponseEntity.status(HttpStatus.CREATED).body(itemMapper.toDTO(savedItem));
         } catch (IllegalArgumentException e) {

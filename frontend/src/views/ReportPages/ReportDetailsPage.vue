@@ -1,8 +1,10 @@
 <template>
   <template-page
-    :headline="`Report #${report?.id || 'Loading...'}`"
-    :show-back-button="true"
-    back-button-path="/reports/overview"
+    :headline="report?.id ? `Report #${report.id}` : 'Report Details'"
+    :leftFooterButton="leftFooterButton"
+    :rightFooterButton="rightFooterButton"
+    @leftFooterButtonClicked="handleBack"
+    @rightFooterButtonClicked="editReport"
   >
     <div class="report-details-container">
       <div v-if="isLoading" class="loading-container">
@@ -110,18 +112,25 @@
                   <h3>{{ item.name }}</h3>
                   <div
                     class="item-status"
-                    :class="item.claimedByUserId ? 'claimed' : 'unclaimed'"
+                    :class="{
+                      claimed: item.status === 'CLAIMED',
+                      unclaimed: item.status === 'UNCLAIMED',
+                    }"
                   >
                     <ion-icon
                       :icon="
-                        item.claimedByUserId
+                        item.status === 'CLAIMED'
                           ? checkmarkCircleOutline
                           : searchOutline
                       "
                       class="status-icon"
                     ></ion-icon>
                     <span>{{
-                      item.claimedByUserId ? "Claimed" : "Unclaimed"
+                      item.status === "CLAIMED"
+                        ? "Claimed"
+                        : item.status === "UNCLAIMED"
+                          ? "Unclaimed"
+                          : ""
                     }}</span>
                   </div>
                 </div>
@@ -150,7 +159,7 @@
                     View Details
                   </ion-button>
                   <ion-button
-                    v-if="!item.claimedByUserId"
+                    v-if="item.status === 'UNCLAIMED'"
                     fill="solid"
                     size="small"
                     color="success"
@@ -216,6 +225,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import TemplatePage from "@/components/TemplatePage.vue";
 import {
   IonCard,
   IonCardHeader,
@@ -238,6 +248,7 @@ import {
   personOutline,
   handRightOutline,
   trashOutline,
+  arrowBackOutline,
 } from "ionicons/icons";
 import { useReportStore } from "@/stores/reportStore";
 import { Item } from "@/models/item";
@@ -255,6 +266,16 @@ const showDeleteConfirmation = ref(false);
 const report = computed(() => reportStore.getCurrentReport);
 const isLoading = computed(() => reportStore.isLoading);
 const error = computed(() => reportStore.getError);
+const leftFooterButton = computed(() => ({
+  name: "Back",
+  color: "medium",
+  icon: arrowBackOutline,
+}));
+const rightFooterButton = computed(() => ({
+  name: "Edit",
+  color: "primary",
+  icon: createOutline,
+}));
 
 // Methods
 const getStatusText = (status: ReportStatus): string => {
@@ -361,6 +382,10 @@ const handleDeleteReport = async (): Promise<void> => {
 onMounted(async () => {
   await loadReport();
 });
+
+function handleBack() {
+  router.back();
+}
 </script>
 
 <style scoped>

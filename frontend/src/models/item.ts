@@ -1,4 +1,4 @@
-import type { Report } from "./report";
+import type { Report, ReportStatus } from "./report";
 import type { User } from "./user";
 
 export interface Item {
@@ -8,9 +8,10 @@ export interface Item {
     reportId: number;
     claimedByUserId?: number;
     createdAt: string;
+    status: ItemStatus; // Add status field
     locationId?: number;
     locationName?: string;
-    reportStatus?: boolean;
+    reportStatus?: ReportStatus;
     reporterUserId?: number;
     reporterUserName?: string;
     report?: Report;
@@ -21,6 +22,7 @@ export interface ItemCreateData {
     name: string;
     description?: string;
     reportId: number;
+    status: ItemStatus
 }
 
 export interface ItemUpdateData {
@@ -31,4 +33,9 @@ export interface ItemUpdateData {
 export interface ItemFilters {
     reportId?: number;
     claimedByUserId?: number;
+}
+
+export enum ItemStatus {
+    CLAIMED = "CLAIMED",
+    UNCLAIMED = "UNCLAIMED"
 }

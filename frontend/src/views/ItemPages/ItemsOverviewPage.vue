@@ -207,7 +207,7 @@ import {
   closeOutline,
 } from "ionicons/icons";
 import { useItemStore } from "@/stores/itemStore";
-import { Item } from "@/models/item";
+import { Item, ItemStatus } from "@/models/item";
 import TemplatePage from "@/components/TemplatePage.vue";
 import NavigationTabs from "@/components/NavigationTabs.vue";
 import Filter from "@/components/Filter.vue";
@@ -275,11 +275,11 @@ const filteredItems = computed(() => {
 });
 
 const claimedItemsCount = computed(
-  () => items.value.filter(item => item.claimedByUserId !== null).length
+  () => items.value.filter(item => item.status === ItemStatus.CLAIMED).length
 );
 
 const unclaimedItemsCount = computed(
-  () => items.value.filter(item => item.claimedByUserId === null).length
+  () => items.value.filter(item => item.status === ItemStatus.UNCLAIMED).length
 );
 
 const getItemDetails = (item: Item) => [

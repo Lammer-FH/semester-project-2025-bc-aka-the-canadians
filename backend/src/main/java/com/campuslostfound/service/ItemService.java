@@ -1,6 +1,7 @@
 package com.campuslostfound.service;
 
 import com.campuslostfound.model.Item;
+import com.campuslostfound.model.ItemStatus;
 import com.campuslostfound.model.Location;
 import com.campuslostfound.model.Report;
 import com.campuslostfound.repository.ItemRepository;
@@ -41,7 +42,7 @@ public class ItemService {
         return itemRepository.save(existingItem);
     }
 
-    public Item createItemFromReportId(String name, String description, Long reportId) {
+    public Item createItemFromReportId(String name, String description, Long reportId, ItemStatus status) {
         Report report = reportService.getReportById(reportId).orElseThrow(
             () -> new IllegalArgumentException("Report not found with id: " + reportId));
 
@@ -49,6 +50,7 @@ public class ItemService {
         item.setName(name);
         item.setDescription(description);
         item.setReport(report);
+        item.setStatus(status);
 
         return itemRepository.save(item);
     }

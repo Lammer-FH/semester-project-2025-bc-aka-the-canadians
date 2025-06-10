@@ -38,7 +38,7 @@
             }"
             @selectionChange="validateField('type')"
           >
-            <ion-select-option value="LOST">
+            <ion-select-option :value="ReportType.LOST">
               <div class="select-option">
                 <ion-icon :icon="searchOutline" class="option-icon"></ion-icon>
                 <div>
@@ -47,7 +47,7 @@
                 </div>
               </div>
             </ion-select-option>
-            <ion-select-option value="FOUND">
+            <ion-select-option :value="ReportType.FOUND">
               <div class="select-option">
                 <ion-icon :icon="eyeOutline" class="option-icon"></ion-icon>
                 <div>
@@ -307,8 +307,8 @@ import { useRouter } from "vue-router";
 import { useItemStore } from "@/stores/itemStore";
 import { useLocationStore } from "@/stores/locationStore";
 import { useReportStore } from "@/stores/reportStore";
-import type { Item } from "@/models/item";
-import type { ReportCreateData } from "@/models/report";
+import { ItemStatus, type ItemCreateData } from "@/models/item";
+import { ReportType, type ReportCreateData } from "@/models/report";
 
 const router = useRouter();
 const itemStore = useItemStore();
@@ -319,7 +319,7 @@ const reportStore = useReportStore();
 const CURRENT_USER_ID = 1;
 
 const reportData = ref({
-  type: "",
+  type: null as ReportType | null,
   itemName: "",
   description: "",
   location: "",
@@ -359,9 +359,12 @@ const rightFooterButton = computed(() => ({
 
 const isValid = computed(() => {
   return (
-    reportData.value.type.trim() !== "" &&
+    reportData.value.type !== null &&
+    typeof reportData.value.itemName === "string" &&
     reportData.value.itemName.trim() !== "" &&
+    typeof reportData.value.location === "string" &&
     reportData.value.location.trim() !== "" &&
+    typeof reportData.value.reporterName === "string" &&
     reportData.value.reporterName.trim() !== ""
   );
 });
@@ -370,15 +373,18 @@ const completionPercentage = computed(() => {
   const requiredFields = ["type", "itemName", "location", "reporterName"];
   const optionalFields = ["description", "contactInfo"];
 
-  const requiredFilled = requiredFields.filter(
-    field =>
-      reportData.value[field as keyof typeof reportData.value].trim() !== ""
-  ).length;
+  const requiredFilled = requiredFields.filter(field => {
+    const value = reportData.value[field as keyof typeof reportData.value];
+    if (field === "type") {
+      return value !== null;
+    }
+    return typeof value === "string" && value.trim() !== "";
+  }).length;
 
-  const optionalFilled = optionalFields.filter(
-    field =>
-      reportData.value[field as keyof typeof reportData.value].trim() !== ""
-  ).length;
+  const optionalFilled = optionalFields.filter(field => {
+    const value = reportData.value[field as keyof typeof reportData.value];
+    return typeof value === "string" && value.trim() !== "";
+  }).length;
 
   const requiredWeight = 0.8;
   const optionalWeight = 0.2;
@@ -458,7 +464,7 @@ const handleSubmit = async () => {
     const reportCreateData: ReportCreateData = {
       userId: CURRENT_USER_ID,
       locationId: selectedLocation.id,
-      status: reportData.value.type === "FOUND", // true for FOUND, false for LOST
+      type: reportData.value.type!,
     };
 
     const newReport = await reportStore.createReport(reportCreateData);
@@ -472,9 +478,7 @@ const handleSubmit = async () => {
       reportData.value.description,
       "",
       `--- Report Information ---`,
-      `Report Type: ${
-        reportData.value.type === "LOST" ? "Lost Report" : "Found Report"
-      }`,
+      `Report Type: ${reportData.value.type === ReportType.LOST ? "Lost Report" : "Found Report"}`,
       `Reported by: ${reportData.value.reporterName}`,
       reportData.value.contactInfo
         ? `Contact: ${reportData.value.contactInfo}`
@@ -484,10 +488,12 @@ const handleSubmit = async () => {
       .filter(Boolean)
       .join("\n");
 
-    const itemData: Omit<Item, "id" | "createdAt"> = {
+    // Now create the item with the report ID
+    const itemData: ItemCreateData = {
       name: reportData.value.itemName,
       description: enhancedDescription,
       reportId: newReport.id,
+      status: ItemStatus.UNCLAIMED,
     };
 
     const newItem = await itemStore.createItem(itemData);

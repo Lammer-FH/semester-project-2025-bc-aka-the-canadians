@@ -34,7 +34,7 @@
         </div>
         <div class="stat-item">
           <ion-icon :icon="checkmarkCircleOutline" color="success"></ion-icon>
-          <span>{{ activeReportsCount }} Active</span>
+          <span>{{ openReportsCount }} Open</span>
         </div>
         <div class="stat-item">
           <ion-icon :icon="checkmarkCircleOutline" color="medium"></ion-icon>
@@ -197,16 +197,12 @@ const filteredReports = computed(() => {
 
   if (searchTerm.value.trim()) {
     const search = searchTerm.value.toLowerCase();
-    filtered = filtered.filter(
-      report =>
-        report.id.toString().includes(search) ||
-        report.user?.name?.toLowerCase().includes(search) ||
-        report.location?.name?.toLowerCase().includes(search) ||
-        report.items?.some(
-          item =>
-            item.name.toLowerCase().includes(search) ||
-            item.description?.toLowerCase().includes(search)
-        )
+    filtered = filtered.filter(report =>
+      report.items?.some(
+        item =>
+          item.name.toLowerCase().includes(search) ||
+          item.description?.toLowerCase().includes(search)
+      )
     );
   }
 

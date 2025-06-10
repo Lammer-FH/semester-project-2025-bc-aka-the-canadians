@@ -1,9 +1,6 @@
 package com.campuslostfound.service;
 
-import com.campuslostfound.model.Location;
-import com.campuslostfound.model.Report;
-import com.campuslostfound.model.ReportStatus;
-import com.campuslostfound.model.User;
+import com.campuslostfound.model.*;
 import com.campuslostfound.repository.ReportRepository;
 import java.util.List;
 import java.util.Optional;
@@ -37,15 +34,15 @@ public class ReportService {
         return reportRepository.save(report);
     }
 
-    public Report createReportFromIds(Long userId, Long locationId, ReportStatus status) {
+    public Report createReportFromIds(Long userId, Long locationId, ReportType type) {
         if (userId == null) {
             throw new IllegalArgumentException("User ID cannot be null");
         }
         if (locationId == null) {
             throw new IllegalArgumentException("Location ID cannot be null");
         }
-        if (status == null) {
-            throw new IllegalArgumentException("Status cannot be null");
+        if (type == null) {
+            throw new IllegalArgumentException("Type cannot be null");
         }
 
         User user = userService.getUserById(userId).orElseThrow(
@@ -58,12 +55,13 @@ public class ReportService {
         Report report = new Report();
         report.setUser(user);
         report.setLocation(location);
-        report.setStatus(status);
+        report.setType(type);
+        report.setStatus(ReportStatus.OPEN);
 
         return reportRepository.save(report);
     }
 
-    public Report updateReport(Long reportId, Long locationId, ReportStatus status) {
+    public Report updateReportById(Long reportId, Long locationId, ReportStatus status) {
         Report existingReport = reportRepository.findById(reportId).orElseThrow(
             () -> new IllegalArgumentException("Report not found with id: " + reportId));
 
@@ -79,6 +77,14 @@ public class ReportService {
         }
 
         return reportRepository.save(existingReport);
+    }
+
+    public Report resolveReportById(Long reportId) {
+        Report report = reportRepository.findById(reportId).orElseThrow(
+            () -> new IllegalArgumentException("Report not found with id: " + reportId));
+
+        report.setStatus(ReportStatus.RESOLVED);
+        return reportRepository.save(report);
     }
 
     public void deleteReport(Long id) {

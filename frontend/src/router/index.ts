@@ -45,7 +45,7 @@ const routes: RouteRecordRaw[] = [
     },
     {
         path: "/reports",
-        redirect: "/reports/overview",
+        component: ReportsOverviewPage,
     },
     {
         path: "/reports/overview",

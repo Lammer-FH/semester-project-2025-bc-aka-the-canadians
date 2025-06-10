@@ -2,6 +2,7 @@ import { defineStore } from "pinia";
 import { ref, computed } from "vue";
 import { reportService } from "@/services";
 import { Report, ReportCreateData, ReportUpdateData } from "@/models/report";
+import { ItemStatus } from "@/models/item";
 
 export const useReportStore = defineStore("report", () => {
     const reports = ref<Report[]>([]);
@@ -18,13 +19,13 @@ export const useReportStore = defineStore("report", () => {
     const getResolvedReports = computed(() =>
         reports.value.filter(report =>
             report.items && report.items.length > 0 &&
-            report.items.every(item => item.claimedByUserId !== null && item.claimedByUserId !== undefined)
+            report.items.every(item => item.status === ItemStatus.CLAIMED)
         )
     );
     const getOpenReports = computed(() =>
         reports.value.filter(report =>
             !report.items || report.items.length === 0 ||
-            report.items.some(item => item.claimedByUserId === null || item.claimedByUserId === undefined)
+            report.items.some(item => item.status !== ItemStatus.CLAIMED)
         )
     );
 

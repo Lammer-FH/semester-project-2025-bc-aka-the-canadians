@@ -228,7 +228,6 @@ import {
   createOutline,
   cubeOutline,
   documentOutline,
-  eyeOutline,
   flagOutline,
   informationCircleOutline,
   locationOutline,
@@ -244,7 +243,8 @@ import { useRouter, useRoute } from "vue-router";
 import { useReportStore } from "@/stores/reportStore";
 import { useLocationStore } from "@/stores/locationStore";
 import type { Report } from "@/models/report";
-import { ReportStatus } from "@/models/report";
+import { ReportStatus, ReportType } from "@/models/report";
+import { ItemStatus } from "@/models/item";
 import type { Location } from "@/models/location";
 
 const ReportStatusEnum = ReportStatus;
@@ -261,6 +261,7 @@ const report = ref<Report>({
   locationId: 0,
   createdAt: "",
   status: ReportStatusEnum.OPEN,
+  type: ReportType.LOST,
 });
 
 const errors = ref({
@@ -300,10 +301,8 @@ const isValid = computed(() => {
 });
 
 const canBeResolved = computed(() => {
-  return (
-    report.value.items?.length > 0 &&
-    report.value.items.every(item => item.claimedBy !== null)
-  );
+  const items = report.value.items ?? [];
+  return items.length > 0 && items.every(item => item.status === ItemStatus.CLAIMED);
 });
 
 const alertButtons = [

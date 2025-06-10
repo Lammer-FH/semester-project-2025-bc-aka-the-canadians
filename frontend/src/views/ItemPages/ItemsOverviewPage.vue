@@ -207,7 +207,7 @@ import {
   closeOutline,
 } from "ionicons/icons";
 import { useItemStore } from "@/stores/itemStore";
-import { Item } from "@/models/item";
+import { Item, ItemStatus } from "@/models/item";
 import TemplatePage from "@/components/TemplatePage.vue";
 import NavigationTabs from "@/components/NavigationTabs.vue";
 import Filter from "@/components/Filter.vue";
@@ -220,7 +220,7 @@ const activeTab = ref("items");
 const searchTerm = ref("");
 
 const filters = ref({
-  claimedStatus: null as boolean | null,
+  claimedStatus: null as ItemStatus | null,
 });
 
 const itemFilterConfigs = computed(() => [
@@ -243,8 +243,8 @@ const isLoading = computed(() => itemStore.isLoading);
 const error = computed(() => itemStore.getError);
 
 const activeFiltersCount = computed(() => {
-  return Object.entries(filters.value).filter(([key, value]) => {
-    if (value === null || value === undefined || value === "") return false;
+  return Object.entries(filters.value).filter(([value]) => {
+    if (value === null || value === undefined) return false;
     return true;
   }).length;
 });
@@ -346,9 +346,8 @@ const updateFilter = (key: string, value: any): void => {
   filters.value[key as keyof typeof filters.value] = value;
 };
 
-const clearFilter = (key: string): void => {
-  filters.value[key as keyof typeof filters.value] =
-    key === "claimedStatus" ? null : "";
+const clearFilter = (): void => {
+  filters.value.claimedStatus = null;
 };
 
 const applyFilters = (): void => {

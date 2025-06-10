@@ -32,6 +32,10 @@ public class Report {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
+    private ReportType type;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private ReportStatus status;
 
     @OneToMany(mappedBy = "report", cascade = CascadeType.ALL, orphanRemoval = true)

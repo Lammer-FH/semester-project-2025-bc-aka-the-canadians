@@ -146,7 +146,6 @@ import {
   closeCircleOutline,
   searchOutline,
   eyeOutline,
-  alertCircleOutline,
   flagOutline,
 } from "ionicons/icons";
 
@@ -181,22 +180,6 @@ interface ContentSection {
   className?: string;
   maxItems?: number;
   data: any;
-}
-
-interface StatItem {
-  key: string;
-  icon?: string;
-  color?: string;
-  value: number | string;
-  label: string;
-}
-
-interface ListItem {
-  title: string;
-  subtitle?: string;
-  icon?: string;
-  color?: string;
-  data?: any;
 }
 
 interface Props {

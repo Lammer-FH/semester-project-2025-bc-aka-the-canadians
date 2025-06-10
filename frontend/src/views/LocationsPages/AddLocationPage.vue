@@ -39,7 +39,7 @@
             autocomplete="off"
             autocorrect="off"
             autocapitalize="words"
-            spellcheck="false"
+            :spellcheck="false"
             @ionBlur="validateField('name')"
           ></ion-input>
           <div v-if="errors.name" class="error-message">
@@ -62,7 +62,7 @@
             :rows="3"
             autocomplete="off"
             autocorrect="off"
-            spellcheck="false"
+            :spellcheck="false"
           ></ion-textarea>
         </div>
 
@@ -92,8 +92,6 @@ import TemplatePage from "@/components/TemplatePage.vue";
 import { IonInput, IonTextarea, IonIcon, IonProgressBar } from "@ionic/vue";
 import {
   locationOutline,
-  textOutline,
-  documentTextOutline,
   alertCircleOutline,
   informationCircleOutline,
   checkmarkCircleOutline,

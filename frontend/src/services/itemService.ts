@@ -1,5 +1,5 @@
 import axios from "axios";
-import { Item, ItemFilters } from "@/models/item";
+import { Item, ItemFilters, ItemCreateData } from "@/models/item";
 
 const API_URL = `${import.meta.env.VITE_API_URL}/api/v1/items`;
 
@@ -26,13 +26,14 @@ export const itemService = {
         }
     },
 
-    async createItem(itemData: Omit<Item, "id" | "createdAt">): Promise<Item> {
+    async createItem(itemData: ItemCreateData): Promise<Item> {
         try {
             // Prepare data in the format expected by backend
             const payload = {
                 name: itemData.name,
                 description: itemData.description || "",
                 reportId: itemData.reportId,
+                status: itemData.status || "UNCLAIMED",
             };
 
             const response = await axios.post<Item>(API_URL, payload);
@@ -46,7 +47,7 @@ export const itemService = {
     async updateItem(id: number, itemData: Partial<Item>): Promise<Item> {
         try {
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            const {id: itemId, createdAt: createdAt, report: report, claimedByUser: claimedByUser, ...updateData} = itemData;
+            const { id: itemId, createdAt: createdAt, report: report, claimedByUser: claimedByUser, ...updateData } = itemData;
 
             const response = await axios.put<Item>(
                 `${API_URL}/${id}`,

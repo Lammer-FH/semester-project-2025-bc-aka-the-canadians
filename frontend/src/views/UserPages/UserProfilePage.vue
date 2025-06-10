@@ -25,30 +25,11 @@
 
       <div v-else-if="user" class="content-wrapper">
         <div class="profile-header">
-          <div class="avatar-section">
-            <div class="avatar-container">
-              <img
-                v-if="user.avatar"
-                :src="user.avatar"
-                :alt="getFullName(user)"
-                class="avatar-image"
-              />
-              <div v-else class="avatar-placeholder">
-                <ion-icon :icon="personOutline" class="avatar-icon"></ion-icon>
-              </div>
-              <ion-button
-                fill="clear"
-                size="small"
-                class="avatar-edit-button"
-                @click="handleAvatarEdit"
-              >
-                <ion-icon :icon="cameraOutline" slot="icon-only"></ion-icon>
-              </ion-button>
-            </div>
-            <div class="user-info">
-              <h1>{{ getFullName(user) }}</h1>
-              <p>{{ user.email }}</p>
-            </div>
+          <div class="user-info">
+            <h1>{{ user.name }}</h1>
+            <p>{{ user.email }}</p>
+            <p class="user-id">User ID: {{ user.id }}</p>
+            <p class="created-at">Joined: {{ formatDate(user.createdAt) }}</p>
           </div>
         </div>
 
@@ -59,89 +40,42 @@
             <ion-item
               class="modern-item"
               :class="{
-                'item-editing': editingField === 'firstName',
-                'item-error': errors.firstName,
-                'item-filled': user.firstName,
+                'item-editing': editingField === 'name',
+                'item-error': errors.name,
+                'item-filled': user.name,
               }"
             >
               <ion-label position="stacked" class="custom-label">
                 <ion-icon :icon="personOutline" class="label-icon"></ion-icon>
-                First Name *
+                Name *
               </ion-label>
               <ion-input
-                v-if="editingField === 'firstName'"
-                v-model="editData.firstName"
-                placeholder="Enter your first name"
-                @ionBlur="validateField('firstName')"
-                :class="{ 'input-error': errors.firstName }"
+                v-if="editingField === 'name'"
+                v-model="editData.name"
+                placeholder="Enter your name"
+                @ionBlur="validateField('name')"
+                :class="{ 'input-error': errors.name }"
                 autofocus
               ></ion-input>
-              <div v-else class="display-value">{{ user.firstName }}</div>
+              <div v-else class="display-value">{{ user.name }}</div>
               <ion-button
                 fill="clear"
                 size="small"
                 slot="end"
-                :color="editingField === 'firstName' ? 'success' : 'primary'"
-                @click="toggleEdit('firstName')"
+                :color="editingField === 'name' ? 'success' : 'primary'"
+                @click="toggleEdit('name')"
               >
                 <ion-icon
                   :icon="
-                    editingField === 'firstName'
-                      ? checkmarkOutline
-                      : createOutline
+                    editingField === 'name' ? checkmarkOutline : createOutline
                   "
                   slot="icon-only"
                 ></ion-icon>
               </ion-button>
             </ion-item>
-            <div v-if="errors.firstName" class="error-message">
+            <div v-if="errors.name" class="error-message">
               <ion-icon :icon="alertCircleOutline"></ion-icon>
-              {{ errors.firstName }}
-            </div>
-          </div>
-
-          <div class="form-group">
-            <ion-item
-              class="modern-item"
-              :class="{
-                'item-editing': editingField === 'lastName',
-                'item-error': errors.lastName,
-                'item-filled': user.lastName,
-              }"
-            >
-              <ion-label position="stacked" class="custom-label">
-                <ion-icon :icon="personOutline" class="label-icon"></ion-icon>
-                Last Name *
-              </ion-label>
-              <ion-input
-                v-if="editingField === 'lastName'"
-                v-model="editData.lastName"
-                placeholder="Enter your last name"
-                @ionBlur="validateField('lastName')"
-                :class="{ 'input-error': errors.lastName }"
-                autofocus
-              ></ion-input>
-              <div v-else class="display-value">{{ user.lastName }}</div>
-              <ion-button
-                fill="clear"
-                size="small"
-                slot="end"
-                :color="editingField === 'lastName' ? 'success' : 'primary'"
-                @click="toggleEdit('lastName')"
-              >
-                <ion-icon
-                  :icon="
-                    editingField === 'lastName'
-                      ? checkmarkOutline
-                      : createOutline
-                  "
-                  slot="icon-only"
-                ></ion-icon>
-              </ion-button>
-            </ion-item>
-            <div v-if="errors.lastName" class="error-message">
-              <ion-icon :icon="alertCircleOutline"></ion-icon>
-              {{ errors.lastName }}
+              {{ errors.name }}
             </div>
           </div>
 
@@ -187,17 +121,6 @@
               <ion-icon :icon="alertCircleOutline"></ion-icon>
               {{ errors.email }}
             </div>
-          </div>
-
-          <div class="form-group">
-            <ion-item class="modern-item item-filled">
-              <ion-label position="stacked" class="custom-label">
-                <ion-icon :icon="personOutline" class="label-icon"></ion-icon>
-                Username
-              </ion-label>
-              <div class="display-value">{{ user.username }}</div>
-              <ion-note slot="end" color="medium">Not changeable</ion-note>
-            </ion-item>
           </div>
         </div>
 
@@ -265,15 +188,11 @@ import {
   IonInput,
   IonButton,
   IonIcon,
-  IonChip,
   IonSpinner,
   IonAlert,
-  IonNote,
 } from "@ionic/vue";
 import {
   personOutline,
-  cameraOutline,
-  timeOutline,
   createOutline,
   checkmarkOutline,
   mailOutline,
@@ -289,7 +208,7 @@ import {
 import { ref, computed, reactive, watch, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useUserStore } from "@/stores/userStore";
-import type { User, UserUpdateData } from "@/models/user";
+import type { UserUpdateData } from "@/models/user";
 
 const router = useRouter();
 const userStore = useUserStore();
@@ -308,18 +227,16 @@ const userStats = ref({
 });
 
 const editData = reactive({
-  firstName: "",
-  lastName: "",
+  name: "",
   email: "",
 });
 
 const errors = ref({
-  firstName: "",
-  lastName: "",
+  name: "",
   email: "",
 });
 
-const editingField = ref<string | null>(null);
+const editingField = ref<"name" | "email" | null>(null);
 const hasChanges = ref(false);
 const showDeleteAlert = ref(false);
 
@@ -371,31 +288,26 @@ const loadUserStats = async () => {
   };
 };
 
-const getFullName = (user: User): string => {
-  return `${user.firstName} ${user.lastName}`.trim();
+const formatDate = (dateString: string): string => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
 };
 
 const validateField = (fieldName: keyof typeof errors.value) => {
   const value = editData[fieldName as keyof typeof editData]?.trim() || "";
 
   switch (fieldName) {
-    case "firstName":
+    case "name":
       if (!value) {
-        errors.value.firstName = "First name is required";
+        errors.value.name = "Name is required";
       } else if (value.length < 2) {
-        errors.value.firstName =
-          "First name must be at least 2 characters long";
+        errors.value.name = "Name must be at least 2 characters long";
       } else {
-        errors.value.firstName = "";
-      }
-      break;
-    case "lastName":
-      if (!value) {
-        errors.value.lastName = "Last name is required";
-      } else if (value.length < 2) {
-        errors.value.lastName = "Last name must be at least 2 characters long";
-      } else {
-        errors.value.lastName = "";
+        errors.value.name = "";
       }
       break;
     case "email":
@@ -411,21 +323,18 @@ const validateField = (fieldName: keyof typeof errors.value) => {
   }
 };
 
-const toggleEdit = async (fieldName: string) => {
+const toggleEdit = async (fieldName: "name" | "email") => {
   if (editingField.value === fieldName) {
-    validateField(fieldName as keyof typeof errors.value);
+    validateField(fieldName);
 
-    if (!errors.value[fieldName as keyof typeof errors.value] && user.value) {
-      user.value[fieldName as keyof User] =
-        editData[fieldName as keyof typeof editData];
+    if (!errors.value[fieldName] && user.value) {
+      user.value[fieldName] = editData[fieldName];
       editingField.value = null;
       hasChanges.value = true;
     }
   } else {
     if (user.value) {
-      editData[fieldName as keyof typeof editData] = user.value[
-        fieldName as keyof User
-      ] as string;
+      editData[fieldName] = user.value[fieldName] as string;
       editingField.value = fieldName;
     }
   }
@@ -444,8 +353,7 @@ const handleSave = async () => {
 
   try {
     const updateData: UserUpdateData = {
-      firstName: user.value.firstName,
-      lastName: user.value.lastName,
+      name: user.value.name,
       email: user.value.email,
     };
 
@@ -457,10 +365,6 @@ const handleSave = async () => {
   } catch (error) {
     console.error("Error updating profile:", error);
   }
-};
-
-const handleAvatarEdit = () => {
-  console.log("Avatar edit clicked");
 };
 
 const deleteAccount = () => {
@@ -477,15 +381,12 @@ const confirmDeleteAccount = async () => {
 };
 
 watch(
-  [() => editData.firstName, () => editData.lastName, () => editData.email],
+  [() => editData.name, () => editData.email],
   () => {
     if (user.value) {
-      const hasFirstNameChanged = editData.firstName !== user.value.firstName;
-      const hasLastNameChanged = editData.lastName !== user.value.lastName;
+      const hasNameChanged = editData.name !== user.value.name;
       const hasEmailChanged = editData.email !== user.value.email;
-
-      hasChanges.value =
-        hasFirstNameChanged || hasLastNameChanged || hasEmailChanged;
+      hasChanges.value = hasNameChanged || hasEmailChanged;
     }
   },
   { deep: true }
@@ -545,46 +446,8 @@ watch(
   box-shadow: 0 8px 24px rgba(var(--ion-color-primary-rgb), 0.3);
 }
 
-.avatar-section {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-}
-
-.avatar-container {
-  position: relative;
-  flex-shrink: 0;
-}
-
-.avatar-image,
-.avatar-placeholder {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  object-fit: cover;
-}
-
-.avatar-placeholder {
-  background: rgba(255, 255, 255, 0.2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.avatar-icon {
-  font-size: 40px;
-  color: rgba(255, 255, 255, 0.8);
-}
-
-.avatar-edit-button {
-  position: absolute;
-  bottom: -2px;
-  right: -2px;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: var(--ion-color-primary-shade);
-  border: 2px solid white;
+.user-info {
+  text-align: center;
 }
 
 .user-info h1 {
@@ -598,6 +461,13 @@ watch(
   color: rgba(255, 255, 255, 0.9);
   margin: 0 0 12px 0;
   font-size: 0.95em;
+}
+
+.user-id,
+.created-at {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.85em;
+  margin: 4px 0;
 }
 
 .chip-icon {
@@ -767,10 +637,8 @@ watch(
     padding: 12px;
   }
 
-  .avatar-section {
-    flex-direction: column;
+  .user-info {
     text-align: center;
-    gap: 12px;
   }
 
   .stats-grid {
@@ -785,16 +653,6 @@ watch(
 @media (max-width: 480px) {
   .profile-header {
     padding: 20px 16px;
-  }
-
-  .avatar-image,
-  .avatar-placeholder {
-    width: 60px;
-    height: 60px;
-  }
-
-  .avatar-icon {
-    font-size: 30px;
   }
 
   .user-info h1 {

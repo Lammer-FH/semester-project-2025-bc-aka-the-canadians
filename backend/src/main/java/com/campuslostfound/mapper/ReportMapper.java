@@ -1,6 +1,7 @@
 package com.campuslostfound.mapper;
 
 import com.campuslostfound.dto.ReportDTO;
+import com.campuslostfound.model.Item;
 import com.campuslostfound.model.Report;
 
 import org.mapstruct.Mapper;
@@ -25,8 +26,8 @@ public interface ReportMapper {
     Report toEntity(ReportDTO dto);
 
     @Named("reportItemListToIdList")
-    public static java.util.List<Long> itemListToIdList(
-            java.util.List<com.campuslostfound.model.Item> items) {
+    public static List<Long> itemListToIdList(
+            List<Item> items) {
         if (items == null) return null;
         return items.stream()
                 .map(com.campuslostfound.model.Item::getId)

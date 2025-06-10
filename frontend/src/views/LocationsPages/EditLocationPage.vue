@@ -47,7 +47,7 @@
             autocomplete="off"
             autocorrect="off"
             autocapitalize="words"
-            spellcheck="false"
+            :spellcheck="false"
             @ionBlur="validateField('name')"
           ></ion-input>
           <div v-if="errors.name" class="error-message">
@@ -70,7 +70,7 @@
             :rows="3"
             autocomplete="off"
             autocorrect="off"
-            spellcheck="false"
+            :spellcheck="false"
           ></ion-textarea>
         </div>
 
@@ -128,8 +128,6 @@ import {
 } from "@ionic/vue";
 import {
   createOutline,
-  textOutline,
-  documentTextOutline,
   alertCircleOutline,
   informationCircleOutline,
   checkmarkCircleOutline,

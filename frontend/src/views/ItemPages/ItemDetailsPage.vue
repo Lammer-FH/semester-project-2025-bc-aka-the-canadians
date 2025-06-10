@@ -448,6 +448,39 @@ const getStatusText = (status: ItemStatus): string => {
   }
 };
 
+const getStatusColor = (status: ItemStatus): string => {
+  switch (status) {
+    case ItemStatus.UNCLAIMED:
+      return "success";
+    case ItemStatus.CLAIMED:
+      return "medium";
+    default:
+      return "primary";
+  }
+};
+
+const getStatusIcon = (status: ItemStatus): string => {
+  switch (status) {
+    case ItemStatus.UNCLAIMED:
+      return eyeOutline;
+    case ItemStatus.CLAIMED:
+      return checkmarkCircleOutline;
+    default:
+      return flagOutline;
+  }
+};
+
+const getStatusText = (status: ItemStatus): string => {
+  switch (status) {
+    case ItemStatus.UNCLAIMED:
+      return "Unclaimed";
+    case ItemStatus.CLAIMED:
+      return "Claimed";
+    default:
+      return "Unknown";
+  }
+};
+
 const getTypeText = (type: ReportType): string => {
   switch (type) {
     case ReportType.LOST:

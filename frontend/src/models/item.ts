@@ -22,7 +22,6 @@ export interface ItemCreateData {
     name: string;
     description?: string;
     reportId: number;
-    status: ItemStatus
 }
 
 export interface ItemUpdateData {

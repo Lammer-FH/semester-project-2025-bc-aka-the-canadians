@@ -42,7 +42,6 @@
               <div class="select-option">
                 <ion-icon :icon="searchOutline" class="option-icon"></ion-icon>
                 <div>
-                  <strong>Lost Report</strong>
                   <p>I have lost an item</p>
                 </div>
               </div>
@@ -51,7 +50,6 @@
               <div class="select-option">
                 <ion-icon :icon="eyeOutline" class="option-icon"></ion-icon>
                 <div>
-                  <strong>Found Report</strong>
                   <p>I have found an item</p>
                 </div>
               </div>
@@ -85,7 +83,7 @@
         <div class="input-group">
           <ion-textarea
             v-model="reportData.description"
-            label="Description"
+            label="Description *"
             label-placement="stacked"
             placeholder="Describe the item in detail: color, size, special features, where you lost/found it..."
             class="modern-textarea"
@@ -94,6 +92,10 @@
             }"
             :rows="4"
           ></ion-textarea>
+          <div v-if="errors.description" class="error-message">
+            <ion-icon :icon="alertCircleOutline"></ion-icon>
+            {{ errors.description }}
+          </div>
         </div>
 
         <div class="input-group">
@@ -117,9 +119,6 @@
             >
               {{ location.name }}
             </ion-select-option>
-            <ion-select-option value="other">
-              <strong>Other Location (please specify in description)</strong>
-            </ion-select-option>
           </ion-select>
           <div v-if="errors.location" class="error-message">
             <ion-icon :icon="alertCircleOutline"></ion-icon>
@@ -133,7 +132,9 @@
             Your Contact Information
           </h3>
           <p class="section-description">
-            So others can contact you if they have found your item.
+            So others can contact you if they have found your item. This will
+            automatically create a user profile so that next time you can report
+            items faster.
           </p>
 
           <ion-input
@@ -155,123 +156,19 @@
 
           <ion-input
             v-model="reportData.contactInfo"
-            label="Contact (optional)"
+            label="Email *"
             label-placement="stacked"
-            placeholder="Email or Phone"
+            placeholder="Enter your email address"
             class="modern-input"
             :class="{
               'input-filled': reportData.contactInfo,
+              'input-error': errors.contactInfo,
             }"
+            @ionBlur="validateField('contactInfo')"
           ></ion-input>
-        </div>
-
-        <div class="input-group">
-          <div class="image-upload-section">
-            <h3 class="upload-title">
-              <ion-icon :icon="cameraOutline" class="title-icon"></ion-icon>
-              Add Photo (optional)
-            </h3>
-            <p class="upload-description">
-              A photo helps others identify the item
-            </p>
-
-            <div v-if="imagePreview" class="image-preview-container">
-              <img :src="imagePreview" alt="Preview" class="image-preview" />
-              <ion-button
-                fill="clear"
-                color="danger"
-                class="remove-image-btn"
-                @click="removeImage"
-              >
-                <ion-icon :icon="trashOutline" slot="icon-only"></ion-icon>
-              </ion-button>
-            </div>
-
-            <div v-else class="upload-buttons">
-              <ion-button
-                expand="block"
-                fill="outline"
-                class="upload-btn"
-                @click="takePhoto"
-              >
-                <ion-icon :icon="cameraOutline" slot="start"></ion-icon>
-                Take Photo
-              </ion-button>
-              <ion-button
-                expand="block"
-                fill="outline"
-                class="upload-btn"
-                @click="triggerFileInput"
-              >
-                <ion-icon :icon="cloudUploadOutline" slot="start"></ion-icon>
-                Upload Photo
-              </ion-button>
-            </div>
-
-            <input
-              ref="fileInput"
-              type="file"
-              accept="image/*"
-              style="display: none"
-              @change="handleFileSelect"
-            />
-          </div>
-        </div>
-
-        <div class="tips-section">
-          <h3 class="tips-title">
-            <ion-icon :icon="bulbOutline" class="title-icon"></ion-icon>
-            Tips for a Good Report
-          </h3>
-          <div class="tips-list">
-            <div class="tip-item">
-              <ion-icon
-                :icon="checkmarkCircleOutline"
-                color="success"
-              ></ion-icon>
-              <div class="tip-text">
-                <p>
-                  <strong>Be detailed:</strong> The more details, the better
-                  others can help
-                </p>
-              </div>
-            </div>
-            <div class="tip-item">
-              <ion-icon
-                :icon="checkmarkCircleOutline"
-                color="success"
-              ></ion-icon>
-              <div class="tip-text">
-                <p>
-                  <strong>Add a photo:</strong> Images help enormously with
-                  identification
-                </p>
-              </div>
-            </div>
-            <div class="tip-item">
-              <ion-icon
-                :icon="checkmarkCircleOutline"
-                color="success"
-              ></ion-icon>
-              <div class="tip-text">
-                <p>
-                  <strong>Choose the right location:</strong> Where did you last
-                  see the item?
-                </p>
-              </div>
-            </div>
-            <div class="tip-item">
-              <ion-icon
-                :icon="checkmarkCircleOutline"
-                color="success"
-              ></ion-icon>
-              <div class="tip-text">
-                <p>
-                  <strong>Stay reachable:</strong> Provide correct contact
-                  information
-                </p>
-              </div>
-            </div>
+          <div v-if="errors.contactInfo" class="error-message">
+            <ion-icon :icon="alertCircleOutline"></ion-icon>
+            {{ errors.contactInfo }}
           </div>
         </div>
       </div>
@@ -287,17 +184,12 @@ import {
   IonIcon,
   IonSelect,
   IonSelectOption,
-  IonButton,
 } from "@ionic/vue";
 import {
   megaphoneOutline,
   alertCircleOutline,
   checkmarkCircleOutline,
   closeCircleOutline,
-  cameraOutline,
-  cloudUploadOutline,
-  trashOutline,
-  bulbOutline,
   personOutline,
   searchOutline,
   eyeOutline,
@@ -325,19 +217,18 @@ const reportData = ref({
   location: "",
   reporterName: "",
   contactInfo: "",
-  imageData: "",
 });
 
 const errors = ref({
   type: "",
   itemName: "",
+  description: "",
   location: "",
   reporterName: "",
+  contactInfo: "",
 });
 
 const isSubmitting = computed(() => itemStore.isLoading);
-const imagePreview = ref("");
-const fileInput = ref<HTMLInputElement>();
 const availableLocations = computed(() => locationStore.getLocations || []);
 
 const leftFooterButton = computed(() => ({
@@ -347,12 +238,8 @@ const leftFooterButton = computed(() => ({
 }));
 
 const rightFooterButton = computed(() => ({
-  name: isSubmitting.value
-    ? "Submitting Report..."
-    : isValid.value
-      ? "Submit Report"
-      : "Fill Required Fields",
-  color: isValid.value ? "primary" : "medium",
+  name: "Submit Report",
+  color: isValid.value && !isSubmitting.value ? "primary" : "medium",
   icon: checkmarkCircleOutline,
   disabled: !isValid.value || isSubmitting.value,
 }));
@@ -362,44 +249,49 @@ const isValid = computed(() => {
     reportData.value.type !== null &&
     typeof reportData.value.itemName === "string" &&
     reportData.value.itemName.trim() !== "" &&
+    typeof reportData.value.description === "string" &&
+    reportData.value.description.trim() !== "" &&
     typeof reportData.value.location === "string" &&
     reportData.value.location.trim() !== "" &&
     typeof reportData.value.reporterName === "string" &&
-    reportData.value.reporterName.trim() !== ""
+    reportData.value.reporterName.trim() !== "" &&
+    typeof reportData.value.contactInfo === "string" &&
+    validateEmail(reportData.value.contactInfo)
   );
 });
 
 const completionPercentage = computed(() => {
-  const requiredFields = ["type", "itemName", "location", "reporterName"];
-  const optionalFields = ["description", "contactInfo"];
+  const requiredFields = [
+    "type",
+    "itemName",
+    "description",
+    "location",
+    "reporterName",
+    "contactInfo",
+  ];
 
   const requiredFilled = requiredFields.filter(field => {
     const value = reportData.value[field as keyof typeof reportData.value];
     if (field === "type") {
       return value !== null;
     }
+    if (field === "contactInfo") {
+      return typeof value === "string" && validateEmail(value);
+    }
     return typeof value === "string" && value.trim() !== "";
   }).length;
 
-  const optionalFilled = optionalFields.filter(field => {
-    const value = reportData.value[field as keyof typeof reportData.value];
-    return typeof value === "string" && value.trim() !== "";
-  }).length;
-
-  const requiredWeight = 0.8;
-  const optionalWeight = 0.2;
-
-  const requiredScore =
-    (requiredFilled / requiredFields.length) * requiredWeight;
-  const optionalScore =
-    (optionalFilled / optionalFields.length) * optionalWeight;
-
-  return Math.round((requiredScore + optionalScore) * 100);
+  return Math.round((requiredFilled / requiredFields.length) * 100);
 });
 
 onMounted(async () => {
   await locationStore.fetchLocations();
 });
+
+const validateEmail = (email: string) => {
+  // Simple email regex
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+};
 
 const validateField = (fieldName: keyof typeof errors.value) => {
   const value = String(
@@ -419,6 +311,9 @@ const validateField = (fieldName: keyof typeof errors.value) => {
         errors.value.itemName = "";
       }
       break;
+    case "description":
+      errors.value.description = !value ? "Description is required" : "";
+      break;
     case "location":
       errors.value.location = !value ? "Please select a location" : "";
       break;
@@ -431,14 +326,25 @@ const validateField = (fieldName: keyof typeof errors.value) => {
         errors.value.reporterName = "";
       }
       break;
+    case "contactInfo":
+      if (!value) {
+        errors.value.contactInfo = "Email is required";
+      } else if (!validateEmail(value)) {
+        errors.value.contactInfo = "Please enter a valid email address";
+      } else {
+        errors.value.contactInfo = "";
+      }
+      break;
   }
 };
 
 const validateAllFields = () => {
   validateField("type");
   validateField("itemName");
+  validateField("description");
   validateField("location");
   validateField("reporterName");
+  validateField("contactInfo");
 };
 
 const handleCancel = () => {
@@ -474,26 +380,11 @@ const handleSubmit = async () => {
       return;
     }
 
-    const enhancedDescription = [
-      reportData.value.description,
-      "",
-      `--- Report Information ---`,
-      `Report Type: ${reportData.value.type === ReportType.LOST ? "Lost Report" : "Found Report"}`,
-      `Reported by: ${reportData.value.reporterName}`,
-      reportData.value.contactInfo
-        ? `Contact: ${reportData.value.contactInfo}`
-        : "",
-      `Report Date: ${new Date().toLocaleDateString("en-US")}`,
-    ]
-      .filter(Boolean)
-      .join("\n");
-
     // Now create the item with the report ID
     const itemData: ItemCreateData = {
       name: reportData.value.itemName,
-      description: enhancedDescription,
+      description: reportData.value.description,
       reportId: newReport.id,
-      status: ItemStatus.UNCLAIMED,
     };
 
     const newItem = await itemStore.createItem(itemData);
@@ -504,52 +395,6 @@ const handleSubmit = async () => {
     }
   } catch (error) {
     console.error("Error submitting report:", error);
-  }
-};
-
-const triggerFileInput = () => {
-  fileInput.value?.click();
-};
-
-const handleFileSelect = (event: Event) => {
-  const target = event.target as HTMLInputElement;
-  const file = target.files?.[0];
-
-  if (file) {
-    if (!file.type.startsWith("image/")) {
-      console.error("Please select an image file");
-      return;
-    }
-
-    const maxSize = 5 * 1024 * 1024; // 5MB
-    if (file.size > maxSize) {
-      console.error("File size must be less than 5MB");
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = e => {
-      const result = e.target?.result as string;
-      imagePreview.value = result;
-      reportData.value.imageData = result;
-    };
-    reader.readAsDataURL(file);
-  }
-};
-
-const takePhoto = async () => {
-  try {
-    triggerFileInput();
-  } catch (error) {
-    console.error("Error taking photo:", error);
-  }
-};
-
-const removeImage = () => {
-  imagePreview.value = "";
-  reportData.value.imageData = "";
-  if (fileInput.value) {
-    fileInput.value.value = "";
   }
 };
 
@@ -578,6 +423,13 @@ watch(
   () => reportData.value.reporterName,
   () => {
     if (errors.value.reporterName) validateField("reporterName");
+  }
+);
+
+watch(
+  () => reportData.value.contactInfo,
+  () => {
+    if (errors.value.contactInfo) validateField("contactInfo");
   }
 );
 </script>
@@ -744,78 +596,9 @@ watch(
   animation: shake 0.3s ease-in-out;
 }
 
-.image-upload-section {
-  background: var(--ion-color-light-tint);
-  border: 2px dashed var(--ion-color-light-shade);
-  border-radius: 12px;
-  padding: 20px;
-  text-align: center;
-  transition: all 0.3s ease;
-}
-
-.image-upload-section:hover {
-  border-color: var(--ion-color-primary-tint);
-  background: rgba(var(--ion-color-primary-rgb), 0.02);
-}
-
-.upload-title {
-  color: var(--ion-color-dark);
-  margin: 0 0 8px 0;
-  font-size: 1.1em;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-}
-
 .title-icon {
   font-size: 20px;
   color: var(--ion-color-primary);
-}
-
-.upload-description {
-  color: var(--ion-color-medium);
-  margin: 0 0 20px 0;
-  font-size: 0.9em;
-}
-
-.image-preview-container {
-  position: relative;
-  display: inline-block;
-  margin-bottom: 16px;
-}
-
-.image-preview {
-  max-width: 200px;
-  max-height: 200px;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.remove-image-btn {
-  position: absolute;
-  top: -8px;
-  right: -8px;
-  --background: var(--ion-color-danger);
-  --color: white;
-  --border-radius: 50%;
-  width: 32px;
-  height: 32px;
-}
-
-.upload-buttons {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  max-width: 300px;
-  margin: 0 auto;
-}
-
-.upload-btn {
-  --border-width: 2px;
-  --border-style: solid;
-  font-weight: 500;
 }
 
 .tips-section {
@@ -904,10 +687,6 @@ watch(
 
   .form-header h2 {
     font-size: 1.6em;
-  }
-
-  .upload-buttons {
-    max-width: 100%;
   }
 }
 

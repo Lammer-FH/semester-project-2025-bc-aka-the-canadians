@@ -12,10 +12,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Mapper(componentModel = "spring")
-public interface LocationMapper {
+public interface LocationMapper extends GenericMapper<Location, LocationDTO> {
+    @Override
     @Mapping(target = "reportIds", source = "reports", qualifiedByName = "reportListToIdList")
     LocationDTO toDTO(Location location);
 
+    @Override
     @Mapping(target = "reports", ignore = true)
     Location toEntity(LocationDTO dto);
 
@@ -24,6 +26,4 @@ public interface LocationMapper {
         if (reports == null) return null;
         return reports.stream().map(Report::getId).collect(Collectors.toList());
     }
-
-    List<LocationDTO> toDTOList(List<Location> allLocations);
 }

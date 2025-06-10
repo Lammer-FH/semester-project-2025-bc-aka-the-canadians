@@ -180,7 +180,7 @@ const activeFiltersCount = computed(() => {
   }).length;
 });
 
-const activeReportsCount = computed(
+const openReportsCount = computed(
   () =>
     reports.value.filter(report => report.status === ReportStatusEnum.OPEN)
       .length

@@ -31,13 +31,15 @@ public class ItemController {
     public ResponseEntity<ItemDTO> getItemById(@PathVariable Long id) {
         Optional<Item> item = itemService.getItemById(id);
 
-        return item.map(value -> ResponseEntity.ok(itemMapper.toDTO(value))).orElseGet(() -> ResponseEntity.notFound().build());
+        return item.map(value -> ResponseEntity.ok(itemMapper.toDTO(value)))
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PostMapping
     public ResponseEntity<ItemDTO> createItem(@RequestBody ItemDTO itemDTO) {
         try {
-            Item savedItem = itemService.createItemFromReportId(itemDTO.getName(), itemDTO.getDescription(), itemDTO.getReportId(), itemDTO.getStatus());
+            Item savedItem = itemService.createItemFromReportId(itemDTO.getName(), itemDTO.getDescription(),
+                    itemDTO.getReportId());
 
             return ResponseEntity.status(HttpStatus.CREATED).body(itemMapper.toDTO(savedItem));
         } catch (IllegalArgumentException e) {

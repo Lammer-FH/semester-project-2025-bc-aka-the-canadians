@@ -61,12 +61,10 @@ public class DataInitializer {
                 // Create items
                 Item book = new Item(null, "Calculus Textbook", "Blue cover, Stewart 8th Edition", ItemStatus.UNCLAIMED, lostBookReport, null, null);
                 Item phone = new Item(null, "iPhone 12", "Black, with cracked screen", ItemStatus.CLAIMED, foundPhoneReport, alice, null);
-                Item charger = new Item(null, "MacBook Charger", "61W USB-C Power Adapter", ItemStatus.UNCLAIMED, lostElectronicsReport, null, null);
                 Item mouse = new Item(null, "Bluetooth Mouse", "Wireless mouse, black", ItemStatus.CLAIMED, lostElectronicsReport, null, null);
                 Item usbStick = new Item(null, "16GB USB Stick", "USB 3.0 flash drive", ItemStatus.CLAIMED, lostUSBReport, null, null);
                 itemRepository.save(book);
                 itemRepository.save(phone);
-                itemRepository.save(charger);
                 itemRepository.save(mouse);
                 itemRepository.save(usbStick);
 

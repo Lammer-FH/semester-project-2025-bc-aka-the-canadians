@@ -199,7 +199,7 @@ import { useRouter } from "vue-router";
 import { useItemStore } from "@/stores/itemStore";
 import { useLocationStore } from "@/stores/locationStore";
 import { useReportStore } from "@/stores/reportStore";
-import { ItemStatus, type ItemCreateData } from "@/models/item";
+import { type ItemCreateData } from "@/models/item";
 import { ReportType, type ReportCreateData } from "@/models/report";
 
 const router = useRouter();

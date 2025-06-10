@@ -67,11 +67,11 @@
         </div>
         <div class="stat-item">
           <ion-icon :icon="checkmarkCircleOutline" color="success"></ion-icon>
-          <span>{{ activeReportsCount }} Active</span>
+          <span>{{ openReportsCount }} Open</span>
         </div>
         <div class="stat-item">
-          <ion-icon :icon="closeCircleOutline" color="medium"></ion-icon>
-          <span>{{ closedReportsCount }} Closed</span>
+          <ion-icon :icon="checkmarkCircleOutline" color="primary"></ion-icon>
+          <span>{{ resolvedReportsCount }} Resolved</span>
         </div>
       </div>
 
@@ -222,14 +222,14 @@
                   slot="start"
                   :value="ReportStatusEnum.OPEN"
                 ></ion-radio>
-                <ion-label>Active Reports</ion-label>
+                <ion-label>Open Reports</ion-label>
               </ion-item>
               <ion-item>
                 <ion-radio
                   slot="start"
-                  :value="ReportStatusEnum.CLOSED"
+                  :value="ReportStatusEnum.RESOLVED"
                 ></ion-radio>
-                <ion-label>Closed Reports</ion-label>
+                <ion-label>Resolved Reports</ion-label>
               </ion-item>
             </ion-radio-group>
           </div>
@@ -296,7 +296,7 @@ import {
   closeOutline,
   documentTextOutline,
   checkmarkCircleOutline,
-  closeCircleOutline,
+  searchOutline,
   alertCircleOutline,
   refreshOutline,
   documentOutline,
@@ -316,8 +316,14 @@ import NavigationTabs from "@/components/NavigationTabs.vue";
 const activeTab = ref("reports");
 const searchTerm = ref("");
 const showFilterModal = ref(false);
-const selectedStatus = ref<boolean | null>(null);
+const selectedStatus = ref<ReportStatus | null>(null);
 const selectedLocation = ref<string>("");
+
+// Router
+const router = useRouter();
+
+// Stores
+const reportStore = useReportStore();
 
 // Computed properties
 const reports = computed(() => reportStore.getReports);
@@ -330,16 +336,12 @@ const filteredReports = computed(() => {
   // Filter by search term
   if (searchTerm.value.trim()) {
     const search = searchTerm.value.toLowerCase();
-    filtered = filtered.filter(
-      report =>
-        report.id.toString().includes(search) ||
-        report.user?.name?.toLowerCase().includes(search) ||
-        report.location?.name?.toLowerCase().includes(search) ||
-        report.items?.some(
-          item =>
-            item.name.toLowerCase().includes(search) ||
-            item.description?.toLowerCase().includes(search)
-        )
+    filtered = filtered.filter(report =>
+      report.items?.some(
+        item =>
+          item.name.toLowerCase().includes(search) ||
+          item.description?.toLowerCase().includes(search)
+      )
     );
   }
 
@@ -367,15 +369,15 @@ const uniqueLocations = computed(() => {
   return [...new Set(locations)].sort();
 });
 
-const activeReportsCount = computed(
+const openReportsCount = computed(
   () =>
     reports.value.filter(report => report.status === ReportStatusEnum.OPEN)
       .length
 );
 
-const closedReportsCount = computed(
+const resolvedReportsCount = computed(
   () =>
-    reports.value.filter(report => report.status === ReportStatusEnum.CLOSED)
+    reports.value.filter(report => report.status === ReportStatusEnum.RESOLVED)
       .length
 );
 
@@ -391,12 +393,8 @@ const getStatusText = (status: ReportStatus): string => {
   switch (status) {
     case ReportStatus.OPEN:
       return "Open";
-    case ReportStatus.IN_PROGRESS:
-      return "In Progress";
     case ReportStatus.RESOLVED:
       return "Resolved";
-    case ReportStatus.CLOSED:
-      return "Closed";
     default:
       return "Unknown";
   }
@@ -406,12 +404,8 @@ const getStatusIcon = (status: ReportStatus): string => {
   switch (status) {
     case ReportStatus.OPEN:
       return searchOutline;
-    case ReportStatus.IN_PROGRESS:
-      return timeOutline;
     case ReportStatus.RESOLVED:
       return checkmarkCircleOutline;
-    case ReportStatus.CLOSED:
-      return closeCircleOutline;
     default:
       return alertCircleOutline;
   }
@@ -421,12 +415,8 @@ const getStatusClass = (status: ReportStatus): string => {
   switch (status) {
     case ReportStatus.OPEN:
       return "status-open";
-    case ReportStatus.IN_PROGRESS:
-      return "status-progress";
     case ReportStatus.RESOLVED:
       return "status-resolved";
-    case ReportStatus.CLOSED:
-      return "status-closed";
     default:
       return "status-unknown";
   }

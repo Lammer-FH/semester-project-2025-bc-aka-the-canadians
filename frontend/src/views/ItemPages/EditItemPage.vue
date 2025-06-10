@@ -26,7 +26,10 @@
         <div class="form-header">
           <ion-icon :icon="createOutline" class="header-icon"></ion-icon>
           <h2>Edit Item Details</h2>
-          <p>Update the name and description for this item only. Report information (location, type, etc.) must be edited separately.</p>
+          <p>
+            Update the name and description for this item only. Report
+            information (location, type, etc.) must be edited separately.
+          </p>
           <div v-if="item.createdAt" class="last-modified">
             <ion-icon :icon="timeOutline" class="time-icon"></ion-icon>
             Created: {{ formatDate(item.createdAt) }}
@@ -39,7 +42,9 @@
             <ion-icon :icon="createOutline" class="section-icon"></ion-icon>
             Editable Item Fields
           </h3>
-          <p class="section-description">Only these item-specific fields can be edited here:</p>
+          <p class="section-description">
+            Only these item-specific fields can be edited here:
+          </p>
         </div>
 
         <div class="input-group">
@@ -90,14 +95,20 @@
 
         <!-- Report Context Information (Read-Only) -->
         <div class="divider"></div>
-        
+
         <div class="context-section">
           <h3 class="context-title">
-            <ion-icon :icon="informationCircleOutline" class="section-icon"></ion-icon>
+            <ion-icon
+              :icon="informationCircleOutline"
+              class="section-icon"
+            ></ion-icon>
             Report Context (Read-Only)
           </h3>
-          <p class="context-description">This item belongs to the following report (these fields cannot be edited here):</p>
-          
+          <p class="context-description">
+            This item belongs to the following report (these fields cannot be
+            edited here):
+          </p>
+
           <div class="context-grid">
             <div class="context-item">
               <ion-icon :icon="documentOutline" class="context-icon"></ion-icon>
@@ -111,7 +122,7 @@
               <ion-icon :icon="locationOutline" class="context-icon"></ion-icon>
               <div class="context-content">
                 <label>Location</label>
-                <span>{{ item.locationName || 'Not specified' }}</span>
+                <span>{{ item.locationName || "Not specified" }}</span>
               </div>
             </div>
 
@@ -119,7 +130,13 @@
               <ion-icon :icon="flagOutline" class="context-icon"></ion-icon>
               <div class="context-content">
                 <label>Report Type</label>
-                <span>{{ item.reportStatus !== undefined ? (item.reportStatus ? 'Found Item' : 'Lost Item') : 'Unknown' }}</span>
+                <span>{{
+                  item.reportStatus !== undefined
+                    ? item.reportStatus
+                      ? "Found Item"
+                      : "Lost Item"
+                    : "Unknown"
+                }}</span>
               </div>
             </div>
 
@@ -127,12 +144,15 @@
               <ion-icon :icon="personOutline" class="context-icon"></ion-icon>
               <div class="context-content">
                 <label>Reporter</label>
-                <span>{{ item.reporterUserName || 'Unknown' }}</span>
+                <span>{{ item.reporterUserName || "Unknown" }}</span>
               </div>
             </div>
 
             <div v-if="item.claimedByUserId" class="context-item">
-              <ion-icon :icon="handRightOutline" class="context-icon"></ion-icon>
+              <ion-icon
+                :icon="handRightOutline"
+                class="context-icon"
+              ></ion-icon>
               <div class="context-content">
                 <label>Claimed By</label>
                 <span>User ID: {{ item.claimedByUserId }}</span>
@@ -198,6 +218,7 @@ import { ref, computed, watch, onMounted, nextTick } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { useItemStore } from "@/stores/itemStore";
 import type { Item } from "@/models/item";
+import { ItemStatus } from "@/models/item";
 
 const router = useRouter();
 const route = useRoute();
@@ -211,6 +232,7 @@ const item = ref<Item>({
   reportId: 0,
   claimedByUserId: undefined,
   createdAt: "",
+  status: ItemStatus.UNCLAIMED,
 });
 
 const errors = ref({

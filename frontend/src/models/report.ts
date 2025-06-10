@@ -8,6 +8,7 @@ export interface Report {
     locationId: number;
     createdAt: string;
     status: ReportStatus;
+    type: ReportType; // Add type field
     itemIds?: number[];
     user?: User;
     location?: Location;
@@ -17,7 +18,7 @@ export interface Report {
 export interface ReportCreateData {
     userId: number;
     locationId: number;
-    status?: ReportStatus;
+    type: ReportType;
 }
 
 export interface ReportUpdateData {
@@ -38,5 +39,7 @@ export enum ReportStatus {
     RESOLVED = "RESOLVED"
 }
 
-// Helper type for display purposes
-export type ReportType = "FOUND" | "LOST";
+export enum ReportType {
+    LOST = "LOST",
+    FOUND = "FOUND"
+}

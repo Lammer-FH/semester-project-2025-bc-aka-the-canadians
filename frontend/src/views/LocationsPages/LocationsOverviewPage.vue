@@ -171,9 +171,9 @@
                         class="report-icon"
                       ></ion-icon>
                       <div class="report-text">
-                        <span class="report-title">{{ report.title }}</span>
+                        <span class="report-title">{{ report.id }}</span>
                         <span class="report-time">{{
-                          getTimeAgo(report.dateCreated)
+                          getTimeAgo(report.createdAt)
                         }}</span>
                       </div>
                     </div>
@@ -270,19 +270,8 @@ import { ref, computed, watch, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useLocationStore } from "@/stores/locationStore";
 import { useReportStore } from "@/stores/reportStore";
-import { isReportResolved, ReportStatus } from "@/models/report";
 import type { Location } from "@/models/location";
 import type { Report } from "@/models/report";
-
-interface VirtualReport {
-  id: number;
-  title: string;
-  description: string;
-  status: string;
-  location: string;
-  createdAt: string;
-  reporterName?: string;
-}
 
 const router = useRouter();
 const locationStore = useLocationStore();
@@ -295,18 +284,6 @@ const isLoading = computed(
   () => locationStore.isLoading || reportStore.isLoading
 );
 const error = computed(() => locationStore.getError);
-
-const reports = computed((): VirtualReport[] => {
-  return reportStore.getReports.map((report: Report) => ({
-    id: report.id,
-    title: report.items?.[0]?.name || "Unknown Item",
-    description: report.items?.[0]?.description || "No description available",
-    status: report.status ? "RESOLVED" : "OPEN",
-    location: report.location?.name || "Unknown Location",
-    createdAt: report.createdAt,
-    reporterName: report.user?.name || "Unknown Reporter",
-  }));
-});
 
 onMounted(async () => {
   await loadLocations();

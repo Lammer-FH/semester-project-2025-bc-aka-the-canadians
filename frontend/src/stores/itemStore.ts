@@ -1,7 +1,7 @@
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
 import { itemService } from "@/services";
-import { Item, ItemFilters } from "@/models/item";
+import { Item, ItemFilters, ItemCreateData } from "@/models/item";
 
 export const useItemStore = defineStore("item", () => {
     const items = ref<Item[]>([]);
@@ -55,7 +55,7 @@ export const useItemStore = defineStore("item", () => {
     };
 
     const createItem = async (
-        itemData: Omit<Item, "id" | "createdAt" | "updatedAt">,
+        itemData: ItemCreateData,
     ): Promise<Item | null> => {
         try {
             loading.value = true;

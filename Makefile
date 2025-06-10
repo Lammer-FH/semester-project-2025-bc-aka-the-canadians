@@ -2,7 +2,7 @@ DOCKER_COMPOSE_PATH = docker-compose.yml
 BACKEND_PATH = backend
 FRONTEND_PATH = frontend
 
-.PHONY: backend backend-dev-profile backend-docker frontend lint-frontend fix-frontend check-frontend frontend-docker run-all restart-all help
+.PHONY: backend backend-dev-profile backend-docker frontend lint-frontend fix-frontend check-frontend frontend-docker run-all restart-all clean help
 
 backend: # Building and running backend (locally)
 	@echo "Building and running backend (locally):"
@@ -44,6 +44,10 @@ restart-all: # Removing volumes, rebuilding images and starting all services
 	@echo "Removing volumes, rebuilding images and starting all services"
 	docker compose -f $(DOCKER_COMPOSE_PATH) down -v
 	docker compose -f $(DOCKER_COMPOSE_PATH) up --build
+
+clean: # Clean up all Docker services, images, networks and volumes
+	@echo "Clean up all Docker services, images, networks and volumes"
+	docker compose -f $(DOCKER_COMPOSE_PATH) down -v
 
 help: # Show this help message
 	@echo "Available make commands:"

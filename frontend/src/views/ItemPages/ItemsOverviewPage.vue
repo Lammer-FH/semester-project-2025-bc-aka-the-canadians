@@ -33,13 +33,13 @@
 
       <div v-if="activeFiltersCount > 0" class="filter-chips">
         <ion-chip
-          v-if="selectedClaimedStatus !== null"
+          v-if="selectedStatus !== null"
           class="filter-chip"
           @click="clearClaimedStatusFilter"
         >
           <ion-icon :icon="personOutline"></ion-icon>
           <ion-label>{{
-            getClaimedStatusText(selectedClaimedStatus)
+            getClaimedStatusText(selectedStatus)
           }}</ion-label>
           <ion-icon :icon="closeOutline"></ion-icon>
         </ion-chip>
@@ -105,20 +105,15 @@
           class="item-card"
           @click="navigateToItem(item.id)"
         >
-          <div
-            class="card-header"
-            :class="getClaimedStatusClass(item.claimedByUserId)"
-          >
+          <div class="card-header" :class="getClaimedStatusClass(item.status)">
             <div class="header-content">
               <h3 class="item-title">{{ item.name }}</h3>
               <div class="status-chip">
                 <ion-icon
-                  :icon="getClaimedStatusIcon(item.claimedByUserId)"
+                  :icon="getClaimedStatusIcon(item.status)"
                   class="chip-icon"
                 ></ion-icon>
-                <span>{{
-                  getClaimedStatusText(item.claimedByUserId !== null)
-                }}</span>
+                <span>{{ getClaimedStatusText(item.status) }}</span>
               </div>
             </div>
           </div>
@@ -170,7 +165,7 @@
               <ion-icon :icon="createOutline" slot="icon-only"></ion-icon>
             </ion-button>
             <ion-button
-              v-if="!item.claimedByUserId"
+              v-if="item.status === ItemStatus.UNCLAIMED"
               fill="solid"
               size="small"
               color="success"
@@ -204,17 +199,17 @@
         <ion-content class="filter-modal-content">
           <div class="filter-section">
             <h3>Claim Status</h3>
-            <ion-radio-group v-model="selectedClaimedStatus">
+            <ion-radio-group v-model="selectedStatus">
               <ion-item>
                 <ion-radio slot="start" :value="null"></ion-radio>
                 <ion-label>All Items</ion-label>
               </ion-item>
               <ion-item>
-                <ion-radio slot="start" :value="false"></ion-radio>
+                <ion-radio slot="start" :value="ItemStatus.UNCLAIMED"></ion-radio>
                 <ion-label>Unclaimed Items</ion-label>
               </ion-item>
               <ion-item>
-                <ion-radio slot="start" :value="true"></ion-radio>
+                <ion-radio slot="start" :value="ItemStatus.CLAIMED"></ion-radio>
                 <ion-label>Claimed Items</ion-label>
               </ion-item>
             </ion-radio-group>
@@ -370,7 +365,7 @@ import {
   chatbubbleOutline,
 } from "ionicons/icons";
 import { useItemStore } from "@/stores/itemStore";
-import { Item } from "@/models/item";
+import { Item, ItemStatus } from "@/models/item";
 import TemplatePage from "@/components/TemplatePage.vue";
 import NavigationTabs from "@/components/NavigationTabs.vue";
 
@@ -381,7 +376,8 @@ const itemStore = useItemStore();
 const activeTab = ref("items");
 const searchTerm = ref("");
 const showFilterModal = ref(false);
-const selectedClaimedStatus = ref<boolean | null>(null);
+
+const selectedStatus = ref<ItemStatus | null>(null);
 
 // Computed properties
 const items = computed(() => itemStore.getItems);
@@ -404,28 +400,24 @@ const filteredItems = computed(() => {
   }
 
   // Filter by claimed status
-  if (selectedClaimedStatus.value !== null) {
-    if (selectedClaimedStatus.value) {
-      filtered = filtered.filter(item => item.claimedByUserId !== null);
-    } else {
-      filtered = filtered.filter(item => item.claimedByUserId === null);
-    }
+  if (selectedStatus.value !== null) {
+    filtered = filtered.filter(item => item.status === selectedStatus.value);
   }
 
   return filtered;
 });
 
 const claimedItemsCount = computed(
-  () => items.value.filter(item => item.claimedByUserId !== null).length
+  () => items.value.filter(item => item.status === ItemStatus.CLAIMED).length
 );
 
 const unclaimedItemsCount = computed(
-  () => items.value.filter(item => item.claimedByUserId === null).length
+  () => items.value.filter(item => item.status === ItemStatus.UNCLAIMED).length
 );
 
 const activeFiltersCount = computed(() => {
   let count = 0;
-  if (selectedClaimedStatus.value !== null) count++;
+  if (selectedStatus.value !== null) count++;
   return count;
 });
 
@@ -452,20 +444,16 @@ const isClaimFormValid = computed(() => {
 });
 
 // Methods
-const getClaimedStatusText = (isClaimed: boolean): string => {
-  return isClaimed ? "Claimed" : "Unclaimed";
+const getClaimedStatusText = (status: ItemStatus): string => {
+  return status === ItemStatus.CLAIMED ? "Claimed" : "Unclaimed";
 };
 
-const getClaimedStatusIcon = (
-  claimedByUserId: number | null | undefined
-): string => {
-  return claimedByUserId ? checkmarkCircleOutline : searchOutline;
+const getClaimedStatusIcon = (status: ItemStatus): string => {
+  return status === ItemStatus.CLAIMED ? checkmarkCircleOutline : searchOutline;
 };
 
-const getClaimedStatusClass = (
-  claimedByUserId: number | null | undefined
-): string => {
-  return claimedByUserId ? "status-claimed" : "status-unclaimed";
+const getClaimedStatusClass = (status: ItemStatus): string => {
+  return status === ItemStatus.CLAIMED ? "status-claimed" : "status-unclaimed";
 };
 
 const getTimeAgo = (dateString: string): string => {
@@ -508,11 +496,11 @@ const toggleFilterModal = (): void => {
 };
 
 const clearClaimedStatusFilter = (): void => {
-  selectedClaimedStatus.value = null;
+  selectedStatus.value = null;
 };
 
 const clearAllFilters = (): void => {
-  selectedClaimedStatus.value = null;
+  selectedStatus.value = null;
   searchTerm.value = "";
 };
 

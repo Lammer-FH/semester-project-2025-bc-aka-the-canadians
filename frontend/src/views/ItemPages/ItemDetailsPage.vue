@@ -27,14 +27,18 @@
           <div class="header-content">
             <div class="header-left">
               <ion-chip
-                :color="getStatusColor(item.reportStatus ?? false)"
+                :color="getStatusColor(item.status)"
                 class="status-chip"
               >
                 <ion-icon
-                  :icon="getStatusIcon(item.reportStatus ?? false)"
+                  :icon="getStatusIcon(item.status)"
                   class="chip-icon"
                 ></ion-icon>
-                {{ getStatusText(item.reportStatus ?? false) }}
+                {{ getStatusText(item.status) }}
+              </ion-chip>
+              <ion-chip v-if="item.report?.type" class="type-chip">
+                <ion-icon :icon="getTypeIcon(item.report.type)" class="chip-icon"></ion-icon>
+                {{ getTypeText(item.report.type) }}
               </ion-chip>
               <div class="report-meta">
                 <span class="report-id">Report #{{ item.id }}</span>
@@ -71,7 +75,7 @@
           </div>
 
           <div class="status-section">
-            <div v-if="item.reportStatus === true" class="found-item-section">
+            <div v-if="item.status === ItemStatus.UNCLAIMED && item.report?.type === ReportType.FOUND" class="found-item-section">
               <div class="action-banner found-banner">
                 <div class="banner-content">
                   <ion-icon :icon="eyeOutline" class="banner-icon"></ion-icon>
@@ -96,7 +100,7 @@
             </div>
 
             <div
-              v-else-if="item.reportStatus === false && !item.claimedByUserId"
+              v-else-if="item.status === ItemStatus.UNCLAIMED && item.report?.type === ReportType.LOST"
               class="lost-item-section"
             >
               <div class="action-banner lost-banner">
@@ -126,7 +130,7 @@
               </div>
             </div>
 
-            <div v-else-if="item.claimedByUserId" class="claimed-item-section">
+            <div v-else-if="item.status === ItemStatus.CLAIMED" class="claimed-item-section">
               <div class="action-banner claimed-banner">
                 <div class="banner-content">
                   <ion-icon
@@ -211,13 +215,10 @@
               <div class="timeline-content">
                 <h4>Report Created</h4>
                 <p>{{ formatDetailedDate(item.createdAt || "") }}</p>
-                <span class="timeline-type">{{
-                  getReportType(item.reportStatus ?? false)
-                }}</span>
+                <span class="timeline-type">{{ getReportType(item.status) }}</span>
               </div>
             </div>
-            <!-- Status update timeline removed - updatedAt not available in schema -->
-            <div v-if="item.claimedByUserId" class="timeline-item">
+            <div v-if="item.status === ItemStatus.CLAIMED" class="timeline-item">
               <div class="timeline-marker claimed"></div>
               <div class="timeline-content">
                 <h4>Pickup Requested</h4>
@@ -262,14 +263,14 @@
             >
               <div class="related-content">
                 <ion-chip
-                  :color="getStatusColor(related.report?.status ?? false)"
+                  :color="getReportStatusColor(related.report?.status)"
                   class="related-status"
                 >
                   <ion-icon
-                    :icon="getStatusIcon(related.report?.status ?? false)"
+                    :icon="getReportStatusIcon(related.report?.status)"
                     class="chip-icon"
                   ></ion-icon>
-                  {{ getStatusText(related.report?.status ?? false) }}
+                  {{ getReportStatusText(related.report?.status) }}
                 </ion-chip>
                 <h4>{{ related.name || "Unknown Item" }}</h4>
                 <p>
@@ -287,7 +288,7 @@
 
         <div class="action-buttons">
           <ion-button
-            v-if="item.reportStatus === true"
+            v-if="item.status === ItemStatus.UNCLAIMED && item.report?.type === ReportType.FOUND"
             expand="block"
             size="large"
             color="success"
@@ -298,7 +299,7 @@
           </ion-button>
 
           <ion-button
-            v-else-if="item.reportStatus === false"
+            v-else-if="item.status === ItemStatus.UNCLAIMED && item.report?.type === ReportType.LOST"
             expand="block"
             size="large"
             fill="outline"
@@ -387,7 +388,8 @@ import {
 import { ref, computed, onMounted, nextTick } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { useItemStore } from "@/stores/itemStore";
-import type { Item } from "@/models/item";
+import { Item, ItemStatus } from "@/models/item";
+import { ReportType, ReportStatus } from "@/models/report";
 
 const router = useRouter();
 const route = useRoute();
@@ -522,7 +524,7 @@ const loadRelatedReports = async () => {
         i =>
           i.id !== item.value!.id &&
           i.report?.locationId === item.value!.report?.locationId &&
-          !i.claimedByUserId
+          i.status === ItemStatus.UNCLAIMED
       )
       .slice(0, 3);
   } catch (error) {
@@ -540,39 +542,102 @@ const loadItemStatistics = async () => {
   }
 };
 
-const getStatusColor = (status: boolean): string => {
-  try {
-    return status ? "success" : "warning";
-  } catch (error) {
-    console.error("Error getting status color:", error);
-    return "primary";
+const getStatusColor = (status: ItemStatus): string => {
+  switch (status) {
+    case ItemStatus.UNCLAIMED:
+      return "success";
+    case ItemStatus.CLAIMED:
+      return "medium";
+    default:
+      return "primary";
   }
 };
 
-const getStatusIcon = (status: boolean): string => {
-  try {
-    return status ? eyeOutline : searchOutline;
-  } catch (error) {
-    console.error("Error getting status icon:", error);
-    return flagOutline;
+const getStatusIcon = (status: ItemStatus): string => {
+  switch (status) {
+    case ItemStatus.UNCLAIMED:
+      return eyeOutline;
+    case ItemStatus.CLAIMED:
+      return checkmarkCircleOutline;
+    default:
+      return flagOutline;
   }
 };
 
-const getStatusText = (status: boolean): string => {
-  try {
-    return status ? "Found" : "Lost";
-  } catch (error) {
-    console.error("Error getting status text:", error);
-    return "Unknown";
+const getStatusText = (status: ItemStatus): string => {
+  switch (status) {
+    case ItemStatus.UNCLAIMED:
+      return "Unclaimed";
+    case ItemStatus.CLAIMED:
+      return "Claimed";
+    default:
+      return "Unknown";
   }
 };
 
-const getReportType = (status: boolean): string => {
-  try {
-    return status ? "Found Report" : "Lost Report";
-  } catch (error) {
-    console.error("Error getting report type:", error);
-    return "Report";
+const getTypeText = (type: ReportType): string => {
+  switch (type) {
+    case ReportType.LOST:
+      return "Lost";
+    case ReportType.FOUND:
+      return "Found";
+    default:
+      return "Unknown";
+  }
+};
+
+const getTypeIcon = (type: ReportType): string => {
+  switch (type) {
+    case ReportType.LOST:
+      return searchOutline;
+    case ReportType.FOUND:
+      return eyeOutline;
+    default:
+      return flagOutline;
+  }
+};
+
+const getReportType = (status: ItemStatus): string => {
+  switch (status) {
+    case ItemStatus.UNCLAIMED:
+      return "Found Report";
+    case ItemStatus.CLAIMED:
+      return "Claimed Report";
+    default:
+      return "Report";
+  }
+};
+
+const getReportStatusText = (status: ReportStatus | undefined): string => {
+  switch (status) {
+    case ReportStatus.OPEN:
+      return "Open";
+    case ReportStatus.RESOLVED:
+      return "Resolved";
+    default:
+      return "Unknown";
+  }
+};
+
+const getReportStatusColor = (status: ReportStatus | undefined): string => {
+  switch (status) {
+    case ReportStatus.OPEN:
+      return "warning";
+    case ReportStatus.RESOLVED:
+      return "success";
+    default:
+      return "medium";
+  }
+};
+
+const getReportStatusIcon = (status: ReportStatus | undefined): string => {
+  switch (status) {
+    case ReportStatus.OPEN:
+      return searchOutline;
+    case ReportStatus.RESOLVED:
+      return checkmarkCircleOutline;
+    default:
+      return flagOutline;
   }
 };
 
@@ -789,7 +854,7 @@ const shareItem = async () => {
   try {
     const shareData = {
       title: `Lost & Found: ${item.value.name || "Unbekannt"}`,
-      text: `${getStatusText(item.value.report?.status ?? false)}: ${
+      text: `${getReportStatusText(item.value.report?.status as ReportStatus | undefined)}: ${
         item.value.name || "Unknown"
       } at ${item.value.report?.location?.name || "Unknown"}`,
       url: window.location.href,

@@ -51,7 +51,7 @@
         <ion-icon :icon="alertCircleOutline" class="empty-icon"></ion-icon>
         <h2>Error Loading</h2>
         <p>{{ error }}</p>
-        <ion-button @click="loadReports">
+        <ion-button @click="loadReports" class="btn-secondary-action">
           <ion-icon :icon="refreshOutline" slot="start"></ion-icon>
           Try Again
         </ion-button>
@@ -66,7 +66,7 @@
         <p v-else>
           No reports created yet. Be the first to report a found or lost item!
         </p>
-        <ion-button routerLink="/items/report" fill="solid">
+        <ion-button routerLink="/items/report" class="btn-primary-action">
           <ion-icon :icon="addOutline" slot="start"></ion-icon>
           Create First Report
         </ion-button>
@@ -181,11 +181,15 @@ const activeFiltersCount = computed(() => {
 });
 
 const activeReportsCount = computed(
-  () => reports.value.filter(report => report.status === ReportStatusEnum.OPEN).length
+  () =>
+    reports.value.filter(report => report.status === ReportStatusEnum.OPEN)
+      .length
 );
 
 const resolvedReportsCount = computed(
-  () => reports.value.filter(report => report.status === ReportStatusEnum.RESOLVED).length
+  () =>
+    reports.value.filter(report => report.status === ReportStatusEnum.RESOLVED)
+      .length
 );
 
 const filteredReports = computed(() => {
@@ -261,7 +265,7 @@ const getReportDetails = (report: Report) => [
 
 const getReportMetadata = (report: Report) => [
   {
-    key: "time",
+    key: "timeAgo",
     icon: calendarOutline,
     value: getTimeAgo(report.createdAt),
   },
@@ -274,25 +278,32 @@ const getReportActions = (report: Report) => [
     icon: createOutline,
     iconSlot: "icon-only" as const,
     fill: "clear" as const,
+    size: "small" as const,
     handler: () => editReport(report.id),
   },
   {
     key: "view",
     label: "View Details",
-    color: "primary",
     fill: "clear" as const,
+    color: "primary",
+    size: "small" as const,
     handler: () => navigateToReport(report.id),
   },
 ];
 
-const handleReportListClick = (item: { data?: Item; title: string; subtitle?: string }, sectionKey: string) => {
+const handleReportListClick = (
+  item: { data?: Item; title: string; subtitle?: string },
+  sectionKey: string
+) => {
   if (sectionKey === "items" && item.data) {
-    // Handle item click if needed
-    console.log("Item clicked:", item.data);
+    router.push(`/items/${item.data.id}`);
   }
 };
 
-const updateFilter = (key: string, value: ReportStatus | string | null): void => {
+const updateFilter = (
+  key: string,
+  value: ReportStatus | string | null
+): void => {
   if (key === "status") {
     filters.value.status = value as ReportStatus | null;
   } else if (key === "location") {
@@ -312,7 +323,6 @@ const applyFilters = (): void => {
   console.log("Filters applied");
 };
 
-// Methods
 const getStatusText = (status: ReportStatus): string => {
   switch (status) {
     case ReportStatus.OPEN:
@@ -323,8 +333,6 @@ const getStatusText = (status: ReportStatus): string => {
       return "Unknown";
   }
 };
-
-
 
 const getTimeAgo = (dateString: string): string => {
   const date = new Date(dateString);
@@ -454,6 +462,24 @@ onMounted(async () => {
   gap: 16px;
 }
 
+.btn-primary-action {
+  --background: var(--ion-color-primary);
+  --color: white;
+  --border-radius: 12px;
+  font-weight: 600;
+  height: 48px;
+}
+
+.btn-secondary-action {
+  --background: transparent;
+  --color: var(--ion-color-primary);
+  --border-color: var(--ion-color-primary);
+  --border-width: 2px;
+  --border-style: solid;
+  --border-radius: 12px;
+  font-weight: 600;
+  height: 48px;
+}
 
 @media (max-width: 768px) {
   .reports-grid {

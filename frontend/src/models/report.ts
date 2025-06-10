@@ -8,7 +8,7 @@ export interface Report {
     locationId: number;
     createdAt: string;
     status: ReportStatus;
-    type: ReportType; // Add type field
+    type: ReportType;
     itemIds?: number[];
     user?: User;
     location?: Location;

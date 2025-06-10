@@ -33,7 +33,7 @@ export const itemService = {
                 name: itemData.name,
                 description: itemData.description || "",
                 reportId: itemData.reportId,
-                status: itemData.status || "UNCLAIMED", // Default to UNCLAIMED if not provided
+                status: itemData.status || "UNCLAIMED",
             };
 
             const response = await axios.post<Item>(API_URL, payload);
@@ -47,7 +47,7 @@ export const itemService = {
     async updateItem(id: number, itemData: Partial<Item>): Promise<Item> {
         try {
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            const {id: itemId, createdAt: createdAt, report: report, claimedByUser: claimedByUser, ...updateData} = itemData;
+            const { id: itemId, createdAt: createdAt, report: report, claimedByUser: claimedByUser, ...updateData } = itemData;
 
             const response = await axios.put<Item>(
                 `${API_URL}/${id}`,

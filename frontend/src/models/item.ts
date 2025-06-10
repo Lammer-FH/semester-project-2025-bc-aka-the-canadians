@@ -8,7 +8,7 @@ export interface Item {
     reportId: number;
     claimedByUserId?: number;
     createdAt: string;
-    status: ItemStatus; // Add status field
+    status: ItemStatus;
     locationId?: number;
     locationName?: string;
     reportStatus?: ReportStatus;

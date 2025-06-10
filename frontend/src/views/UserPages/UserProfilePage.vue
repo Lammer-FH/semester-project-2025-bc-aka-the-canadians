@@ -375,13 +375,6 @@ const getFullName = (user: User): string => {
   return `${user.firstName} ${user.lastName}`.trim();
 };
 
-const formatDate = (dateString: string) => {
-  return new Date(dateString).toLocaleDateString("en-US", {
-    month: "long",
-    year: "numeric",
-  });
-};
-
 const validateField = (fieldName: keyof typeof errors.value) => {
   const value = editData[fieldName as keyof typeof editData]?.trim() || "";
 

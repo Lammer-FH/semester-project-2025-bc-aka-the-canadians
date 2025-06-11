@@ -1,6 +1,6 @@
 <template>
   <template-page
-    :showProfileButton="false"
+    :showProfileButton="true"
     :leftFooterButton="leftFooterButton"
     :rightFooterButton="rightFooterButton"
     :headline="'My Profile'"
@@ -13,19 +13,12 @@
         <p>Loading Profile...</p>
       </div>
 
-      <div v-else-if="error && !user" class="empty-state">
-        <ion-icon :icon="alertCircleOutline" class="empty-icon"></ion-icon>
-        <h2>Loading Error</h2>
-        <p>{{ error }}</p>
-        <ion-button @click="loadUserProfile">
-          <ion-icon :icon="refreshOutline" slot="start"></ion-icon>
-          Try Again
-        </ion-button>
-      </div>
-
-      <div v-else-if="user" class="content-wrapper">
+      <div v-else class="content-wrapper">
         <div class="profile-form">
-          <h3>Personal Information</h3>
+          <h3>{{ user ? "Personal Information" : "Create Your Profile" }}</h3>
+          <p v-if="!user" class="create-profile-description">
+            Welcome! Please fill in your information to create your profile.
+          </p>
 
           <div class="form-group">
             <ion-item
@@ -80,7 +73,13 @@
           </div>
         </div>
 
-        <div class="danger-zone">
+        <div v-if="user" class="danger-zone">
+          <h3>Danger Zone</h3>
+          <p class="warning-text">
+            <ion-icon :icon="warningOutline" class="warning-icon"></ion-icon>
+            This will permanently delete your account. This action cannot be
+            undone.
+          </p>
           <ion-button
             fill="outline"
             color="danger"
@@ -114,9 +113,9 @@ import {
   trashOutline,
   closeOutline,
   saveOutline,
-  refreshOutline,
+  warningOutline,
 } from "ionicons/icons";
-import { ref, computed, reactive, watch, onMounted } from "vue";
+import { ref, computed, reactive, watch, onMounted, nextTick } from "vue";
 import { useRouter } from "vue-router";
 import { useUserStore } from "@/stores/userStore";
 
@@ -127,9 +126,7 @@ const user = computed(() => userStore.getCurrentUser);
 const isLoading = computed(() => userStore.isLoading);
 const error = computed(() => userStore.getError);
 
-// Mock user ID for now - in a real app, this would come from authentication
-const CURRENT_USER_ID = 1;
-
+// Remove static user ID since we'll handle user creation dynamically
 const userStats = ref({
   itemsReported: 0,
   itemsClaimed: 0,
@@ -154,29 +151,50 @@ const leftFooterButton = computed(() => ({
   icon: closeOutline,
 }));
 
-const rightFooterButton = computed(() => ({
-  name: hasChanges.value ? "Save Changes" : "Saved",
-  color: hasChanges.value ? "primary" : "medium",
-  icon: saveOutline,
-  disabled: !hasChanges.value,
-}));
+const rightFooterButton = computed(() => {
+  if (!user.value) {
+    // Creating new user
+    return {
+      name: "Create Profile",
+      color: hasChanges.value ? "primary" : "medium",
+      icon: saveOutline,
+      disabled: !hasChanges.value,
+    };
+  } else {
+    // Updating existing user
+    return {
+      name: hasChanges.value ? "Save Changes" : "Saved",
+      color: hasChanges.value ? "primary" : "medium",
+      icon: saveOutline,
+      disabled: !hasChanges.value,
+    };
+  }
+});
 
 onMounted(async () => {
-  await loadUserProfile();
+  // User is already loaded by the app initialization
   if (user.value) {
     editData.name = user.value.name;
     editData.email = user.value.email;
   }
+  loadUserStats();
 });
 
-const loadUserProfile = async () => {
-  try {
-    await userStore.fetchUserById(CURRENT_USER_ID);
-    loadUserStats();
-  } catch (error) {
-    console.error("Error loading user profile:", error);
-  }
-};
+// Watch for user changes and update form data
+watch(
+  () => user.value,
+  newUser => {
+    if (newUser) {
+      editData.name = newUser.name;
+      editData.email = newUser.email;
+    } else {
+      // Clear form when user is null
+      editData.name = "";
+      editData.email = "";
+    }
+  },
+  { immediate: true }
+);
 
 const loadUserStats = async () => {
   userStats.value = {
@@ -222,11 +240,77 @@ const handleCancel = () => {
 };
 
 const handleSave = async () => {
-  alert("Need to implement save/update functionality");
+  // Validate all fields first
+  validateField("name");
+  validateField("email");
+
+  // Check if there are any validation errors
+  const hasErrors = Object.values(errors.value).some(error => error !== "");
+  if (hasErrors) {
+    return;
+  }
+
+  try {
+    if (user.value) {
+      // Update existing user
+      await userStore.updateUser(user.value.id, {
+        name: editData.name,
+        email: editData.email,
+      });
+    } else {
+      // Create new user
+      await userStore.createUser({
+        name: editData.name,
+        email: editData.email,
+      });
+    }
+
+    hasChanges.value = false;
+    // Could show a success toast here
+  } catch (error) {
+    console.error("Error saving user:", error);
+
+    // Check if it's an email uniqueness error
+    if (
+      error instanceof Error &&
+      error.message.toLowerCase().includes("email")
+    ) {
+      errors.value.email = error.message;
+    } else {
+      // For user creation failures, clear the form and reset state
+      if (!user.value) {
+        // Clear form data immediately
+        editData.name = "";
+        editData.email = "";
+        hasChanges.value = false;
+        // Clear any errors from the store to prevent empty-state from showing
+        userStore.clearError();
+        // Clear local form errors
+        errors.value.name = "";
+        errors.value.email = "";
+        // Force reactivity update
+        await nextTick();
+      } else {
+        // For user update failures, revert to original data
+        editData.name = user.value.name;
+        editData.email = user.value.email;
+        hasChanges.value = false;
+      }
+    }
+  }
 };
 
-const deleteAccount = () => {
-  alert("Need to implement delete account functionality");
+const deleteAccount = async () => {
+  if (!user.value) return;
+
+  try {
+    await userStore.deleteUser(user.value.id);
+    // Redirect to home page after successful deletion
+    router.push("/");
+  } catch (error) {
+    console.error("Error deleting account:", error);
+    // On error, stay on the page - user data is still intact
+  }
 };
 
 watch(
@@ -236,6 +320,10 @@ watch(
       const hasNameChanged = editData.name !== user.value.name;
       const hasEmailChanged = editData.email !== user.value.email;
       hasChanges.value = hasNameChanged || hasEmailChanged;
+    } else {
+      // For new users, any content in the fields indicates changes
+      hasChanges.value =
+        editData.name.trim() !== "" || editData.email.trim() !== "";
     }
   },
   { deep: true }
@@ -455,6 +543,33 @@ watch(
   --border-radius: 12px;
   height: 48px;
   font-weight: 600;
+}
+
+.warning-text {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ion-color-warning);
+  background: rgba(var(--ion-color-warning-rgb), 0.1);
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-size: 0.9em;
+  line-height: 1.4;
+  border-left: 4px solid var(--ion-color-warning);
+}
+
+.warning-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.create-profile-description {
+  color: var(--ion-color-medium);
+  margin-bottom: 20px;
+  padding: 0 4px;
+  font-size: 0.9em;
+  line-height: 1.4;
 }
 
 @keyframes fadeInUp {

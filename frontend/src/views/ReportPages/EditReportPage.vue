@@ -24,21 +24,12 @@
 
       <div v-else class="form-content">
         <div class="form-header">
+          <ion-icon :icon="createOutline" class="header-icon"></ion-icon>
+          <p>Update the details for this report</p>
           <div v-if="report.createdAt" class="last-modified">
             <ion-icon :icon="timeOutline" class="time-icon"></ion-icon>
             Created: {{ formatDate(report.createdAt) }}
           </div>
-        </div>
-
-        <!-- Editable Report Fields -->
-        <div class="editable-section">
-          <h3 class="section-header">
-            <ion-icon :icon="createOutline" class="section-icon"></ion-icon>
-            Editable Report Fields
-          </h3>
-          <p class="section-description">
-            These report-specific fields can be edited:
-          </p>
         </div>
 
         <div class="input-group">
@@ -456,7 +447,7 @@ onMounted(async () => {
 
 <style scoped>
 .form-container {
-  padding: 16px;
+  padding: 20px;
   max-width: 600px;
   margin: 0 auto;
 }
@@ -490,58 +481,42 @@ onMounted(async () => {
 }
 
 .form-header {
-  margin-bottom: 24px;
   text-align: center;
+  margin-bottom: 40px;
 }
 
 .header-icon {
-  font-size: 32px;
+  font-size: 48px;
   color: var(--ion-color-primary);
-  margin-bottom: 8px;
+  margin-bottom: 16px;
 }
 
 .form-header h2 {
-  margin: 8px 0 4px 0;
   color: var(--ion-color-dark);
+  margin: 0 0 8px 0;
+  font-weight: 600;
 }
 
 .form-header p {
-  margin: 0 0 16px 0;
   color: var(--ion-color-medium);
+  margin: 0 0 16px 0;
+  font-size: 0.95em;
 }
 
 .last-modified {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  font-size: 14px;
+  gap: 6px;
+  background: var(--ion-color-light-tint);
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 0.85em;
   color: var(--ion-color-medium);
-  margin-top: 8px;
+  margin-top: 12px;
 }
 
 .time-icon {
-  font-size: 16px;
-}
-
-.editable-section {
-  margin-bottom: 16px;
-  padding: 16px 0 8px 0;
-}
-
-.section-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin: 0 0 6px 0;
-  color: var(--ion-color-success);
-  font-size: 16px;
-  font-weight: 600;
-}
-
-.section-description {
-  margin: 0;
-  color: var(--ion-color-medium);
   font-size: 14px;
 }
 
@@ -556,42 +531,37 @@ onMounted(async () => {
 }
 
 .input-group {
-  margin-bottom: 16px;
+  margin-bottom: 24px;
 }
 
 .modern-select {
-  --border-radius: 12px;
-  --border-color: var(--ion-color-light);
-  --border-style: solid;
-  --border-width: 1px;
-  --padding-start: 44px;
-  --padding-end: 16px;
-  --padding-top: 16px;
-  --padding-bottom: 16px;
   --background: var(--ion-color-light-tint);
+  --border-radius: 12px;
+  --padding-start: 16px;
+  --padding-end: 16px;
+  --padding-top: 12px;
+  --padding-bottom: 12px;
+  border: 2px solid var(--ion-color-light-shade);
+  border-radius: 12px;
   margin-bottom: 8px;
+  transition: all 0.3s ease;
+  position: relative;
 }
 
 .modern-select.select-filled {
-  --border-color: var(--ion-color-primary);
-  --color: var(--ion-color-dark);
-  --background: var(--ion-item-background);
+  border-color: var(--ion-color-primary-tint);
+  --background: rgba(var(--ion-color-primary-rgb), 0.05);
 }
 
 .modern-select:focus-within {
-  --border-color: var(--ion-color-primary);
-  --border-width: 2px;
-  --background: var(--ion-item-background);
+  border-color: var(--ion-color-primary);
+  box-shadow: 0 0 0 3px rgba(var(--ion-color-primary-rgb), 0.1);
+  transform: translateY(-2px);
 }
 
 .input-icon {
-  position: absolute;
-  left: 16px;
-  top: 50%;
-  transform: translateY(-50%);
   color: var(--ion-color-medium);
   font-size: 18px;
-  z-index: 10;
 }
 
 .select-option {
@@ -619,11 +589,25 @@ onMounted(async () => {
 .error-message {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   color: var(--ion-color-danger);
-  font-size: 14px;
+  font-size: 0.85em;
   margin-top: 4px;
-  padding: 0 4px;
+  padding-left: 4px;
+  animation: shake 0.3s ease-in-out;
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-5px);
+  }
+  75% {
+    transform: translateX(5px);
+  }
 }
 
 .context-section {
@@ -692,29 +676,30 @@ onMounted(async () => {
 
 @media (max-width: 768px) {
   .form-container {
-    padding: 12px;
+    padding: 16px;
   }
 
   .form-header {
-    margin-bottom: 20px;
+    margin-bottom: 30px;
   }
 
   .header-icon {
-    font-size: 28px;
+    font-size: 40px;
   }
 
   .last-modified {
-    font-size: 12px;
+    padding: 6px 12px;
+    font-size: 0.8em;
   }
 }
 
 @media (max-width: 480px) {
   .form-header {
-    margin-bottom: 16px;
+    margin-bottom: 20px;
   }
 
   .input-group {
-    margin-bottom: 12px;
+    margin-bottom: 20px;
   }
 }
 </style>

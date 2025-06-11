@@ -14,58 +14,52 @@
       </div>
 
       <div v-else class="content-wrapper">
-        <div class="profile-form">
-          <h3>{{ user ? "Personal Information" : "Create Your Profile" }}</h3>
-          <p v-if="!user" class="create-profile-description">
-            Welcome! Please fill in your information to create your profile.
-          </p>
+        <div class="form-header">
+          <ion-icon :icon="personOutline" class="header-icon"></ion-icon>
+          <p>{{ user ? "Update your personal information" : "Create your profile to get started" }}</p>
+        </div>
 
-          <div class="form-group">
-            <ion-item
-              class="modern-item"
+        <div class="profile-form">
+          <div class="input-group">
+            <ion-input
+              v-model="editData.name"
+              label="Name *"
+              label-placement="stacked"
+              placeholder="Enter your name"
+              class="modern-input"
               :class="{
-                'item-error': errors.name,
-                'item-filled': editData.name,
+                'input-filled': editData.name,
+                'input-error': errors.name,
               }"
-            >
-              <ion-label position="stacked" class="custom-label">
-                <ion-icon :icon="personOutline" class="label-icon"></ion-icon>
-                Name *
-              </ion-label>
-              <ion-input
-                v-model="editData.name"
-                placeholder="Enter your name"
-                @ionBlur="validateField('name')"
-                :class="{ 'input-error': errors.name }"
-                autofocus
-              ></ion-input>
-            </ion-item>
+              autocomplete="off"
+              autocorrect="off"
+              autocapitalize="words"
+              :spellcheck="false"
+              @ionBlur="validateField('name')"
+            ></ion-input>
             <div v-if="errors.name" class="error-message">
               <ion-icon :icon="alertCircleOutline"></ion-icon>
               {{ errors.name }}
             </div>
           </div>
 
-          <div class="form-group">
-            <ion-item
-              class="modern-item"
+          <div class="input-group">
+            <ion-input
+              v-model="editData.email"
+              label="Email Address *"
+              label-placement="stacked"
+              type="email"
+              placeholder="your.email@example.com"
+              class="modern-input"
               :class="{
-                'item-error': errors.email,
-                'item-filled': editData.email,
+                'input-filled': editData.email,
+                'input-error': errors.email,
               }"
-            >
-              <ion-label position="stacked" class="custom-label">
-                <ion-icon :icon="mailOutline" class="label-icon"></ion-icon>
-                Email Address *
-              </ion-label>
-              <ion-input
-                v-model="editData.email"
-                type="email"
-                placeholder="your.email@example.com"
-                @ionBlur="validateField('email')"
-                :class="{ 'input-error': errors.email }"
-              ></ion-input>
-            </ion-item>
+              autocomplete="email"
+              autocorrect="off"
+              :spellcheck="false"
+              @ionBlur="validateField('email')"
+            ></ion-input>
             <div v-if="errors.email" class="error-message">
               <ion-icon :icon="alertCircleOutline"></ion-icon>
               {{ errors.email }}
@@ -99,8 +93,6 @@
 <script setup lang="ts">
 import TemplatePage from "@/components/TemplatePage.vue";
 import {
-  IonItem,
-  IonLabel,
   IonInput,
   IonButton,
   IonIcon,
@@ -332,8 +324,9 @@ watch(
 
 <style scoped>
 .profile-container {
-  min-height: 100vh;
-  background: var(--ion-color-light-tint);
+  padding: 20px;
+  max-width: 600px;
+  margin: 0 auto;
 }
 
 .loading-container {
@@ -366,8 +359,30 @@ watch(
 }
 
 .content-wrapper {
-  padding: 20px;
   animation: fadeInUp 0.6s ease-out;
+}
+
+.form-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.header-icon {
+  font-size: 48px;
+  color: var(--ion-color-primary);
+  margin-bottom: 16px;
+}
+
+.form-header h2 {
+  color: var(--ion-color-dark);
+  margin: 0 0 8px 0;
+  font-weight: 600;
+}
+
+.form-header p {
+  color: var(--ion-color-medium);
+  margin: 0 0 16px 0;
+  font-size: 0.95em;
 }
 
 .profile-header {
@@ -412,32 +427,15 @@ watch(
   margin-right: 4px;
 }
 
-.profile-form,
-.account-actions,
-.statistics-section,
-.danger-zone {
-  background: white;
-  border-radius: 12px;
-  padding: 20px;
-  margin-bottom: 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+.profile-form {
+  margin-bottom: 24px;
 }
 
-.profile-form h3,
-.account-actions h3,
-.statistics-section h3,
-.danger-zone h3 {
-  color: var(--ion-color-dark);
-  margin: 0 0 20px 0;
-  font-size: 1.1em;
-  font-weight: 600;
+.input-group {
+  margin-bottom: 24px;
 }
 
-.form-group {
-  margin-bottom: 20px;
-}
-
-.modern-item {
+.modern-input {
   --background: var(--ion-color-light-tint);
   --border-radius: 12px;
   --padding-start: 16px;
@@ -448,45 +446,33 @@ watch(
   border-radius: 12px;
   margin-bottom: 8px;
   transition: all 0.3s ease;
+  position: relative;
 }
 
-.modern-item.item-filled {
+.modern-input.input-filled {
   border-color: var(--ion-color-primary-tint);
   --background: rgba(var(--ion-color-primary-rgb), 0.05);
 }
 
-.modern-item.item-editing {
+.modern-input:focus-within {
   border-color: var(--ion-color-primary);
   box-shadow: 0 0 0 3px rgba(var(--ion-color-primary-rgb), 0.1);
+  transform: translateY(-2px);
 }
 
-.modern-item.item-error {
-  border-color: var(--ion-color-danger);
-  --background: rgba(var(--ion-color-danger-rgb), 0.05);
+.danger-zone {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-.custom-label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+.danger-zone h3 {
+  color: var(--ion-color-dark);
+  margin: 0 0 20px 0;
+  font-size: 1.1em;
   font-weight: 600;
-  color: var(--ion-color-dark);
-  margin-bottom: 4px;
-}
-
-.label-icon {
-  font-size: 16px;
-  color: var(--ion-color-primary);
-}
-
-.display-value {
-  color: var(--ion-color-dark);
-  font-size: 16px;
-  padding: 8px 0;
-}
-
-.input-error {
-  color: var(--ion-color-danger);
 }
 
 .error-message {
@@ -597,12 +583,16 @@ watch(
 }
 
 @media (max-width: 768px) {
-  .content-wrapper {
-    padding: 12px;
+  .profile-container {
+    padding: 16px;
   }
 
-  .user-info {
-    text-align: center;
+  .form-header {
+    margin-bottom: 30px;
+  }
+
+  .header-icon {
+    font-size: 40px;
   }
 
   .stats-grid {
@@ -615,12 +605,12 @@ watch(
 }
 
 @media (max-width: 480px) {
-  .profile-header {
-    padding: 20px 16px;
+  .form-header {
+    margin-bottom: 20px;
   }
 
-  .user-info h1 {
-    font-size: 1.3em;
+  .input-group {
+    margin-bottom: 20px;
   }
 }
 </style>

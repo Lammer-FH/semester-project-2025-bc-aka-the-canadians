@@ -403,7 +403,8 @@ const handleSave = async () => {
 
 const handleDelete = () => {
   // just delete report and push user to reports overview
-  reportStore.deleteReport(report.value.id)
+  reportStore
+    .deleteReport(report.value.id)
     .then(() => {
       router.push("/reports/overview");
     })

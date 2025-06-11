@@ -9,5 +9,12 @@
     "target": "ES2020",
     "lib": ["ES2020"]
   },
-  "include": ["vite.config.ts", "capacitor.config.ts", "eslint.config.mjs", "*.config.ts", "*.config.js", "*.config.mjs"]
+  "include": [
+    "vite.config.ts",
+    "capacitor.config.ts",
+    "eslint.config.mjs",
+    "*.config.ts",
+    "*.config.js",
+    "*.config.mjs"
+  ]
 }

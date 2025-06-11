@@ -16,7 +16,13 @@
       <div v-else class="content-wrapper">
         <div class="form-header">
           <ion-icon :icon="personOutline" class="header-icon"></ion-icon>
-          <p>{{ user ? "Update your personal information" : "Create your profile to get started" }}</p>
+          <p>
+            {{
+              user
+                ? "Update your personal information"
+                : "Create your profile to get started"
+            }}
+          </p>
         </div>
 
         <div class="profile-form">
@@ -92,15 +98,9 @@
 
 <script setup lang="ts">
 import TemplatePage from "@/components/TemplatePage.vue";
-import {
-  IonInput,
-  IonButton,
-  IonIcon,
-  IonSpinner,
-} from "@ionic/vue";
+import { IonInput, IonButton, IonIcon, IonSpinner } from "@ionic/vue";
 import {
   personOutline,
-  mailOutline,
   alertCircleOutline,
   trashOutline,
   closeOutline,
@@ -116,7 +116,6 @@ const userStore = useUserStore();
 
 const user = computed(() => userStore.getCurrentUser);
 const isLoading = computed(() => userStore.isLoading);
-const error = computed(() => userStore.getError);
 
 // Remove static user ID since we'll handle user creation dynamically
 const userStats = ref({
@@ -209,7 +208,7 @@ const validateField = (fieldName: keyof typeof errors.value) => {
         errors.value.name = "";
       }
       break;
-    case "email":
+    case "email": {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!value) {
         errors.value.email = "Email address is required";
@@ -219,6 +218,7 @@ const validateField = (fieldName: keyof typeof errors.value) => {
         errors.value.email = "";
       }
       break;
+    }
   }
 };
 
@@ -259,15 +259,15 @@ const handleSave = async () => {
 
     hasChanges.value = false;
     // Could show a success toast here
-  } catch (error) {
-    console.error("Error saving user:", error);
+  } catch (saveError) {
+    console.error("Error saving user:", saveError);
 
     // Check if it's an email uniqueness error
     if (
-      error instanceof Error &&
-      error.message.toLowerCase().includes("email")
+      saveError instanceof Error &&
+      saveError.message.toLowerCase().includes("email")
     ) {
-      errors.value.email = error.message;
+      errors.value.email = saveError.message;
     } else {
       // For user creation failures, clear the form and reset state
       if (!user.value) {
@@ -299,8 +299,8 @@ const deleteAccount = async () => {
     await userStore.deleteUser(user.value.id);
     // Redirect to home page after successful deletion
     router.push("/");
-  } catch (error) {
-    console.error("Error deleting account:", error);
+  } catch (deleteError) {
+    console.error("Error deleting account:", deleteError);
     // On error, stay on the page - user data is still intact
   }
 };

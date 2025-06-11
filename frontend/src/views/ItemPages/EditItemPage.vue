@@ -445,8 +445,6 @@ onMounted(() => {
   padding: 0;
 }
 
-
-
 .divider {
   height: 1px;
   background: var(--ion-color-light);

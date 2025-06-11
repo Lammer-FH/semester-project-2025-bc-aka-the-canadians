@@ -467,6 +467,7 @@ const claimItem = async () => {
     error.value = null;
 
     const updatedItem = await itemStore.updateItem(item.value.id, {
+      ...item.value,
       claimedByUserId: currentUserId,
       status: ItemStatus.CLAIMED,
     });

@@ -15,6 +15,7 @@ public interface ItemMapper extends GenericMapper<Item, ItemDTO> {
     @Mapping(target = "locationId", source = "report.location.id")
     @Mapping(target = "locationName", source = "report.location.name")
     @Mapping(target = "reportStatus", source = "report.status")
+    @Mapping(target = "reportType", source = "report.type")
     @Mapping(target = "reporterUserId", source = "report.user.id")
     @Mapping(target = "reporterUserName", source = "report.user.name")
     ItemDTO toDTO(Item item);

@@ -3,7 +3,7 @@
     :headline="location?.name || 'Location Details'"
     :leftFooterButton="leftFooterButton"
     :rightFooterButton="rightFooterButton"
-    @leftFooterButtonClicked="handleDelete"
+    @leftFooterButtonClicked="handleBack"
     @rightFooterButtonClicked="handleEdit"
   >
     <div class="details-container">
@@ -42,82 +42,63 @@
           <p>{{ location.description }}</p>
         </div>
 
-        <div class="items-section">
-          <div class="section-header">
-            <h3>Items at this Location</h3>
-            <ion-chip color="primary">
-              <ion-icon :icon="bagOutline" class="chip-icon"></ion-icon>
-              {{ itemsAtLocation.length }}
-            </ion-chip>
-          </div>
-
-          <div v-if="itemsLoading" class="loading-container">
-            <ion-spinner name="crescent" color="primary"></ion-spinner>
-            <p>Loading items...</p>
-          </div>
-
-          <div v-else-if="itemsAtLocation.length === 0" class="empty-state">
-            <ion-icon :icon="bagOutline" class="empty-icon"></ion-icon>
-            <h4>No Items Found</h4>
-            <p>No items have been reported at this location yet.</p>
-            <ion-button fill="outline" @click="navigateToReportItem">
-              <ion-icon :icon="addOutline" slot="start"></ion-icon>
-              Report Item
-            </ion-button>
-          </div>
-
-          <div v-else class="items-grid">
-            <ion-card
-              v-for="(item, index) in itemsAtLocation"
-              :key="item.id"
-              class="item-card"
-              :style="{ '--animation-delay': `${index * 0.1}s` }"
-              @click="navigateToItem(item.id)"
+        <!-- Items List -->
+        <ion-card class="items-card">
+          <ion-card-header>
+            <ion-card-title>
+              <ion-icon :icon="cubeOutline" class="section-icon"></ion-icon>
+              Items at this Location
+              <ion-chip color="primary" style="margin-left: 12px">
+                <ion-icon :icon="bagOutline" class="chip-icon"></ion-icon>
+                {{ itemsAtLocation.length }}
+              </ion-chip>
+            </ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <div v-if="itemsLoading" class="loading-container">
+              <ion-spinner name="crescent" color="primary"></ion-spinner>
+              <p>Loading items...</p>
+            </div>
+            <div
+              v-else-if="itemsAtLocation && itemsAtLocation.length > 0"
+              class="items-list"
             >
-              <ion-card-header>
+              <div
+                v-for="item in itemsAtLocation"
+                :key="item.id"
+                class="item-card"
+                @click="navigateToItem(item.id)"
+              >
                 <div class="item-header">
-                  <ion-card-title class="item-name">{{
-                    item.name
-                  }}</ion-card-title>
+                  <h3>{{ item.name }}</h3>
                 </div>
-              </ion-card-header>
-              <ion-card-content>
                 <p v-if="item.description" class="item-description">
-                  {{ item.description }}
+                  {{ truncateDescription(item.description, 100) }}
                 </p>
-                <div class="item-metadata">
-                  <div class="metadata-row">
-                    <ion-icon
-                      :icon="timeOutline"
-                      class="item-metadata-icon"
-                    ></ion-icon>
+                <div class="item-meta">
+                  <span class="meta-item">
+                    <ion-icon :icon="timeOutline" class="meta-icon"></ion-icon>
                     {{ formatDate(item.createdAt) }}
-                  </div>
+                  </span>
+                  <span v-if="item.claimedByUser" class="meta-item">
+                    <ion-icon
+                      :icon="personOutline"
+                      class="meta-icon"
+                    ></ion-icon>
+                    Claimed by {{ item.claimedByUser.name }}
+                  </span>
                 </div>
-              </ion-card-content>
-              <div class="item-actions">
-                <ion-button
-                  fill="clear"
-                  size="small"
-                  @click.stop="navigateToItem(item.id)"
-                >
-                  <ion-icon :icon="eyeOutline" slot="start"></ion-icon>
-                  Details
-                </ion-button>
               </div>
-            </ion-card>
-          </div>
-        </div>
+            </div>
+            <div v-else class="empty-items">
+              <ion-icon :icon="cubeOutline" class="empty-icon"></ion-icon>
+              <h3>No Items</h3>
+              <p>No items have been found at this location yet.</p>
+            </div>
+          </ion-card-content>
+        </ion-card>
       </div>
     </div>
-
-    <ion-alert
-      :is-open="showDeleteAlert"
-      header="Delete Location"
-      message="Are you sure you want to delete this location? This action cannot be undone."
-      :buttons="alertButtons"
-      @didDismiss="showDeleteAlert = false"
-    ></ion-alert>
   </template-page>
 </template>
 
@@ -132,24 +113,42 @@ import {
   IonCardTitle,
   IonCardContent,
   IonSpinner,
-  IonAlert,
 } from "@ionic/vue";
 import {
   locationOutline,
   createOutline,
-  trashOutline,
-  timeOutline,
   refreshOutline,
   bagOutline,
-  addOutline,
-  eyeOutline,
   alertCircleOutline,
+  arrowBack,
+  timeOutline,
+  personOutline,
+  cubeOutline,
 } from "ionicons/icons";
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, nextTick } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { useLocationStore } from "@/stores/locationStore";
 import type { Location } from "@/models/location";
 import type { Item } from "@/models/item";
+
+const formatDate = (dateString: string): string => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
+
+const truncateDescription = (
+  description: string,
+  maxLength: number = 100
+): string => {
+  if (description.length <= maxLength) return description;
+  return description.substring(0, maxLength) + "...";
+};
 
 const router = useRouter();
 const route = useRoute();
@@ -157,16 +156,20 @@ const locationStore = useLocationStore();
 
 const location = ref<Location | null>(null);
 const itemsAtLocation = ref<Item[]>([]);
-const showDeleteAlert = ref(false);
 const itemsLoading = ref(false);
 
-const isLoading = computed(() => locationStore.isLoading && !location.value);
-const error = computed(() => locationStore.getError);
+const localIsLoading = ref(false);
+const localError = ref<string | null>(null);
+
+const isLoading = computed(
+  () => localIsLoading.value || (locationStore.isLoading && !location.value)
+);
+const error = computed(() => localError.value || locationStore.getError);
 
 const leftFooterButton = computed(() => ({
-  name: "Delete",
-  color: "danger",
-  icon: trashOutline,
+  name: "Back",
+  color: "medium",
+  icon: arrowBack,
 }));
 
 const rightFooterButton = computed(() => ({
@@ -175,81 +178,57 @@ const rightFooterButton = computed(() => ({
   icon: createOutline,
 }));
 
-const alertButtons = [
-  {
-    text: "Cancel",
-    role: "cancel",
-    cssClass: "alert-button-cancel",
-  },
-  {
-    text: "Delete",
-    role: "destructive",
-    cssClass: "alert-button-confirm",
-    handler: () => confirmDelete(),
-  },
-];
-
-const formatDate = (dateString: string) => {
-  return new Date(dateString).toLocaleDateString("en-US", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-};
-
 const loadLocation = async () => {
   try {
+    localIsLoading.value = true;
+    localError.value = null;
+
     const locationId = Number(route.params.id);
-    if (!locationId) {
+    if (!locationId || isNaN(locationId)) {
       throw new Error("Invalid location ID");
     }
 
-    const loadedLocation = await locationStore.fetchLocationById(locationId);
+    await locationStore.fetchLocationById(locationId);
+    const loadedLocation = locationStore.getCurrentLocation;
+
     if (loadedLocation) {
-      location.value = loadedLocation;
-      await loadItemsAtLocation(locationId);
+      await nextTick();
+      location.value = { ...loadedLocation };
     } else {
       throw new Error("Location not found");
     }
-  } catch (error) {
-    console.error("Error loading location:", error);
-    router.back();
+  } catch (err) {
+    console.error("Error loading location:", err);
+    localError.value = err instanceof Error ? err.message : "Unknown error";
+    setTimeout(() => {
+      router.back();
+    }, 2000);
+  } finally {
+    localIsLoading.value = false;
   }
 };
 
 const loadItemsAtLocation = async (locationId: number) => {
   try {
     itemsLoading.value = true;
-    itemsAtLocation.value =
-      await locationStore.fetchItemsByLocation(locationId);
-  } catch (error) {
-    console.error("Error loading items at location:", error);
+    // Use the correct store method name
+    const allItems = await locationStore.fetchItemsByLocation(locationId);
+    itemsAtLocation.value = allItems || [];
+  } catch (err) {
+    console.error("Error loading items at location:", err);
     itemsAtLocation.value = [];
   } finally {
     itemsLoading.value = false;
   }
 };
 
+const handleBack = () => {
+  router.back();
+};
+
 const handleEdit = () => {
-  if (location.value) {
+  if (location.value?.id) {
     router.push(`/locations/${location.value.id}/edit`);
-  }
-};
-
-const handleDelete = () => {
-  showDeleteAlert.value = true;
-};
-
-const confirmDelete = async () => {
-  if (!location.value) return;
-
-  try {
-    await locationStore.deleteLocation(location.value.id);
-    router.push("/locations/overview");
-  } catch (error) {
-    console.error("Error deleting location:", error);
   }
 };
 
@@ -257,12 +236,11 @@ const navigateToItem = (itemId: number) => {
   router.push(`/items/${itemId}`);
 };
 
-const navigateToReportItem = () => {
-  router.push("/items/report");
-};
-
-onMounted(() => {
-  loadLocation();
+onMounted(async () => {
+  await loadLocation();
+  if (location.value?.id) {
+    await loadItemsAtLocation(location.value.id);
+  }
 });
 </script>
 
@@ -476,77 +454,99 @@ onMounted(() => {
   font-weight: 600;
 }
 
-.items-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+.items-card {
+  margin: 0;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.section-icon {
+  margin-right: 8px;
+  font-size: 20px;
+}
+
+.items-list {
+  display: flex;
+  flex-direction: column;
   gap: 16px;
 }
 
 .item-card {
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
+  padding: 16px;
+  border: 1px solid var(--ion-color-light-shade);
+  border-radius: 8px;
   cursor: pointer;
-  animation: slideInUp 0.6s ease-out;
-  animation-delay: var(--animation-delay);
-  animation-fill-mode: backwards;
+  transition: all 0.2s ease;
 }
 
 .item-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  background: var(--ion-color-light-tint);
+  border-color: var(--ion-color-primary-tint);
 }
 
 .item-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 12px;
+  margin-bottom: 8px;
 }
 
-.item-name {
-  color: var(--ion-color-dark);
-  font-size: 1.1em;
+.item-header h3 {
+  margin: 0;
+  font-size: 16px;
   font-weight: 600;
-  margin: 0;
-  flex: 1;
-}
-
-.status-chip {
-  margin: 0;
+  color: var(--ion-color-dark);
 }
 
 .item-description {
+  margin: 8px 0;
+  font-size: 14px;
   color: var(--ion-color-medium-shade);
-  line-height: 1.5;
-  margin: 0 0 16px 0;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  line-height: 1.4;
 }
 
-.item-metadata {
-  padding-top: 12px;
-  border-top: 1px solid var(--ion-color-light-shade);
+.item-meta {
+  display: flex;
+  gap: 16px;
+  margin: 8px 0;
+  flex-wrap: wrap;
 }
 
-.metadata-row {
+.meta-item {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 0.85em;
+  gap: 4px;
+  font-size: 12px;
   color: var(--ion-color-medium);
 }
 
-.item-metadata-icon {
+.meta-icon {
   font-size: 14px;
 }
 
-.item-actions {
-  padding: 8px 16px 16px;
-  border-top: 1px solid var(--ion-color-light-shade);
-  background: var(--ion-color-light-tint);
+.empty-items {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 32px 16px;
+  text-align: center;
+}
+
+.empty-icon {
+  font-size: 48px;
+  color: var(--ion-color-medium);
+}
+
+.empty-items h3 {
+  margin: 0;
+  color: var(--ion-color-dark);
+}
+
+.empty-items p {
+  margin: 0;
+  color: var(--ion-color-medium);
+  font-size: 14px;
 }
 
 @keyframes fadeInUp {
@@ -599,14 +599,10 @@ onMounted(() => {
     grid-template-columns: 1fr;
   }
 
-  .section-header {
+  .item-header {
     flex-direction: column;
-    align-items: flex-start;
     gap: 8px;
-  }
-
-  .items-grid {
-    grid-template-columns: 1fr;
+    align-items: flex-start;
   }
 }
 
@@ -618,23 +614,9 @@ onMounted(() => {
   .location-info {
     gap: 4px;
   }
-
-  .item-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-  }
-
-  .status-chip {
-    align-self: flex-start;
-  }
 }
 
 @media (min-width: 768px) {
-  .items-grid {
-    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-  }
-
   .metadata-grid {
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   }

@@ -37,7 +37,7 @@
 
         <div v-if="section.type === 'stats'" class="stats-display">
           <ion-chip
-            v-for="stat in section.data"
+            v-for="stat in section.data as StatData[]"
             :key="stat.key"
             :color="stat.color"
             class="stat-chip"
@@ -53,7 +53,7 @@
 
         <div v-else-if="section.type === 'list'" class="list-display">
           <div
-            v-for="(item, index) in section.data.slice(
+            v-for="(item, index) in (section.data as ListData[]).slice(
               0,
               section.maxItems || 3
             )"
@@ -77,15 +77,18 @@
             </div>
           </div>
           <div
-            v-if="section.data.length > (section.maxItems || 3)"
+            v-if="(section.data as ListData[]).length > (section.maxItems || 3)"
             class="more-items"
           >
-            +{{ section.data.length - (section.maxItems || 3) }} more
+            +{{
+              (section.data as ListData[]).length - (section.maxItems || 3)
+            }}
+            more
           </div>
         </div>
 
         <div v-else-if="section.type === 'text'" class="text-content">
-          <p>{{ section.data }}</p>
+          <p>{{ section.data as string }}</p>
         </div>
       </div>
 
@@ -124,7 +127,7 @@
         <ion-icon
           v-if="action.icon"
           :icon="action.icon"
-          :slot="action.iconSlot || 'start'"
+          slot="start"
         ></ion-icon>
         {{ action.label }}
       </ion-button>
@@ -172,6 +175,22 @@ interface CardMetadata {
   value: string;
 }
 
+interface StatData {
+  key: string;
+  value: string | number;
+  label: string;
+  color?: string;
+  icon?: string;
+}
+
+interface ListData {
+  title: string;
+  subtitle?: string;
+  icon?: string;
+  color?: string;
+  data?: unknown;
+}
+
 interface ContentSection {
   key: string;
   title?: string;
@@ -179,7 +198,7 @@ interface ContentSection {
   type: "stats" | "list" | "text";
   className?: string;
   maxItems?: number;
-  data: any;
+  data: StatData[] | ListData[] | string;
 }
 
 interface Props {
@@ -197,7 +216,13 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
+  description: "",
   descriptionLength: 120,
+  status: "",
+  details: () => [],
+  metadata: () => [],
+  actions: () => [],
+  contentSections: () => [],
   cardType: "item",
   animationDelay: 0,
   clickable: true,
@@ -206,7 +231,7 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<{
   cardClick: [];
   actionClick: [action: CardAction];
-  listItemClick: [item: any, sectionKey: string];
+  listItemClick: [item: unknown, sectionKey: string];
 }>();
 
 const cardClasses = computed(() => ({
@@ -293,7 +318,7 @@ const handleActionClick = (action: CardAction): void => {
   emit("actionClick", action);
 };
 
-const handleListItemClick = (item: any, sectionKey: string): void => {
+const handleListItemClick = (item: unknown, sectionKey: string): void => {
   emit("listItemClick", item, sectionKey);
 };
 </script>

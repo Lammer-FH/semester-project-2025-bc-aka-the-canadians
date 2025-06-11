@@ -81,7 +81,6 @@
           :content-sections="getReportContentSections(report)"
           :details="getReportDetails(report)"
           :metadata="getReportMetadata(report)"
-          :actions="getReportActions(report)"
           card-type="report"
           :animation-delay="index * 0.1"
           @card-click="navigateToReport(report.id)"
@@ -106,16 +105,14 @@ import {
   documentOutline,
   addOutline,
   personOutline,
-  timeOutline,
   calendarOutline,
-  createOutline,
 } from "ionicons/icons";
 import { useReportStore } from "@/stores/reportStore";
 import { ReportStatus } from "@/models/report";
 const ReportStatusEnum = ReportStatus;
 import TemplatePage from "@/components/TemplatePage.vue";
 import NavigationTabs from "@/components/NavigationTabs.vue";
-import Filter from "@/components/Filter.vue";
+import Filter from "@/components/FilterComponent.vue";
 import UniversalCard from "@/components/OverviewCard.vue";
 import type { Report } from "@/models/report";
 import type { Item } from "@/models/item";
@@ -149,7 +146,7 @@ const reportFilterConfigs = computed(() => [
     title: "Status",
     type: "radio" as const,
     icon: flagOutline,
-    getLabel: (value: ReportStatus) => getStatusText(value),
+    getLabel: (value: unknown) => getStatusText(value as ReportStatus),
     options: [
       { value: null, label: "All Reports" },
       { value: ReportStatusEnum.OPEN, label: "Open Reports" },
@@ -162,7 +159,7 @@ const reportFilterConfigs = computed(() => [
     type: "select" as const,
     placeholder: "Select Location",
     icon: locationOutline,
-    getLabel: (value: string) => value,
+    getLabel: (value: unknown) => value as string,
     options: [
       { value: "", label: "All Locations" },
       ...uniqueLocations.value.map(location => ({
@@ -227,12 +224,11 @@ const getReportContentSections = (report: Report) => {
   if (report.items && report.items.length > 0) {
     sections.push({
       key: "items",
-      title: `Items (${report.items.length})`,
       type: "list" as const,
       maxItems: 3,
       data: report.items.map(item => ({
         title: item.name,
-        subtitle: item.description || undefined,
+        subtitle: item.description || "No description",
         data: item,
       })),
     });
@@ -252,11 +248,6 @@ const getReportDetails = (report: Report) => [
     icon: personOutline,
     value: report.user?.name || "Anonymous",
   },
-  {
-    key: "created",
-    icon: timeOutline,
-    value: formatDate(report.createdAt),
-  },
 ];
 
 const getReportMetadata = (report: Report) => [
@@ -267,39 +258,14 @@ const getReportMetadata = (report: Report) => [
   },
 ];
 
-const getReportActions = (report: Report) => [
-  {
-    key: "edit",
-    label: "",
-    icon: createOutline,
-    iconSlot: "icon-only" as const,
-    fill: "clear" as const,
-    size: "small" as const,
-    handler: () => editReport(report.id),
-  },
-  {
-    key: "view",
-    label: "View Details",
-    fill: "clear" as const,
-    color: "primary",
-    size: "small" as const,
-    handler: () => navigateToReport(report.id),
-  },
-];
-
-const handleReportListClick = (
-  item: { data?: Item; title: string; subtitle?: string },
-  sectionKey: string
-) => {
-  if (sectionKey === "items" && item.data) {
-    router.push(`/items/${item.data.id}`);
+const handleReportListClick = (item: unknown, sectionKey: string) => {
+  const typedItem = item as { data?: Item; title: string; subtitle?: string };
+  if (sectionKey === "items" && typedItem.data) {
+    router.push(`/items/${typedItem.data.id}`);
   }
 };
 
-const updateFilter = (
-  key: string,
-  value: ReportStatus | string | null
-): void => {
+const updateFilter = (key: string, value: unknown): void => {
   if (key === "status") {
     filters.value.status = value as ReportStatus | null;
   } else if (key === "location") {
@@ -346,23 +312,8 @@ const getTimeAgo = (dateString: string): string => {
   }
 };
 
-const formatDate = (dateString: string): string => {
-  const date = new Date(dateString);
-  return date.toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-};
-
 const navigateToReport = (reportId: number): void => {
   router.push(`/reports/${reportId}`);
-};
-
-const editReport = (reportId: number): void => {
-  router.push(`/reports/${reportId}/edit`);
 };
 
 const loadReports = async (): Promise<void> => {

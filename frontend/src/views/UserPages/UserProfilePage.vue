@@ -1,6 +1,6 @@
 <template>
   <template-page
-    :showProfileButton="false"
+    :showProfileButton="true"
     :leftFooterButton="leftFooterButton"
     :rightFooterButton="rightFooterButton"
     :headline="'My Profile'"
@@ -13,110 +13,59 @@
         <p>Loading Profile...</p>
       </div>
 
-      <div v-else-if="error && !user" class="empty-state">
-        <ion-icon :icon="alertCircleOutline" class="empty-icon"></ion-icon>
-        <h2>Loading Error</h2>
-        <p>{{ error }}</p>
-        <ion-button @click="loadUserProfile">
-          <ion-icon :icon="refreshOutline" slot="start"></ion-icon>
-          Try Again
-        </ion-button>
-      </div>
-
-      <div v-else-if="user" class="content-wrapper">
-        <div class="profile-header">
-          <div class="user-info">
-            <h1>{{ user.name }}</h1>
-            <p>{{ user.email }}</p>
-            <p class="user-id">User ID: {{ user.id }}</p>
-            <p class="created-at">Joined: {{ formatDate(user.createdAt) }}</p>
-          </div>
+      <div v-else class="content-wrapper">
+        <div class="form-header">
+          <ion-icon :icon="personOutline" class="header-icon"></ion-icon>
+          <p>
+            {{
+              user
+                ? "Update your personal information"
+                : "Create your profile to get started"
+            }}
+          </p>
         </div>
 
         <div class="profile-form">
-          <h3>Personal Information</h3>
-
-          <div class="form-group">
-            <ion-item
-              class="modern-item"
+          <div class="input-group">
+            <ion-input
+              v-model="editData.name"
+              label="Name *"
+              label-placement="stacked"
+              placeholder="Enter your name"
+              class="modern-input"
               :class="{
-                'item-editing': editingField === 'name',
-                'item-error': errors.name,
-                'item-filled': user.name,
+                'input-filled': editData.name,
+                'input-error': errors.name,
               }"
-            >
-              <ion-label position="stacked" class="custom-label">
-                <ion-icon :icon="personOutline" class="label-icon"></ion-icon>
-                Name *
-              </ion-label>
-              <ion-input
-                v-if="editingField === 'name'"
-                v-model="editData.name"
-                placeholder="Enter your name"
-                @ionBlur="validateField('name')"
-                :class="{ 'input-error': errors.name }"
-                autofocus
-              ></ion-input>
-              <div v-else class="display-value">{{ user.name }}</div>
-              <ion-button
-                fill="clear"
-                size="small"
-                slot="end"
-                :color="editingField === 'name' ? 'success' : 'primary'"
-                @click="toggleEdit('name')"
-              >
-                <ion-icon
-                  :icon="
-                    editingField === 'name' ? checkmarkOutline : createOutline
-                  "
-                  slot="icon-only"
-                ></ion-icon>
-              </ion-button>
-            </ion-item>
+              autocomplete="off"
+              autocorrect="off"
+              autocapitalize="words"
+              :spellcheck="false"
+              @ionBlur="validateField('name')"
+            ></ion-input>
             <div v-if="errors.name" class="error-message">
               <ion-icon :icon="alertCircleOutline"></ion-icon>
               {{ errors.name }}
             </div>
           </div>
 
-          <div class="form-group">
-            <ion-item
-              class="modern-item"
+          <div class="input-group">
+            <ion-input
+              v-model="editData.email"
+              label="Email Address *"
+              label-placement="stacked"
+              type="email"
+              placeholder="your.email@example.com"
+              class="modern-input"
               :class="{
-                'item-editing': editingField === 'email',
-                'item-error': errors.email,
-                'item-filled': user.email,
+                'input-filled': editData.email,
+                'input-error': errors.email,
               }"
-            >
-              <ion-label position="stacked" class="custom-label">
-                <ion-icon :icon="mailOutline" class="label-icon"></ion-icon>
-                Email Address *
-              </ion-label>
-              <ion-input
-                v-if="editingField === 'email'"
-                v-model="editData.email"
-                type="email"
-                placeholder="your.email@example.com"
-                @ionBlur="validateField('email')"
-                :class="{ 'input-error': errors.email }"
-                autofocus
-              ></ion-input>
-              <div v-else class="display-value">{{ user.email }}</div>
-              <ion-button
-                fill="clear"
-                size="small"
-                slot="end"
-                :color="editingField === 'email' ? 'success' : 'primary'"
-                @click="toggleEdit('email')"
-              >
-                <ion-icon
-                  :icon="
-                    editingField === 'email' ? checkmarkOutline : createOutline
-                  "
-                  slot="icon-only"
-                ></ion-icon>
-              </ion-button>
-            </ion-item>
+              autocomplete="email"
+              autocorrect="off"
+              :spellcheck="false"
+              @ionBlur="validateField('email')"
+            ></ion-input>
             <div v-if="errors.email" class="error-message">
               <ion-icon :icon="alertCircleOutline"></ion-icon>
               {{ errors.email }}
@@ -124,38 +73,13 @@
           </div>
         </div>
 
-        <div class="statistics-section">
-          <h3>Your Activity</h3>
-          <div class="stats-grid">
-            <div class="stat-card">
-              <ion-icon :icon="bagOutline" class="stat-icon"></ion-icon>
-              <div class="stat-content">
-                <div class="stat-number">{{ userStats.itemsReported }}</div>
-                <div class="stat-label">Items Reported</div>
-              </div>
-            </div>
-            <div class="stat-card">
-              <ion-icon
-                :icon="checkmarkCircleOutline"
-                class="stat-icon"
-              ></ion-icon>
-              <div class="stat-content">
-                <div class="stat-number">{{ userStats.itemsClaimed }}</div>
-                <div class="stat-label">Items Collected</div>
-              </div>
-            </div>
-            <div class="stat-card">
-              <ion-icon :icon="trophyOutline" class="stat-icon"></ion-icon>
-              <div class="stat-content">
-                <div class="stat-number">{{ userStats.helpfulReports }}</div>
-                <div class="stat-label">Helpful Reports</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="danger-zone">
+        <div v-if="user" class="danger-zone">
           <h3>Danger Zone</h3>
+          <p class="warning-text">
+            <ion-icon :icon="warningOutline" class="warning-icon"></ion-icon>
+            This will permanently delete your account. This action cannot be
+            undone.
+          </p>
           <ion-button
             fill="outline"
             color="danger"
@@ -169,57 +93,31 @@
         </div>
       </div>
     </div>
-
-    <ion-alert
-      :is-open="showDeleteAlert"
-      header="Delete Account"
-      message="Are you sure you want to delete your account? This action cannot be undone and all your data will be permanently deleted."
-      :buttons="deleteAlertButtons"
-      @didDismiss="showDeleteAlert = false"
-    ></ion-alert>
   </template-page>
 </template>
 
 <script setup lang="ts">
 import TemplatePage from "@/components/TemplatePage.vue";
-import {
-  IonItem,
-  IonLabel,
-  IonInput,
-  IonButton,
-  IonIcon,
-  IonSpinner,
-  IonAlert,
-} from "@ionic/vue";
+import { IonInput, IonButton, IonIcon, IonSpinner } from "@ionic/vue";
 import {
   personOutline,
-  createOutline,
-  checkmarkOutline,
-  mailOutline,
   alertCircleOutline,
-  bagOutline,
-  checkmarkCircleOutline,
-  trophyOutline,
   trashOutline,
   closeOutline,
   saveOutline,
-  refreshOutline,
+  warningOutline,
 } from "ionicons/icons";
-import { ref, computed, reactive, watch, onMounted } from "vue";
+import { ref, computed, reactive, watch, onMounted, nextTick } from "vue";
 import { useRouter } from "vue-router";
 import { useUserStore } from "@/stores/userStore";
-import type { UserUpdateData } from "@/models/user";
 
 const router = useRouter();
 const userStore = useUserStore();
 
 const user = computed(() => userStore.getCurrentUser);
 const isLoading = computed(() => userStore.isLoading);
-const error = computed(() => userStore.getError);
 
-// Mock user ID for now - in a real app, this would come from authentication
-const CURRENT_USER_ID = 1;
-
+// Remove static user ID since we'll handle user creation dynamically
 const userStats = ref({
   itemsReported: 0,
   itemsClaimed: 0,
@@ -236,9 +134,7 @@ const errors = ref({
   email: "",
 });
 
-const editingField = ref<"name" | "email" | null>(null);
 const hasChanges = ref(false);
-const showDeleteAlert = ref(false);
 
 const leftFooterButton = computed(() => ({
   name: "Back",
@@ -246,39 +142,50 @@ const leftFooterButton = computed(() => ({
   icon: closeOutline,
 }));
 
-const rightFooterButton = computed(() => ({
-  name: hasChanges.value ? "Save Changes" : "Saved",
-  color: hasChanges.value ? "primary" : "medium",
-  icon: saveOutline,
-  disabled: !hasChanges.value,
-}));
-
-const deleteAlertButtons = [
-  {
-    text: "Cancel",
-    role: "cancel",
-    cssClass: "alert-button-cancel",
-  },
-  {
-    text: "Delete Account",
-    role: "destructive",
-    cssClass: "alert-button-confirm",
-    handler: () => confirmDeleteAccount(),
-  },
-];
-
-onMounted(async () => {
-  await loadUserProfile();
+const rightFooterButton = computed(() => {
+  if (!user.value) {
+    // Creating new user
+    return {
+      name: "Create Profile",
+      color: hasChanges.value ? "primary" : "medium",
+      icon: saveOutline,
+      disabled: !hasChanges.value,
+    };
+  } else {
+    // Updating existing user
+    return {
+      name: hasChanges.value ? "Save Changes" : "Saved",
+      color: hasChanges.value ? "primary" : "medium",
+      icon: saveOutline,
+      disabled: !hasChanges.value,
+    };
+  }
 });
 
-const loadUserProfile = async () => {
-  try {
-    await userStore.fetchUserById(CURRENT_USER_ID);
-    loadUserStats();
-  } catch (error) {
-    console.error("Error loading user profile:", error);
+onMounted(async () => {
+  // User is already loaded by the app initialization
+  if (user.value) {
+    editData.name = user.value.name;
+    editData.email = user.value.email;
   }
-};
+  loadUserStats();
+});
+
+// Watch for user changes and update form data
+watch(
+  () => user.value,
+  newUser => {
+    if (newUser) {
+      editData.name = newUser.name;
+      editData.email = newUser.email;
+    } else {
+      // Clear form when user is null
+      editData.name = "";
+      editData.email = "";
+    }
+  },
+  { immediate: true }
+);
 
 const loadUserStats = async () => {
   userStats.value = {
@@ -286,15 +193,6 @@ const loadUserStats = async () => {
     itemsClaimed: 8,
     helpfulReports: 15,
   };
-};
-
-const formatDate = (dateString: string): string => {
-  const date = new Date(dateString);
-  return date.toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
 };
 
 const validateField = (fieldName: keyof typeof errors.value) => {
@@ -310,7 +208,7 @@ const validateField = (fieldName: keyof typeof errors.value) => {
         errors.value.name = "";
       }
       break;
-    case "email":
+    case "email": {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!value) {
         errors.value.email = "Email address is required";
@@ -320,63 +218,90 @@ const validateField = (fieldName: keyof typeof errors.value) => {
         errors.value.email = "";
       }
       break;
-  }
-};
-
-const toggleEdit = async (fieldName: "name" | "email") => {
-  if (editingField.value === fieldName) {
-    validateField(fieldName);
-
-    if (!errors.value[fieldName] && user.value) {
-      user.value[fieldName] = editData[fieldName];
-      editingField.value = null;
-      hasChanges.value = true;
-    }
-  } else {
-    if (user.value) {
-      editData[fieldName] = user.value[fieldName] as string;
-      editingField.value = fieldName;
     }
   }
 };
 
 const handleCancel = () => {
-  if (hasChanges.value) {
+  if (hasChanges.value && user.value) {
+    editData.name = user.value.name;
+    editData.email = user.value.email;
     hasChanges.value = false;
-    editingField.value = null;
   }
   router.back();
 };
 
 const handleSave = async () => {
-  if (!hasChanges.value || !user.value) return;
+  // Validate all fields first
+  validateField("name");
+  validateField("email");
+
+  // Check if there are any validation errors
+  const hasErrors = Object.values(errors.value).some(error => error !== "");
+  if (hasErrors) {
+    return;
+  }
 
   try {
-    const updateData: UserUpdateData = {
-      name: user.value.name,
-      email: user.value.email,
-    };
+    if (user.value) {
+      // Update existing user
+      await userStore.updateUser(user.value.id, {
+        name: editData.name,
+        email: editData.email,
+      });
+    } else {
+      // Create new user
+      await userStore.createUser({
+        name: editData.name,
+        email: editData.email,
+      });
+    }
 
-    await userStore.updateUser(user.value.id, updateData);
     hasChanges.value = false;
-    editingField.value = null;
+    // Could show a success toast here
+  } catch (saveError) {
+    console.error("Error saving user:", saveError);
 
-    console.log("Profile updated successfully");
-  } catch (error) {
-    console.error("Error updating profile:", error);
+    // Check if it's an email uniqueness error
+    if (
+      saveError instanceof Error &&
+      saveError.message.toLowerCase().includes("email")
+    ) {
+      errors.value.email = saveError.message;
+    } else {
+      // For user creation failures, clear the form and reset state
+      if (!user.value) {
+        // Clear form data immediately
+        editData.name = "";
+        editData.email = "";
+        hasChanges.value = false;
+        // Clear any errors from the store to prevent empty-state from showing
+        userStore.clearError();
+        // Clear local form errors
+        errors.value.name = "";
+        errors.value.email = "";
+        // Force reactivity update
+        await nextTick();
+      } else {
+        // For user update failures, revert to original data
+        editData.name = user.value.name;
+        editData.email = user.value.email;
+        hasChanges.value = false;
+      }
+    }
   }
 };
 
-const deleteAccount = () => {
-  showDeleteAlert.value = true;
-};
+const deleteAccount = async () => {
+  if (!user.value) return;
 
-const confirmDeleteAccount = async () => {
   try {
-    console.log("Delete account confirmed");
+    await userStore.deleteUser(user.value.id);
+    // Redirect to home page after successful deletion
     router.push("/");
-  } catch (error) {
-    console.error("Error deleting account:", error);
+  } catch (deleteError) {
+    console.error("Error deleting account:", deleteError);
+    // On error, stay on the page - user data is still intact
   }
 };
 
@@ -387,6 +312,10 @@ watch(
       const hasNameChanged = editData.name !== user.value.name;
       const hasEmailChanged = editData.email !== user.value.email;
       hasChanges.value = hasNameChanged || hasEmailChanged;
+    } else {
+      // For new users, any content in the fields indicates changes
+      hasChanges.value =
+        editData.name.trim() !== "" || editData.email.trim() !== "";
     }
   },
   { deep: true }
@@ -395,8 +324,9 @@ watch(
 
 <style scoped>
 .profile-container {
-  min-height: 100vh;
-  background: var(--ion-color-light-tint);
+  padding: 20px;
+  max-width: 600px;
+  margin: 0 auto;
 }
 
 .loading-container {
@@ -429,8 +359,30 @@ watch(
 }
 
 .content-wrapper {
-  padding: 20px;
   animation: fadeInUp 0.6s ease-out;
+}
+
+.form-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.header-icon {
+  font-size: 48px;
+  color: var(--ion-color-primary);
+  margin-bottom: 16px;
+}
+
+.form-header h2 {
+  color: var(--ion-color-dark);
+  margin: 0 0 8px 0;
+  font-weight: 600;
+}
+
+.form-header p {
+  color: var(--ion-color-medium);
+  margin: 0 0 16px 0;
+  font-size: 0.95em;
 }
 
 .profile-header {
@@ -475,32 +427,15 @@ watch(
   margin-right: 4px;
 }
 
-.profile-form,
-.account-actions,
-.statistics-section,
-.danger-zone {
-  background: white;
-  border-radius: 12px;
-  padding: 20px;
-  margin-bottom: 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+.profile-form {
+  margin-bottom: 24px;
 }
 
-.profile-form h3,
-.account-actions h3,
-.statistics-section h3,
-.danger-zone h3 {
-  color: var(--ion-color-dark);
-  margin: 0 0 20px 0;
-  font-size: 1.1em;
-  font-weight: 600;
+.input-group {
+  margin-bottom: 24px;
 }
 
-.form-group {
-  margin-bottom: 20px;
-}
-
-.modern-item {
+.modern-input {
   --background: var(--ion-color-light-tint);
   --border-radius: 12px;
   --padding-start: 16px;
@@ -511,45 +446,33 @@ watch(
   border-radius: 12px;
   margin-bottom: 8px;
   transition: all 0.3s ease;
+  position: relative;
 }
 
-.modern-item.item-filled {
+.modern-input.input-filled {
   border-color: var(--ion-color-primary-tint);
   --background: rgba(var(--ion-color-primary-rgb), 0.05);
 }
 
-.modern-item.item-editing {
+.modern-input:focus-within {
   border-color: var(--ion-color-primary);
   box-shadow: 0 0 0 3px rgba(var(--ion-color-primary-rgb), 0.1);
+  transform: translateY(-2px);
 }
 
-.modern-item.item-error {
-  border-color: var(--ion-color-danger);
-  --background: rgba(var(--ion-color-danger-rgb), 0.05);
+.danger-zone {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-.custom-label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+.danger-zone h3 {
+  color: var(--ion-color-dark);
+  margin: 0 0 20px 0;
+  font-size: 1.1em;
   font-weight: 600;
-  color: var(--ion-color-dark);
-  margin-bottom: 4px;
-}
-
-.label-icon {
-  font-size: 16px;
-  color: var(--ion-color-primary);
-}
-
-.display-value {
-  color: var(--ion-color-dark);
-  font-size: 16px;
-  padding: 8px 0;
-}
-
-.input-error {
-  color: var(--ion-color-danger);
 }
 
 .error-message {
@@ -608,6 +531,33 @@ watch(
   font-weight: 600;
 }
 
+.warning-text {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ion-color-warning);
+  background: rgba(var(--ion-color-warning-rgb), 0.1);
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-size: 0.9em;
+  line-height: 1.4;
+  border-left: 4px solid var(--ion-color-warning);
+}
+
+.warning-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.create-profile-description {
+  color: var(--ion-color-medium);
+  margin-bottom: 20px;
+  padding: 0 4px;
+  font-size: 0.9em;
+  line-height: 1.4;
+}
+
 @keyframes fadeInUp {
   from {
     opacity: 0;
@@ -633,12 +583,16 @@ watch(
 }
 
 @media (max-width: 768px) {
-  .content-wrapper {
-    padding: 12px;
+  .profile-container {
+    padding: 16px;
   }
 
-  .user-info {
-    text-align: center;
+  .form-header {
+    margin-bottom: 30px;
+  }
+
+  .header-icon {
+    font-size: 40px;
   }
 
   .stats-grid {
@@ -651,12 +605,12 @@ watch(
 }
 
 @media (max-width: 480px) {
-  .profile-header {
-    padding: 20px 16px;
+  .form-header {
+    margin-bottom: 20px;
   }
 
-  .user-info h1 {
-    font-size: 1.3em;
+  .input-group {
+    margin-bottom: 20px;
   }
 }
 </style>

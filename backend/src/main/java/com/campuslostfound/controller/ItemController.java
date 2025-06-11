@@ -4,9 +4,7 @@ import com.campuslostfound.dto.ItemDTO;
 import com.campuslostfound.mapper.ItemMapper;
 import com.campuslostfound.model.Item;
 import com.campuslostfound.service.ItemService;
-
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -31,13 +29,15 @@ public class ItemController {
     public ResponseEntity<ItemDTO> getItemById(@PathVariable Long id) {
         Optional<Item> item = itemService.getItemById(id);
 
-        return item.map(value -> ResponseEntity.ok(itemMapper.toDTO(value))).orElseGet(() -> ResponseEntity.notFound().build());
+        return item.map(value -> ResponseEntity.ok(itemMapper.toDTO(value)))
+            .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PostMapping
     public ResponseEntity<ItemDTO> createItem(@RequestBody ItemDTO itemDTO) {
         try {
-            Item savedItem = itemService.createItemFromReportId(itemDTO.getName(), itemDTO.getDescription(), itemDTO.getReportId(), itemDTO.getStatus());
+            Item savedItem = itemService.createItemFromReportId(itemDTO.getName(), itemDTO.getDescription(),
+                itemDTO.getReportId());
 
             return ResponseEntity.status(HttpStatus.CREATED).body(itemMapper.toDTO(savedItem));
         } catch (IllegalArgumentException e) {
@@ -48,7 +48,8 @@ public class ItemController {
     @PutMapping("/{id}")
     public ResponseEntity<ItemDTO> updateItem(@PathVariable Long id, @RequestBody ItemDTO itemDTO) {
         try {
-            Item updatedItem = itemService.updateItem(id, itemDTO.getName(), itemDTO.getDescription());
+            Item updatedItem = itemService.updateItem(id, itemDTO.getName(), itemDTO.getDescription(),
+                itemDTO.getStatus(), itemDTO.getClaimedByUserId());
 
             return ResponseEntity.ok(itemMapper.toDTO(updatedItem));
         } catch (IllegalArgumentException e) {

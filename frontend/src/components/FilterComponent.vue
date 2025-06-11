@@ -55,8 +55,8 @@
             @ionChange="updateFilter(filterConfig.key, $event.detail.value)"
           >
             <ion-radio
-              v-for="option in filterConfig.options"
-              :key="option.value"
+              v-for="(option, index) in filterConfig.options"
+              :key="`${filterConfig.key}-${index}`"
               :value="option.value"
               class="filter-radio"
             >
@@ -70,8 +70,8 @@
             @ionChange="updateFilter(filterConfig.key, $event.detail.value)"
           >
             <ion-radio
-              v-for="option in filterConfig.options"
-              :key="option.value"
+              v-for="(option, index) in filterConfig.options"
+              :key="`${filterConfig.key}-select-${index}`"
               :value="option.value"
               class="filter-radio"
             >
@@ -109,7 +109,7 @@ import {
 import { funnelOutline, closeOutline } from "ionicons/icons";
 
 interface FilterOption {
-  value: any;
+  value: unknown;
   label: string;
 }
 
@@ -120,7 +120,8 @@ interface FilterConfig {
   placeholder?: string;
   options: FilterOption[];
   icon: string;
-  getLabel: (value: any) => string;
+  // eslint-disable-next-line no-unused-vars
+  getLabel: (value: unknown) => string;
 }
 
 interface ActiveFilter {
@@ -132,13 +133,13 @@ interface ActiveFilter {
 interface Props {
   modalTitle: string;
   filterConfigs: FilterConfig[];
-  filters: Record<string, any>;
+  filters: Record<string, unknown>;
 }
 
 const props = defineProps<Props>();
 
 const emit = defineEmits<{
-  updateFilter: [key: string, value: any];
+  updateFilter: [key: string, value: unknown];
   clearFilter: [key: string];
   applyFilters: [];
 }>();
@@ -146,8 +147,9 @@ const emit = defineEmits<{
 const showFilterModal = ref(false);
 
 const activeFiltersCount = computed(() => {
-  return Object.values(props.filters).filter(value => {
-    if (value === null || value === undefined || value === "") return false;
+  return Object.values(props.filters).filter(filterValue => {
+    if (filterValue === null || filterValue === undefined || filterValue === "")
+      return false;
     return true;
   }).length;
 });
@@ -155,14 +157,15 @@ const activeFiltersCount = computed(() => {
 const activeFilters = computed((): ActiveFilter[] => {
   const active: ActiveFilter[] = [];
 
-  Object.entries(props.filters).forEach(([key, value]) => {
-    if (value === null || value === undefined || value === "") return;
+  Object.entries(props.filters).forEach(([key, filterValue]) => {
+    if (filterValue === null || filterValue === undefined || filterValue === "")
+      return;
 
     const config = props.filterConfigs.find(c => c.key === key);
     if (config) {
       active.push({
         key,
-        label: config.getLabel(value),
+        label: config.getLabel(filterValue),
         icon: config.icon,
       });
     }
@@ -179,8 +182,8 @@ const handleFilterModalDismiss = (): void => {
   showFilterModal.value = false;
 };
 
-const updateFilter = (key: string, value: any): void => {
-  emit("updateFilter", key, value);
+const updateFilter = (key: string, filterValue: unknown): void => {
+  emit("updateFilter", key, filterValue);
 };
 
 const clearFilter = (key: string): void => {

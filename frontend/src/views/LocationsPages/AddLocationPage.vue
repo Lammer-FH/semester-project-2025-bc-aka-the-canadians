@@ -20,7 +20,6 @@
 
       <div class="form-header">
         <ion-icon :icon="locationOutline" class="header-icon"></ion-icon>
-        <h2>Add New Location</h2>
         <p>Create a new location for the Campus Lost & Found System</p>
       </div>
 
@@ -65,23 +64,6 @@
             :spellcheck="false"
           ></ion-textarea>
         </div>
-
-        <div class="form-footer-info">
-          <div class="info-item">
-            <ion-icon
-              :icon="informationCircleOutline"
-              color="primary"
-              class="info-icon"
-            ></ion-icon>
-            <div class="info-text">
-              <p>
-                The new location will be immediately available in the system.
-              </p>
-              <p>Users can then report items at this location.</p>
-              <p class="required-note">* Required fields must be filled out.</p>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   </template-page>
@@ -93,7 +75,6 @@ import { IonInput, IonTextarea, IonIcon, IonProgressBar } from "@ionic/vue";
 import {
   locationOutline,
   alertCircleOutline,
-  informationCircleOutline,
   checkmarkCircleOutline,
   closeCircleOutline,
 } from "ionicons/icons";
@@ -123,11 +104,7 @@ const leftFooterButton = computed(() => ({
 }));
 
 const rightFooterButton = computed(() => ({
-  name: isLoading.value
-    ? "Creating..."
-    : isValid.value
-      ? "Add Location"
-      : "Fill Required Fields",
+  name: isLoading.value ? "Creating..." : "Add Location",
   color: isValid.value ? "primary" : "medium",
   icon: checkmarkCircleOutline,
   disabled: !isValid.value || isLoading.value,

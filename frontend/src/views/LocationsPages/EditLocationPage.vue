@@ -25,7 +25,6 @@
       <div v-else class="form-content">
         <div class="form-header">
           <ion-icon :icon="createOutline" class="header-icon"></ion-icon>
-          <h2>Edit Location</h2>
           <p>Update the details for this location</p>
           <div v-if="location.createdAt" class="last-modified">
             <ion-icon :icon="timeOutline" class="time-icon"></ion-icon>
@@ -80,39 +79,14 @@
             color="danger"
             expand="block"
             class="delete-button"
-            @click="handleDelete"
+            @click="deleteLocation(location.id)"
           >
             <ion-icon :icon="trashOutline" slot="start"></ion-icon>
             Delete Location
           </ion-button>
         </div>
-
-        <div class="form-footer-info">
-          <div class="info-item">
-            <ion-icon
-              :icon="informationCircleOutline"
-              color="primary"
-              class="info-icon"
-            ></ion-icon>
-            <div class="info-text">
-              <p>
-                All changes will be automatically saved when you click "Save
-                Changes".
-              </p>
-              <p>Fields marked with * are required.</p>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
-
-    <ion-alert
-      :is-open="showDeleteAlert"
-      header="Delete Location"
-      message="Are you sure you want to delete this location? This action cannot be undone."
-      :buttons="alertButtons"
-      @didDismiss="showDeleteAlert = false"
-    ></ion-alert>
   </template-page>
 </template>
 
@@ -124,12 +98,10 @@ import {
   IonIcon,
   IonButton,
   IonSpinner,
-  IonAlert,
 } from "@ionic/vue";
 import {
   createOutline,
   alertCircleOutline,
-  informationCircleOutline,
   checkmarkCircleOutline,
   closeCircleOutline,
   trashOutline,
@@ -160,7 +132,6 @@ const errors = ref({
 const isLoading = ref(false);
 const error = ref<string | null>(null);
 const isSaving = ref(false);
-const showDeleteAlert = ref(false);
 
 const leftFooterButton = computed(() => ({
   name: "Cancel",
@@ -171,9 +142,7 @@ const leftFooterButton = computed(() => ({
 const rightFooterButton = computed(() => ({
   name: isSaving.value
     ? "Saving..."
-    : isValid.value
-      ? "Save Changes"
-      : "Fill Required Fields",
+    : "Fill Required Fields",
   color: isValid.value ? "primary" : "medium",
   icon: checkmarkCircleOutline,
   disabled: !isValid.value || isSaving.value || isLoading.value,
@@ -190,20 +159,6 @@ const isValid = computed(() => {
     return false;
   }
 });
-
-const alertButtons = [
-  {
-    text: "Cancel",
-    role: "cancel",
-    cssClass: "alert-button-cancel",
-  },
-  {
-    text: "Delete",
-    role: "destructive",
-    cssClass: "alert-button-confirm",
-    handler: () => confirmDelete(),
-  },
-];
 
 const formatDate = (dateString: string) => {
   try {
@@ -313,17 +268,8 @@ const handleSave = async () => {
   }
 };
 
-const handleDelete = () => {
-  showDeleteAlert.value = true;
-};
-
-const confirmDelete = async () => {
-  try {
-    await locationStore.deleteLocation(location.value.id);
-    router.push("/locations/overview");
-  } catch (error) {
-    console.error("Error deleting location:", error);
-  }
+const deleteLocation = (locationId: number) => {
+  alert("Need to refactor deleteLocation:" + locationId);
 };
 
 watch(

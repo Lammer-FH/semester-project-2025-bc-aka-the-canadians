@@ -19,7 +19,6 @@
       </div>
 
       <div class="reports-summary">
-        <h3>Reports at Locations</h3>
         <div class="summary-stats">
           <div class="stat-item">
             <ion-icon :icon="locationOutline" color="primary"></ion-icon>
@@ -75,12 +74,9 @@
           :title="location.name"
           :description="location.description"
           :content-sections="getLocationContentSections(location)"
-          :metadata="getLocationMetadata(location)"
-          :actions="getLocationActions(location)"
           card-type="location"
           :animation-delay="index * 0.1"
           @card-click="navigateToLocation(location.id)"
-          @list-item-click="handleLocationListClick"
         />
       </div>
     </div>
@@ -96,12 +92,9 @@ import {
   addOutline,
   refreshOutline,
   eyeOutline,
-  createOutline,
   alertCircleOutline,
   documentTextOutline,
-  calendarOutline,
   flagOutline,
-  checkmarkCircleOutline,
   checkmarkOutline,
 } from "ionicons/icons";
 import { useLocationStore } from "@/stores/locationStore";
@@ -191,72 +184,12 @@ const getTotalReportsCount = (location: Location): number => {
   return getReportsForLocation(location).length;
 };
 
-const getRecentReportsForLocation = (location: Location): Report[] => {
-  return getReportsForLocation(location)
-    .sort(
-      (a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    )
-    .slice(0, 3);
-};
-
-const getStatusColor = (status: ReportStatus) => {
-  return status === ReportStatus.RESOLVED ? "success" : "warning";
-};
-
-const getStatusIcon = (status: ReportStatus) => {
-  return status === ReportStatus.RESOLVED ? checkmarkCircleOutline : alertCircleOutline;
-};
-
-const getTimeAgo = (dateString: string) => {
-  const date = new Date(dateString);
-  const now = new Date();
-  const diffInHours = Math.floor(
-    (now.getTime() - date.getTime()) / (1000 * 60 * 60)
-  );
-
-  if (diffInHours < 1) return "A few minutes ago";
-  if (diffInHours < 24) return `${diffInHours} hours ago`;
-
-  const diffInDays = Math.floor(diffInHours / 24);
-  if (diffInDays < 7) return `${diffInDays} days ago`;
-
-  return date.toLocaleDateString("en-US");
-};
-
-const formatDate = (dateString: string) => {
-  return new Date(dateString).toLocaleDateString("en-US", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-};
-
 const navigateToLocation = (locationId: number) => {
   router.push(`/locations/${locationId}`);
 };
 
-const editLocation = (locationId: number) => {
-  router.push(`/locations/${locationId}/edit`);
-};
-
 const navigateToAddLocation = () => {
   router.push("/locations/add");
-};
-
-const viewAllReportsAtLocation = (locationName: string) => {
-  router.push({
-    path: "/items/overview",
-    query: { location: locationName },
-  });
-};
-
-const handleLocationListClick = (item: { data?: Report; title: string; subtitle?: string }, sectionKey: string) => {
-  if (sectionKey === "recentReports" && item.data) {
-    router.push(`/reports/${item.data.id}`);
-  }
 };
 
 const getLocationContentSections = (location: Location) => {
@@ -297,63 +230,13 @@ const getLocationContentSections = (location: Location) => {
 
   sections.push({
     key: "reports",
-    title: "Reports at this Location",
     icon: flagOutline,
     type: "stats" as const,
     data: statsData,
   });
 
-  const recentReports = getRecentReportsForLocation(location);
-  if (recentReports.length > 0) {
-    sections.push({
-      key: "recentReports",
-      title: "Latest Reports",
-      type: "list" as const,
-      maxItems: 2,
-      data: recentReports.slice(0, 2).map(report => ({
-        title: report.items?.[0]?.name || `Report #${report.id}`,
-        subtitle: getTimeAgo(report.createdAt),
-        icon: getStatusIcon(report.status),
-        color: getStatusColor(report.status),
-        data: report,
-      })),
-    });
-  }
-
   return sections;
 };
-
-const getLocationMetadata = (location: Location) => [
-  {
-    key: "created",
-    icon: calendarOutline,
-    value: `Created ${formatDate(location.createdAt)}`,
-  },
-];
-
-const getLocationActions = (location: Location) => [
-  {
-    key: "view",
-    label: "View Location",
-    icon: eyeOutline,
-    fill: "clear" as const,
-    handler: () => navigateToLocation(location.id),
-  },
-  {
-    key: "reports",
-    label: `Reports (${getReportsForLocation(location).length})`,
-    icon: flagOutline,
-    fill: "clear" as const,
-    handler: () => viewAllReportsAtLocation(location.name),
-  },
-  {
-    key: "edit",
-    label: "Edit",
-    icon: createOutline,
-    fill: "clear" as const,
-    handler: () => editLocation(location.id),
-  },
-];
 </script>
 
 <style scoped>

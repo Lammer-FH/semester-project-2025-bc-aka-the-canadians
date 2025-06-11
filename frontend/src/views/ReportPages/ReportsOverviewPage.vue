@@ -81,7 +81,6 @@
           :content-sections="getReportContentSections(report)"
           :details="getReportDetails(report)"
           :metadata="getReportMetadata(report)"
-          :actions="getReportActions(report)"
           card-type="report"
           :animation-delay="index * 0.1"
           @card-click="navigateToReport(report.id)"
@@ -106,9 +105,7 @@ import {
   documentOutline,
   addOutline,
   personOutline,
-  timeOutline,
   calendarOutline,
-  createOutline,
 } from "ionicons/icons";
 import { useReportStore } from "@/stores/reportStore";
 import { ReportStatus } from "@/models/report";
@@ -227,12 +224,11 @@ const getReportContentSections = (report: Report) => {
   if (report.items && report.items.length > 0) {
     sections.push({
       key: "items",
-      title: `Items (${report.items.length})`,
       type: "list" as const,
       maxItems: 3,
       data: report.items.map(item => ({
         title: item.name,
-        subtitle: item.description || undefined,
+        subtitle: item.description || "No description",
         data: item,
       })),
     });
@@ -252,11 +248,6 @@ const getReportDetails = (report: Report) => [
     icon: personOutline,
     value: report.user?.name || "Anonymous",
   },
-  {
-    key: "created",
-    icon: timeOutline,
-    value: formatDate(report.createdAt),
-  },
 ];
 
 const getReportMetadata = (report: Report) => [
@@ -264,26 +255,6 @@ const getReportMetadata = (report: Report) => [
     key: "timeAgo",
     icon: calendarOutline,
     value: getTimeAgo(report.createdAt),
-  },
-];
-
-const getReportActions = (report: Report) => [
-  {
-    key: "edit",
-    label: "",
-    icon: createOutline,
-    iconSlot: "icon-only" as const,
-    fill: "clear" as const,
-    size: "small" as const,
-    handler: () => editReport(report.id),
-  },
-  {
-    key: "view",
-    label: "View Details",
-    fill: "clear" as const,
-    color: "primary",
-    size: "small" as const,
-    handler: () => navigateToReport(report.id),
   },
 ];
 
@@ -346,23 +317,8 @@ const getTimeAgo = (dateString: string): string => {
   }
 };
 
-const formatDate = (dateString: string): string => {
-  const date = new Date(dateString);
-  return date.toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-};
-
 const navigateToReport = (reportId: number): void => {
   router.push(`/reports/${reportId}`);
-};
-
-const editReport = (reportId: number): void => {
-  router.push(`/reports/${reportId}/edit`);
 };
 
 const loadReports = async (): Promise<void> => {

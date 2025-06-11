@@ -34,7 +34,7 @@ public class ItemService {
 
     public Item updateItem(Long itemId, String name, String description) {
         Item existingItem = itemRepository.findById(itemId).orElseThrow(
-            () -> new IllegalArgumentException("Item not found with id: " + itemId));
+                () -> new IllegalArgumentException("Item not found with id: " + itemId));
 
         existingItem.setName(name);
         existingItem.setDescription(description);
@@ -42,15 +42,15 @@ public class ItemService {
         return itemRepository.save(existingItem);
     }
 
-    public Item createItemFromReportId(String name, String description, Long reportId, ItemStatus status) {
+    public Item createItemFromReportId(String name, String description, Long reportId) {
         Report report = reportService.getReportById(reportId).orElseThrow(
-            () -> new IllegalArgumentException("Report not found with id: " + reportId));
+                () -> new IllegalArgumentException("Report not found with id: " + reportId));
 
         Item item = new Item();
         item.setName(name);
         item.setDescription(description);
         item.setReport(report);
-        item.setStatus(status);
+        item.setStatus(ItemStatus.UNCLAIMED);
 
         return itemRepository.save(item);
     }

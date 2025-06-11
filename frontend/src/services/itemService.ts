@@ -33,7 +33,6 @@ export const itemService = {
                 name: itemData.name,
                 description: itemData.description || "",
                 reportId: itemData.reportId,
-                status: itemData.status || "UNCLAIMED",
             };
 
             const response = await axios.post<Item>(API_URL, payload);

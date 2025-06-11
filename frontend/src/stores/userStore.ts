@@ -12,6 +12,9 @@ export const useUserStore = defineStore("user", () => {
     const isLoading = computed(() => loading.value);
     const getError = computed(() => error.value);
 
+    // check for current user in local storage
+    // will implement this in a bit
+
     const fetchUserById = async (id: number) => {
         try {
             loading.value = true;

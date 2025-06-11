@@ -4,6 +4,8 @@ import java.sql.Timestamp;
 
 import com.campuslostfound.model.ItemStatus;
 import com.campuslostfound.model.ReportStatus;
+import com.campuslostfound.model.ReportType;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -22,6 +24,7 @@ public class ItemDTO {
     private String locationName;
     private ItemStatus status;
     private ReportStatus reportStatus;
+    private ReportType reportType;
     private Long reporterUserId;
     private String reporterUserName;
 }

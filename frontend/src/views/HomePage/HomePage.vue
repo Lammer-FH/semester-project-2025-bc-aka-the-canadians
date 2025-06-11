@@ -1,5 +1,5 @@
 <template>
-  <template-page :show-profile-button="false">
+  <template-page :show-profile-button="true">
     <div class="home-container">
       <div class="hero-section">
         <div class="hero-content">
@@ -85,12 +85,8 @@
             <div class="stat-label">Items Returned</div>
           </div>
           <div class="stat-card">
-            <div class="stat-number">{{ stats.activeUsers }}</div>
-            <div class="stat-label">Active Users</div>
-          </div>
-          <div class="stat-card">
             <div class="stat-number">{{ stats.locations }}</div>
-            <div class="stat-label">Campus Locations</div>
+            <div class="stat-label">Known Locations</div>
           </div>
         </div>
       </div>
@@ -176,29 +172,6 @@
           </div>
         </div>
       </div>
-
-      <div class="cta-section">
-        <h2>Ready to get started?</h2>
-        <p>
-          Become part of the Campus Lost & Found community and help return lost
-          items to their owners.
-        </p>
-        <div class="cta-buttons">
-          <ion-button expand="block" size="large" @click="navigateToReport">
-            <ion-icon :icon="addOutline" slot="start"></ion-icon>
-            Create First Report
-          </ion-button>
-          <ion-button
-            expand="block"
-            size="large"
-            fill="outline"
-            @click="navigateToItems"
-          >
-            <ion-icon :icon="listOutline" slot="start"></ion-icon>
-            Browse All Reports
-          </ion-button>
-        </div>
-      </div>
     </div>
   </template-page>
 </template>
@@ -215,8 +188,6 @@ import {
   locationOutline,
   peopleOutline,
   shieldCheckmarkOutline,
-  addOutline,
-  listOutline,
 } from "ionicons/icons";
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
@@ -230,7 +201,6 @@ const locationStore = useLocationStore();
 const stats = ref({
   totalReports: 0,
   itemsReturned: 0,
-  activeUsers: 0,
   locations: 0,
 });
 
@@ -248,16 +218,14 @@ onMounted(async () => {
           item.status?.toUpperCase() === "CLAIMED" ||
           item.status?.toUpperCase() === "RETURNED"
       ).length,
-      activeUsers: Math.max(1, Math.floor(items.length * 0.7)),
       locations: locations.length,
     };
   } catch (error) {
     console.error("Error loading statistics:", error);
     stats.value = {
-      totalReports: 156,
-      itemsReturned: 89,
-      activeUsers: 42,
-      locations: 15,
+      totalReports: 0,
+      itemsReturned: 0,
+      locations: 0,
     };
   }
 });

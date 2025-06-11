@@ -24,12 +24,6 @@
 
       <div v-else class="form-content">
         <div class="form-header">
-          <ion-icon :icon="createOutline" class="header-icon"></ion-icon>
-          <h2>Edit Item Details</h2>
-          <p>
-            Update the name and description for this item only. Report
-            information (location, type, etc.) must be edited separately.
-          </p>
           <div v-if="item.createdAt" class="last-modified">
             <ion-icon :icon="timeOutline" class="time-icon"></ion-icon>
             Created: {{ formatDate(item.createdAt) }}
@@ -60,11 +54,6 @@
             }"
             @ionBlur="validateField('name')"
           >
-            <ion-icon
-              :icon="textOutline"
-              slot="start"
-              class="input-icon"
-            ></ion-icon>
           </ion-input>
           <div v-if="errors.name" class="error-message">
             <ion-icon :icon="alertCircleOutline"></ion-icon>
@@ -85,15 +74,9 @@
             :auto-grow="true"
             :rows="3"
           >
-            <ion-icon
-              :icon="documentTextOutline"
-              slot="start"
-              class="input-icon"
-            ></ion-icon>
           </ion-textarea>
         </div>
 
-        <!-- Report Context Information (Read-Only) -->
         <div class="divider"></div>
 
         <div class="context-section">
@@ -102,11 +85,10 @@
               :icon="informationCircleOutline"
               class="section-icon"
             ></ion-icon>
-            Report Context (Read-Only)
+            Report Context
           </h3>
           <p class="context-description">
-            This item belongs to the following report (these fields cannot be
-            edited here):
+            This item belongs to the following report
           </p>
 
           <div class="context-grid">
@@ -167,22 +149,13 @@
             fill="outline"
             color="danger"
             expand="block"
-            @click="handleDelete"
+            @click="deleteItem"
           >
             <ion-icon :icon="trashOutline" slot="start"></ion-icon>
             Delete Item
           </ion-button>
         </div>
       </div>
-
-      <!-- Delete Alert -->
-      <ion-alert
-        :is-open="showDeleteAlert"
-        header="Delete Item"
-        :message="`Are you sure you want to delete '${item.name}'? This action cannot be undone.`"
-        :buttons="alertButtons"
-        @didDismiss="showDeleteAlert = false"
-      ></ion-alert>
     </div>
   </template-page>
 </template>
@@ -194,14 +167,12 @@ import {
   IonButton,
   IonSpinner,
   IonIcon,
-  IonAlert,
 } from "@ionic/vue";
 import {
   alertCircleOutline,
   checkmarkCircleOutline,
   closeCircleOutline,
   createOutline,
-  documentTextOutline,
   documentOutline,
   flagOutline,
   handRightOutline,
@@ -209,7 +180,6 @@ import {
   locationOutline,
   personOutline,
   refreshOutline,
-  textOutline,
   timeOutline,
   trashOutline,
 } from "ionicons/icons";
@@ -242,7 +212,6 @@ const errors = ref({
 const isLoading = ref(false);
 const error = ref<string | null>(null);
 const isSaving = ref(false);
-const showDeleteAlert = ref(false);
 
 const leftFooterButton = computed(() => ({
   name: "Cancel",
@@ -267,20 +236,6 @@ const isValid = computed(() => {
     Object.values(errors.value).every(error => error === "")
   );
 });
-
-const alertButtons = [
-  {
-    text: "Cancel",
-    role: "cancel",
-    cssClass: "alert-button-cancel",
-  },
-  {
-    text: "Delete",
-    role: "destructive",
-    cssClass: "alert-button-confirm",
-    handler: () => confirmDelete(),
-  },
-];
 
 const formatDate = (dateString: string) => {
   try {
@@ -392,18 +347,8 @@ const handleSave = async () => {
   }
 };
 
-const handleDelete = () => {
-  showDeleteAlert.value = true;
-};
-
-const confirmDelete = async () => {
-  try {
-    await itemStore.deleteItem(item.value.id);
-    router.push("/items/overview");
-  } catch (error) {
-    console.error("Error deleting item:", error);
-    // You might want to show an error toast here
-  }
+const deleteItem = () => {
+  alert("Delete Item needs to be implemented");
 };
 
 // Watch for name changes to clear errors

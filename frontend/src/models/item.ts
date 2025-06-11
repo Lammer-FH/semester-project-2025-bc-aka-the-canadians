@@ -1,4 +1,4 @@
-import type { Report, ReportStatus } from "./report";
+import type { Report, ReportStatus, ReportType } from "./report";
 import type { User } from "./user";
 
 export interface Item {
@@ -12,6 +12,7 @@ export interface Item {
     locationId?: number;
     locationName?: string;
     reportStatus?: ReportStatus;
+    reportType?: ReportType
     reporterUserId?: number;
     reporterUserName?: string;
     report?: Report;
@@ -22,7 +23,6 @@ export interface ItemCreateData {
     name: string;
     description?: string;
     reportId: number;
-    status: ItemStatus
 }
 
 export interface ItemUpdateData {

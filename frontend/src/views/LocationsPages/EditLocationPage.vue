@@ -79,7 +79,7 @@
             color="danger"
             expand="block"
             class="delete-button"
-            @click="deleteLocation(location.id)"
+            @click="deleteLocation"
           >
             <ion-icon :icon="trashOutline" slot="start"></ion-icon>
             Delete Location
@@ -132,6 +132,7 @@ const errors = ref({
 const isLoading = ref(false);
 const error = ref<string | null>(null);
 const isSaving = ref(false);
+const originalLocation = ref<Location | null>(null);
 
 const leftFooterButton = computed(() => ({
   name: "Cancel",
@@ -140,9 +141,7 @@ const leftFooterButton = computed(() => ({
 }));
 
 const rightFooterButton = computed(() => ({
-  name: isSaving.value
-    ? "Saving..."
-    : "Fill Required Fields",
+  name: isSaving.value ? "Saving..." : "Save Changes",
   color: isValid.value ? "primary" : "medium",
   icon: checkmarkCircleOutline,
   disabled: !isValid.value || isSaving.value || isLoading.value,
@@ -150,9 +149,16 @@ const rightFooterButton = computed(() => ({
 
 const isValid = computed(() => {
   try {
-    return (
+    const nameValid =
       location.value?.name?.trim() !== "" &&
-      Object.values(errors.value).every(error => error === "")
+      Object.values(errors.value).every(error => error === "");
+    if (!nameValid) return false;
+    if (!originalLocation.value) return false;
+    // Only enable if something changed
+    return (
+      location.value.name.trim() !== originalLocation.value.name.trim() ||
+      (location.value.description?.trim() || "") !==
+        (originalLocation.value.description?.trim() || "")
     );
   } catch (error) {
     console.error("Error in isValid computed:", error);
@@ -221,6 +227,7 @@ const loadLocation = async () => {
     if (loadedLocation) {
       await nextTick();
       location.value = { ...loadedLocation };
+      originalLocation.value = { ...loadedLocation };
     } else {
       throw new Error("Location not found");
     }
@@ -268,8 +275,16 @@ const handleSave = async () => {
   }
 };
 
-const deleteLocation = (locationId: number) => {
-  alert("Need to refactor deleteLocation:" + locationId);
+const deleteLocation = async () => {
+  try {
+    isSaving.value = true;
+    await locationStore.deleteLocation(location.value.id);
+    router.push("/locations/overview");
+  } catch (error) {
+    console.error("Error deleting location:", error);
+  } finally {
+    isSaving.value = false;
+  }
 };
 
 watch(

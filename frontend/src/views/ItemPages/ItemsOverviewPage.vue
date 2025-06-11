@@ -66,7 +66,7 @@
         <p v-else>
           No items reported yet. Be the first to report a found or lost item!
         </p>
-        <ion-button routerLink="/items/report" fill="solid">
+        <ion-button @click="navigateToReportItem" fill="solid">
           <ion-icon :icon="addOutline" slot="start"></ion-icon>
           Report First Item
         </ion-button>
@@ -107,7 +107,6 @@ import {
 } from "ionicons/icons";
 import { useItemStore } from "@/stores/itemStore";
 import { Item, ItemStatus } from "@/models/item";
-
 import TemplatePage from "@/components/TemplatePage.vue";
 import NavigationTabs from "@/components/NavigationTabs.vue";
 import FilterComponent from "@/components/FilterComponent.vue";
@@ -246,6 +245,10 @@ const formatDate = (dateString: string): string => {
 
 const navigateToItem = (itemId: number): void => {
   router.push(`/items/${itemId}`);
+};
+
+const navigateToReportItem = (): void => {
+  router.push("/items/report");
 };
 
 const loadItems = async (): Promise<void> => {

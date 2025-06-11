@@ -21,8 +21,22 @@
           Try Again
         </ion-button>
       </div>
-
       <div v-else class="form-content">
+        <!-- Resolved Report Warning -->
+        <div
+          v-if="report.status === ReportStatusEnum.RESOLVED"
+          class="resolved-warning"
+        >
+          <ion-icon :icon="lockClosedOutline" class="warning-icon"></ion-icon>
+          <div class="warning-content">
+            <h3>Report is Resolved</h3>
+            <p>
+              This report cannot be edited because it has been resolved. All
+              items have been claimed and the report is now immutable.
+            </p>
+          </div>
+        </div>
+
         <div class="form-header">
           <ion-icon :icon="createOutline" class="header-icon"></ion-icon>
           <p>Update the details for this report</p>
@@ -44,6 +58,7 @@
               'select-filled': report.locationId,
               'select-error': errors.locationId,
             }"
+            :disabled="report.status === ReportStatusEnum.RESOLVED"
             @ionChange="validateField('locationId')"
           >
             <ion-icon
@@ -118,6 +133,102 @@
             {{ errors.status }}
           </div>
         </div>
+        <!-- Items Management Section -->
+        <div class="divider"></div>
+
+        <div class="items-section">
+          <div class="section-header">
+            <h3 class="section-title">
+              <ion-icon :icon="cubeOutline" class="section-icon"></ion-icon>
+              Items in this Report
+            </h3>
+            <ion-button
+              @click="openAddItemModal"
+              fill="outline"
+              size="small"
+              color="primary"
+              :disabled="report.status === ReportStatusEnum.RESOLVED"
+            >
+              <ion-icon :icon="addOutline" slot="start"></ion-icon>
+              Add Item
+            </ion-button>
+          </div>
+          <p class="section-description">
+            Manage the items associated with this report. You can edit existing
+            items or remove items from the report.
+          </p>
+
+          <div
+            v-if="report.items && report.items.length > 0"
+            class="items-list"
+          >
+            <div v-for="item in report.items" :key="item.id" class="item-card">
+              <div class="item-header">
+                <div class="item-info">
+                  <h4 class="item-name">{{ item.name }}</h4>
+                  <div class="item-status">
+                    <ion-icon
+                      :icon="getItemStatusIcon(item.status)"
+                      class="status-icon"
+                      :class="getItemStatusClass(item.status)"
+                    ></ion-icon>
+                    <span :class="getItemStatusClass(item.status)">
+                      {{ getItemStatusText(item.status) }}
+                    </span>
+                  </div>
+                </div>
+                <div class="item-actions">
+                  <ion-button
+                    fill="clear"
+                    size="small"
+                    color="primary"
+                    @click="navigateToItemDetails(item.id)"
+                    title="View Item Details"
+                  >
+                    <ion-icon :icon="eyeOutline" slot="icon-only"></ion-icon>
+                  </ion-button>
+                  <ion-button
+                    fill="clear"
+                    size="small"
+                    color="primary"
+                    @click="navigateToEditItem(item.id)"
+                    title="Edit Item"
+                    :disabled="report.status === ReportStatusEnum.RESOLVED"
+                  >
+                    <ion-icon :icon="createOutline" slot="icon-only"></ion-icon>
+                  </ion-button>
+                  <ion-button
+                    fill="clear"
+                    size="small"
+                    color="danger"
+                    @click="confirmRemoveItem(item)"
+                    title="Remove Item from Report"
+                    :disabled="report.status === ReportStatusEnum.RESOLVED"
+                  >
+                    <ion-icon :icon="trashOutline" slot="icon-only"></ion-icon>
+                  </ion-button>
+                </div>
+              </div>
+              <p v-if="item.description" class="item-description">
+                {{ truncateText(item.description, 100) }}
+              </p>
+            </div>
+          </div>
+          <div v-else class="empty-items">
+            <ion-icon :icon="cubeOutline" class="empty-icon"></ion-icon>
+            <h4>No Items in Report</h4>
+            <p>This report doesn't have any items yet.</p>
+            <ion-button
+              @click="openAddItemModal"
+              fill="outline"
+              color="primary"
+              :disabled="report.status === ReportStatusEnum.RESOLVED"
+            >
+              <ion-icon :icon="addOutline" slot="start"></ion-icon>
+              Add First Item
+            </ion-button>
+          </div>
+        </div>
 
         <!-- Report Context Information (Read-Only) -->
         <div class="divider"></div>
@@ -155,14 +266,11 @@
               </div>
             </div>
 
-            <div
-              v-if="report.items && report.items.length > 0"
-              class="context-item"
-            >
+            <div class="context-item">
               <ion-icon :icon="cubeOutline" class="context-icon"></ion-icon>
               <div class="context-content">
                 <label>Items Count</label>
-                <span>{{ report.items.length }} item(s)</span>
+                <span>{{ report.items?.length || 0 }} item(s)</span>
               </div>
             </div>
           </div>
@@ -182,6 +290,72 @@
         </div>
       </div>
     </div>
+
+    <!-- Add Item Modal -->
+    <ion-modal :is-open="isAddItemModalOpen" @didDismiss="closeAddItemModal">
+      <ion-header>
+        <ion-toolbar>
+          <ion-title>Add New Item</ion-title>
+          <ion-button
+            slot="end"
+            fill="clear"
+            @click="closeAddItemModal"
+            :disabled="isAddingItem"
+          >
+            <ion-icon :icon="closeOutline" slot="icon-only"></ion-icon>
+          </ion-button>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content>
+        <div class="add-item-form">
+          <ion-item>
+            <ion-input
+              v-model="newItemName"
+              label="Item Name"
+              label-placement="stacked"
+              placeholder="e.g. iPhone 14, Key Chain, Backpack..."
+              :disabled="isAddingItem"
+              required
+            ></ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-textarea
+              v-model="newItemDescription"
+              label="Description"
+              label-placement="stacked"
+              placeholder="Describe the item in detail: color, size, special features..."
+              :rows="4"
+              :disabled="isAddingItem"
+            ></ion-textarea>
+          </ion-item>
+
+          <div class="modal-buttons">
+            <ion-button
+              @click="closeAddItemModal"
+              fill="outline"
+              color="medium"
+              :disabled="isAddingItem"
+            >
+              Cancel
+            </ion-button>
+            <ion-button
+              @click="addItemToReport"
+              :disabled="!newItemName.trim() || isAddingItem"
+              color="primary"
+            >
+              <ion-spinner
+                v-if="isAddingItem"
+                name="crescent"
+                size="small"
+              ></ion-spinner>
+              <ion-icon v-else :icon="checkmarkOutline" slot="start"></ion-icon>
+              {{ isAddingItem ? "Adding..." : "Add Item" }}
+            </ion-button>
+          </div>
+        </div>
+      </ion-content>
+    </ion-modal>
   </template-page>
 </template>
 
@@ -192,6 +366,15 @@ import {
   IonButton,
   IonSpinner,
   IonIcon,
+  IonModal,
+  IonHeader,
+  IonToolbar,
+  IonTitle,
+  IonContent,
+  IonInput,
+  IonTextarea,
+  IonItem,
+  alertController,
 } from "@ionic/vue";
 import {
   alertCircleOutline,
@@ -205,20 +388,26 @@ import {
   flagOutline,
   informationCircleOutline,
   locationOutline,
+  lockClosedOutline,
   personOutline,
   refreshOutline,
   searchOutline,
   timeOutline,
   trashOutline,
+  eyeOutline,
+  addOutline,
+  closeOutline,
+  checkmarkOutline,
 } from "ionicons/icons";
 import TemplatePage from "@/components/TemplatePage.vue";
 import { ref, computed, watch, onMounted, nextTick } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { useReportStore } from "@/stores/reportStore";
 import { useLocationStore } from "@/stores/locationStore";
+import { useItemStore } from "@/stores/itemStore";
 import type { Report } from "@/models/report";
 import { ReportStatus, ReportType } from "@/models/report";
-import { ItemStatus } from "@/models/item";
+import { ItemStatus, type Item } from "@/models/item";
 import type { Location } from "@/models/location";
 
 const ReportStatusEnum = ReportStatus;
@@ -227,6 +416,13 @@ const router = useRouter();
 const route = useRoute();
 const reportStore = useReportStore();
 const locationStore = useLocationStore();
+const itemStore = useItemStore();
+
+// Add item modal state
+const isAddItemModalOpen = ref(false);
+const newItemName = ref("");
+const newItemDescription = ref("");
+const isAddingItem = ref(false);
 
 // Initialize with proper default values
 const report = ref<Report>({
@@ -259,10 +455,19 @@ const rightFooterButton = computed(() => ({
     ? "Saving..."
     : isValid.value
       ? "Save Changes"
-      : "Fill Required Fields",
-  color: isValid.value ? "primary" : "medium",
+      : report.value.status === ReportStatusEnum.RESOLVED
+        ? "Report is Resolved"
+        : "Fill Required Fields",
+  color:
+    isValid.value && report.value.status !== ReportStatusEnum.RESOLVED
+      ? "primary"
+      : "medium",
   icon: checkmarkCircleOutline,
-  disabled: !isValid.value || isSaving.value || isLoading.value,
+  disabled:
+    !isValid.value ||
+    isSaving.value ||
+    isLoading.value ||
+    report.value.status === ReportStatusEnum.RESOLVED,
 }));
 
 const isValid = computed(() => {
@@ -414,6 +619,112 @@ const handleDelete = () => {
     });
 };
 
+// Item management functions
+const getItemStatusIcon = (status: ItemStatus) => {
+  return status === ItemStatus.CLAIMED ? checkmarkCircleOutline : cubeOutline;
+};
+
+const getItemStatusClass = (status: ItemStatus) => {
+  return status === ItemStatus.CLAIMED ? "status-claimed" : "status-unclaimed";
+};
+
+const getItemStatusText = (status: ItemStatus) => {
+  return status === ItemStatus.CLAIMED ? "Claimed" : "Available";
+};
+
+const truncateText = (text: string, maxLength: number) => {
+  if (!text) return "";
+  return text.length > maxLength ? text.substring(0, maxLength) + "..." : text;
+};
+
+const navigateToItemDetails = (itemId: number) => {
+  router.push(`/items/${itemId}`);
+};
+
+const navigateToEditItem = (itemId: number) => {
+  router.push(`/items/${itemId}/edit`);
+};
+
+const confirmRemoveItem = async (item: Item) => {
+  // Check if this is the last item in the report
+  const remainingItemsCount = (report.value.items?.length || 0) - 1;
+
+  let confirmMessage;
+  if (remainingItemsCount === 0) {
+    confirmMessage = `Are you sure you want to remove "${item.name}"? This is the last item in the report, so the entire report will be deleted. This action cannot be undone.`;
+  } else {
+    confirmMessage = `Are you sure you want to remove "${item.name}" from this report? This action cannot be undone.`;
+  }
+
+  const confirmed = confirm(confirmMessage);
+  if (!confirmed) return;
+
+  try {
+    await itemStore.deleteItem(item.id);
+
+    // If this was the last item, the backend automatically deletes the empty report
+    if (remainingItemsCount === 0) {
+      // Navigate to reports overview since the report no longer exists
+      router.push("/reports/overview");
+    } else {
+      // Reload the report to update the items list
+      await loadReport();
+    }
+  } catch (error) {
+    console.error("Error removing item:", error);
+    alert("Failed to remove item. Please try again.");
+  }
+};
+
+// Add item modal functions
+const openAddItemModal = (): void => {
+  newItemName.value = "";
+  newItemDescription.value = "";
+  isAddItemModalOpen.value = true;
+};
+
+const closeAddItemModal = (): void => {
+  if (isAddingItem.value) return; // Prevent closing while adding
+  isAddItemModalOpen.value = false;
+  newItemName.value = "";
+  newItemDescription.value = "";
+};
+
+const addItemToReport = async (): Promise<void> => {
+  if (!newItemName.value.trim() || !report.value) return;
+
+  try {
+    isAddingItem.value = true;
+
+    const itemData = {
+      name: newItemName.value.trim(),
+      description: newItemDescription.value.trim() || undefined,
+      reportId: report.value.id,
+    };
+
+    const newItem = await itemStore.createItem(itemData);
+
+    if (newItem) {
+      // Refresh the report to get updated items list
+      await loadReport();
+    }
+  } catch (error) {
+    console.error("Error adding item:", error);
+
+    // Show error message
+    const alert = await alertController.create({
+      header: "Error",
+      message: "Failed to add item. Please try again.",
+      buttons: ["OK"],
+    });
+    await alert.present();
+  } finally {
+    isAddingItem.value = false;
+    // Always close modal regardless of success or failure
+    closeAddItemModal();
+  }
+};
+
 // Watch for location changes to clear errors
 watch(
   () => report.value?.locationId,
@@ -481,7 +792,40 @@ onMounted(async () => {
   margin-bottom: 16px;
 }
 
+.resolved-warning {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  margin-bottom: 24px;
+  background: #fff3cd;
+  border: 1px solid #f0ad4e;
+  border-radius: 8px;
+  color: #856404;
+}
+
+.warning-icon {
+  font-size: 24px;
+  color: #f0ad4e;
+  flex-shrink: 0;
+}
+
+.warning-content h3 {
+  margin: 0 0 4px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #856404;
+}
+
+.warning-content p {
+  margin: 0;
+  font-size: 14px;
+  color: #856404;
+  line-height: 1.4;
+}
+
 .form-header {
+  margin-bottom: 24px;
   text-align: center;
   margin-bottom: 40px;
 }
@@ -675,6 +1019,151 @@ onMounted(async () => {
   font-weight: 500;
 }
 
+/* Items Management Section */
+.items-section {
+  margin: 24px 0;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  color: var(--ion-color-dark);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.item-card {
+  background: var(--ion-item-background);
+  border: 1px solid var(--ion-color-light-shade);
+  border-radius: 8px;
+  padding: 16px;
+  transition: all 0.2s ease;
+}
+
+.item-card:hover {
+  background: var(--ion-color-light-tint);
+  border-color: var(--ion-color-primary-tint);
+}
+
+.item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+
+.item-info {
+  flex: 1;
+}
+
+.item-name {
+  margin: 0 0 8px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ion-color-dark);
+}
+
+.item-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.status-icon {
+  font-size: 16px;
+}
+
+.status-claimed {
+  color: var(--ion-color-success);
+}
+
+.status-unclaimed {
+  color: var(--ion-color-warning);
+}
+
+.item-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.item-actions ion-button {
+  --padding-start: 8px;
+  --padding-end: 8px;
+  --padding-top: 8px;
+  --padding-bottom: 8px;
+  min-height: 32px;
+  min-width: 32px;
+}
+
+.item-actions ion-button:hover {
+  transform: scale(1.1);
+  transition: transform 0.2s ease;
+}
+
+.item-description {
+  margin: 0;
+  font-size: 14px;
+  color: var(--ion-color-medium);
+  line-height: 1.4;
+}
+
+.empty-items {
+  text-align: center;
+  padding: 40px 20px;
+  background: var(--ion-color-light-tint);
+  border-radius: 8px;
+  border: 2px dashed var(--ion-color-light-shade);
+}
+
+.empty-icon {
+  font-size: 48px;
+  color: var(--ion-color-medium);
+  margin-bottom: 16px;
+}
+
+.empty-items h4 {
+  margin: 0 0 8px 0;
+  color: var(--ion-color-dark);
+}
+
+.empty-items p {
+  margin: 8px 0 16px 0;
+  color: var(--ion-color-medium);
+  font-size: 14px;
+}
+
+.add-item-form {
+  padding: 16px;
+}
+
+.modal-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 24px;
+  padding: 16px 0;
+}
+
 @media (max-width: 768px) {
   .form-container {
     padding: 16px;
@@ -692,6 +1181,22 @@ onMounted(async () => {
     padding: 6px 12px;
     font-size: 0.8em;
   }
+
+  .section-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .item-header {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .item-actions {
+    justify-content: flex-start;
+  }
 }
 
 @media (max-width: 480px) {
@@ -701,6 +1206,14 @@ onMounted(async () => {
 
   .input-group {
     margin-bottom: 20px;
+  }
+
+  .items-section {
+    margin: 20px 0;
+  }
+
+  .empty-items {
+    padding: 30px 16px;
   }
 }
 </style>

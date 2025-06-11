@@ -21,8 +21,19 @@
           Try Again
         </ion-button>
       </div>
-
       <div v-else class="form-content">
+        <!-- Resolved Report Warning -->
+        <div v-if="isItemFromResolvedReport" class="resolved-warning">
+          <ion-icon :icon="lockClosedOutline" class="warning-icon"></ion-icon>
+          <div class="warning-content">
+            <h3>Item from Resolved Report</h3>
+            <p>
+              This item cannot be edited because it belongs to a resolved
+              report. Resolved reports and their items are immutable.
+            </p>
+          </div>
+        </div>
+
         <div class="form-header">
           <ion-icon :icon="createOutline" class="header-icon"></ion-icon>
           <p>Update the details for this item</p>
@@ -31,7 +42,6 @@
             Created: {{ formatDate(item.createdAt) }}
           </div>
         </div>
-
         <div class="input-group">
           <ion-input
             v-model="item.name"
@@ -43,6 +53,7 @@
               'input-filled': item.name,
               'input-error': errors.name,
             }"
+            :disabled="isItemFromResolvedReport"
             @ionBlur="validateField('name')"
           >
           </ion-input>
@@ -51,7 +62,6 @@
             {{ errors.name }}
           </div>
         </div>
-
         <div class="input-group">
           <ion-textarea
             v-model="item.description"
@@ -64,6 +74,7 @@
             }"
             :auto-grow="true"
             :rows="3"
+            :disabled="isItemFromResolvedReport"
           >
           </ion-textarea>
         </div>
@@ -169,6 +180,7 @@ import {
   handRightOutline,
   informationCircleOutline,
   locationOutline,
+  lockClosedOutline,
   personOutline,
   refreshOutline,
   timeOutline,
@@ -180,6 +192,7 @@ import { useRouter, useRoute } from "vue-router";
 import { useItemStore } from "@/stores/itemStore";
 import type { Item } from "@/models/item";
 import { ItemStatus } from "@/models/item";
+import { ReportStatus } from "@/models/report";
 
 const router = useRouter();
 const route = useRoute();
@@ -215,16 +228,30 @@ const rightFooterButton = computed(() => ({
     ? "Saving..."
     : isValid.value
       ? "Save Changes"
-      : "Fill Required Fields",
-  color: isValid.value ? "primary" : "medium",
+      : isItemFromResolvedReport.value
+        ? "Item from Resolved Report"
+        : "Fill Required Fields",
+  color:
+    isValid.value && !isItemFromResolvedReport.value ? "primary" : "medium",
   icon: checkmarkCircleOutline,
-  disabled: !isValid.value || isSaving.value || isLoading.value,
+  disabled:
+    !isValid.value ||
+    isSaving.value ||
+    isLoading.value ||
+    isItemFromResolvedReport.value,
 }));
 
 const isValid = computed(() => {
   return (
     item.value?.name?.trim() !== "" &&
     Object.values(errors.value).every(error => error === "")
+  );
+});
+
+const isItemFromResolvedReport = computed(() => {
+  return (
+    item.value?.reportStatus === ReportStatus.RESOLVED ||
+    item.value?.report?.status === ReportStatus.RESOLVED
   );
 });
 
@@ -401,7 +428,40 @@ onMounted(() => {
   margin-bottom: 16px;
 }
 
+.resolved-warning {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  margin-bottom: 24px;
+  background: #fff3cd;
+  border: 1px solid #f0ad4e;
+  border-radius: 8px;
+  color: #856404;
+}
+
+.warning-icon {
+  font-size: 24px;
+  color: #f0ad4e;
+  flex-shrink: 0;
+}
+
+.warning-content h3 {
+  margin: 0 0 4px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #856404;
+}
+
+.warning-content p {
+  margin: 0;
+  font-size: 14px;
+  color: #856404;
+  line-height: 1.4;
+}
+
 .form-header {
+  margin-bottom: 24px;
   text-align: center;
   margin-bottom: 40px;
 }

@@ -16,9 +16,15 @@ export interface Report {
 }
 
 export interface ReportCreateData {
-  userId: number;
-  locationId: number;
-  type: ReportType;
+    userId: number;
+    locationId: number;
+    type: ReportType;
+    items?: ReportItemCreateData[];
+}
+
+export interface ReportItemCreateData {
+    name: string;
+    description?: string;
 }
 
 export interface ReportUpdateData {

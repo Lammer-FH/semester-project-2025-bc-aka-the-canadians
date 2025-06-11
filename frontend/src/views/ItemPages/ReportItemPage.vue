@@ -126,7 +126,7 @@
           </div>
         </div>
 
-        <div class="input-group">
+        <div v-if="!currentUser" class="input-group">
           <h3 class="section-title">
             <ion-icon :icon="personOutline" class="section-icon"></ion-icon>
             Your Contact Information
@@ -171,6 +171,17 @@
             {{ errors.contactInfo }}
           </div>
         </div>
+
+        <div v-else class="input-group">
+          <h3 class="section-title">
+            <ion-icon :icon="personOutline" class="section-icon"></ion-icon>
+            Reporting as
+          </h3>
+          <p class="section-description">
+            You're logged in as {{ currentUser.name }} ({{ currentUser.email }}).
+            This report will be associated with your profile.
+          </p>
+        </div>
       </div>
     </div>
   </template-page>
@@ -199,6 +210,7 @@ import { useRouter } from "vue-router";
 import { useItemStore } from "@/stores/itemStore";
 import { useLocationStore } from "@/stores/locationStore";
 import { useReportStore } from "@/stores/reportStore";
+import { useUserStore } from "@/stores/userStore";
 import { type ItemCreateData } from "@/models/item";
 import { ReportType, type ReportCreateData } from "@/models/report";
 
@@ -206,9 +218,7 @@ const router = useRouter();
 const itemStore = useItemStore();
 const locationStore = useLocationStore();
 const reportStore = useReportStore();
-
-// Mock user ID for now - in a real app, this would come from authentication
-const CURRENT_USER_ID = 1;
+const userStore = useUserStore();
 
 const reportData = ref({
   type: null as ReportType | null,
@@ -229,6 +239,7 @@ const errors = ref({
 });
 
 const isSubmitting = computed(() => itemStore.isLoading);
+const currentUser = computed(() => userStore.getCurrentUser);
 const availableLocations = computed(() => locationStore.getLocations || []);
 
 const leftFooterButton = computed(() => ({
@@ -245,14 +256,24 @@ const rightFooterButton = computed(() => ({
 }));
 
 const isValid = computed(() => {
-  return (
+  const baseValid = (
     reportData.value.type !== null &&
     typeof reportData.value.itemName === "string" &&
     reportData.value.itemName.trim() !== "" &&
     typeof reportData.value.description === "string" &&
     reportData.value.description.trim() !== "" &&
     typeof reportData.value.location === "string" &&
-    reportData.value.location.trim() !== "" &&
+    reportData.value.location.trim() !== ""
+  );
+
+  // If there's a current user, we don't need contact info
+  if (currentUser.value) {
+    return baseValid;
+  }
+
+  // If no current user, require contact info
+  return (
+    baseValid &&
     typeof reportData.value.reporterName === "string" &&
     reportData.value.reporterName.trim() !== "" &&
     typeof reportData.value.contactInfo === "string" &&
@@ -261,14 +282,15 @@ const isValid = computed(() => {
 });
 
 const completionPercentage = computed(() => {
-  const requiredFields = [
+  const baseFields = [
     "type",
     "itemName",
     "description",
     "location",
-    "reporterName",
-    "contactInfo",
   ];
+
+  const contactFields = currentUser.value ? [] : ["reporterName", "contactInfo"];
+  const requiredFields = [...baseFields, ...contactFields];
 
   const requiredFilled = requiredFields.filter(field => {
     const value = reportData.value[field as keyof typeof reportData.value];
@@ -343,8 +365,12 @@ const validateAllFields = () => {
   validateField("itemName");
   validateField("description");
   validateField("location");
-  validateField("reporterName");
-  validateField("contactInfo");
+  
+  // Only validate contact fields if no current user
+  if (!currentUser.value) {
+    validateField("reporterName");
+    validateField("contactInfo");
+  }
 };
 
 const handleCancel = () => {
@@ -358,6 +384,24 @@ const handleSubmit = async () => {
   }
 
   try {
+    let user;
+    
+    if (currentUser.value) {
+      // Use existing current user
+      user = currentUser.value;
+    } else {
+      // Create or get user from contact information
+      user = await userStore.createUserFromContactInfo(
+        reportData.value.reporterName,
+        reportData.value.contactInfo
+      );
+
+      if (!user) {
+        console.error("Failed to create or get user");
+        return;
+      }
+    }
+
     const selectedLocation = availableLocations.value.find(
       location => location.name === reportData.value.location
     );
@@ -368,7 +412,7 @@ const handleSubmit = async () => {
     }
 
     const reportCreateData: ReportCreateData = {
-      userId: CURRENT_USER_ID,
+      userId: user.id,
       locationId: selectedLocation.id,
       type: reportData.value.type!,
     };

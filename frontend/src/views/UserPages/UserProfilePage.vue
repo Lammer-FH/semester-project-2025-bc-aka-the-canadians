@@ -17,15 +17,18 @@
         <ion-icon :icon="alertCircleOutline" class="empty-icon"></ion-icon>
         <h2>Loading Error</h2>
         <p>{{ error }}</p>
-        <ion-button @click="loadUserProfile">
+        <ion-button @click="() => userStore.initializeUser()">
           <ion-icon :icon="refreshOutline" slot="start"></ion-icon>
           Try Again
         </ion-button>
       </div>
 
-      <div v-else-if="user" class="content-wrapper">
+      <div v-else class="content-wrapper">
         <div class="profile-form">
-          <h3>Personal Information</h3>
+          <h3>{{ user ? 'Personal Information' : 'Create Your Profile' }}</h3>
+          <p v-if="!user" class="create-profile-description">
+            Welcome! Please fill in your information to create your profile.
+          </p>
 
           <div class="form-group">
             <ion-item
@@ -127,9 +130,7 @@ const user = computed(() => userStore.getCurrentUser);
 const isLoading = computed(() => userStore.isLoading);
 const error = computed(() => userStore.getError);
 
-// Mock user ID for now - in a real app, this would come from authentication
-const CURRENT_USER_ID = 1;
-
+// Remove static user ID since we'll handle user creation dynamically
 const userStats = ref({
   itemsReported: 0,
   itemsClaimed: 0,
@@ -162,21 +163,13 @@ const rightFooterButton = computed(() => ({
 }));
 
 onMounted(async () => {
-  await loadUserProfile();
+  // User is already loaded by the app initialization
   if (user.value) {
     editData.name = user.value.name;
     editData.email = user.value.email;
   }
+  loadUserStats();
 });
-
-const loadUserProfile = async () => {
-  try {
-    await userStore.fetchUserById(CURRENT_USER_ID);
-    loadUserStats();
-  } catch (error) {
-    console.error("Error loading user profile:", error);
-  }
-};
 
 const loadUserStats = async () => {
   userStats.value = {
@@ -222,7 +215,37 @@ const handleCancel = () => {
 };
 
 const handleSave = async () => {
-  alert("Need to implement save/update functionality");
+  // Validate all fields first
+  validateField('name');
+  validateField('email');
+  
+  // Check if there are any validation errors
+  const hasErrors = Object.values(errors.value).some(error => error !== '');
+  if (hasErrors) {
+    return;
+  }
+
+  try {
+    if (user.value) {
+      // Update existing user
+      await userStore.updateUser(user.value.id, {
+        name: editData.name,
+        email: editData.email,
+      });
+    } else {
+      // Create new user
+      await userStore.createUser({
+        name: editData.name,
+        email: editData.email,
+      });
+    }
+    
+    hasChanges.value = false;
+    // Could show a success toast here
+  } catch (error) {
+    console.error('Error saving user:', error);
+    // Could show an error toast here
+  }
 };
 
 const deleteAccount = () => {
@@ -236,6 +259,9 @@ watch(
       const hasNameChanged = editData.name !== user.value.name;
       const hasEmailChanged = editData.email !== user.value.email;
       hasChanges.value = hasNameChanged || hasEmailChanged;
+    } else {
+      // For new users, any content in the fields indicates changes
+      hasChanges.value = editData.name.trim() !== "" || editData.email.trim() !== "";
     }
   },
   { deep: true }
@@ -455,6 +481,14 @@ watch(
   --border-radius: 12px;
   height: 48px;
   font-weight: 600;
+}
+
+.create-profile-description {
+  color: var(--ion-color-medium);
+  margin-bottom: 20px;
+  padding: 0 4px;
+  font-size: 0.9em;
+  line-height: 1.4;
 }
 
 @keyframes fadeInUp {

@@ -32,11 +32,17 @@ public class UserController {
         User savedUser = userService.saveUser(user);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(userMapper.toDTO(savedUser));
-    }
-
-    @GetMapping("/{id}")
+    }    @GetMapping("/{id}")
     public ResponseEntity<UserDTO> getUserById(@PathVariable Long id) {
         Optional<User> user = userService.getUserById(id);
+
+        return user.map(value -> ResponseEntity.ok(userMapper.toDTO(value)))
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/email/{email}")
+    public ResponseEntity<UserDTO> getUserByEmail(@PathVariable String email) {
+        Optional<User> user = userService.getUserByEmail(email);
 
         return user.map(value -> ResponseEntity.ok(userMapper.toDTO(value)))
                 .orElseGet(() -> ResponseEntity.notFound().build());

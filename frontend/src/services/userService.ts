@@ -14,6 +14,19 @@ export const userService = {
         }
     },
 
+    async getUserByEmail(email: string): Promise<User | null> {
+        try {
+            const response = await axios.get<User>(`${API_URL}/email/${email}`);
+            return response.data;
+        } catch (error) {
+            if (axios.isAxiosError(error) && error.response?.status === 404) {
+                return null; // User not found
+            }
+            console.error("Error fetching user by email:", error);
+            throw error;
+        }
+    },
+
     async createUser(userData: UserCreateData): Promise<User> {
         try {
             const response = await axios.post<User>(API_URL, userData);

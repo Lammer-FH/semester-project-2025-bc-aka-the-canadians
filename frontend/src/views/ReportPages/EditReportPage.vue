@@ -142,6 +142,16 @@
               <ion-icon :icon="cubeOutline" class="section-icon"></ion-icon>
               Items in this Report
             </h3>
+            <ion-button
+              @click="openAddItemModal"
+              fill="outline"
+              size="small"
+              color="primary"
+              :disabled="report.status === ReportStatusEnum.RESOLVED"
+            >
+              <ion-icon :icon="addOutline" slot="start"></ion-icon>
+              Add Item
+            </ion-button>
           </div>
           <p class="section-description">
             Manage the items associated with this report. You can edit existing
@@ -208,6 +218,15 @@
             <ion-icon :icon="cubeOutline" class="empty-icon"></ion-icon>
             <h4>No Items in Report</h4>
             <p>This report doesn't have any items yet.</p>
+            <ion-button
+              @click="openAddItemModal"
+              fill="outline"
+              color="primary"
+              :disabled="report.status === ReportStatusEnum.RESOLVED"
+            >
+              <ion-icon :icon="addOutline" slot="start"></ion-icon>
+              Add First Item
+            </ion-button>
           </div>
         </div>
 
@@ -271,6 +290,72 @@
         </div>
       </div>
     </div>
+
+    <!-- Add Item Modal -->
+    <ion-modal :is-open="isAddItemModalOpen" @didDismiss="closeAddItemModal">
+      <ion-header>
+        <ion-toolbar>
+          <ion-title>Add New Item</ion-title>
+          <ion-button
+            slot="end"
+            fill="clear"
+            @click="closeAddItemModal"
+            :disabled="isAddingItem"
+          >
+            <ion-icon :icon="closeOutline" slot="icon-only"></ion-icon>
+          </ion-button>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content>
+        <div class="add-item-form">
+          <ion-item>
+            <ion-input
+              v-model="newItemName"
+              label="Item Name"
+              label-placement="stacked"
+              placeholder="e.g. iPhone 14, Key Chain, Backpack..."
+              :disabled="isAddingItem"
+              required
+            ></ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-textarea
+              v-model="newItemDescription"
+              label="Description"
+              label-placement="stacked"
+              placeholder="Describe the item in detail: color, size, special features..."
+              :rows="4"
+              :disabled="isAddingItem"
+            ></ion-textarea>
+          </ion-item>
+
+          <div class="modal-buttons">
+            <ion-button
+              @click="closeAddItemModal"
+              fill="outline"
+              color="medium"
+              :disabled="isAddingItem"
+            >
+              Cancel
+            </ion-button>
+            <ion-button
+              @click="addItemToReport"
+              :disabled="!newItemName.trim() || isAddingItem"
+              color="primary"
+            >
+              <ion-spinner
+                v-if="isAddingItem"
+                name="crescent"
+                size="small"
+              ></ion-spinner>
+              <ion-icon v-else :icon="checkmarkOutline" slot="start"></ion-icon>
+              {{ isAddingItem ? "Adding..." : "Add Item" }}
+            </ion-button>
+          </div>
+        </div>
+      </ion-content>
+    </ion-modal>
   </template-page>
 </template>
 
@@ -281,6 +366,15 @@ import {
   IonButton,
   IonSpinner,
   IonIcon,
+  IonModal,
+  IonHeader,
+  IonToolbar,
+  IonTitle,
+  IonContent,
+  IonInput,
+  IonTextarea,
+  IonItem,
+  alertController,
 } from "@ionic/vue";
 import {
   alertCircleOutline,
@@ -301,6 +395,9 @@ import {
   timeOutline,
   trashOutline,
   eyeOutline,
+  addOutline,
+  closeOutline,
+  checkmarkOutline,
 } from "ionicons/icons";
 import TemplatePage from "@/components/TemplatePage.vue";
 import { ref, computed, watch, onMounted, nextTick } from "vue";
@@ -320,6 +417,12 @@ const route = useRoute();
 const reportStore = useReportStore();
 const locationStore = useLocationStore();
 const itemStore = useItemStore();
+
+// Add item modal state
+const isAddItemModalOpen = ref(false);
+const newItemName = ref("");
+const newItemDescription = ref("");
+const isAddingItem = ref(false);
 
 // Initialize with proper default values
 const report = ref<Report>({
@@ -570,6 +673,55 @@ const confirmRemoveItem = async (item: Item) => {
   } catch (error) {
     console.error("Error removing item:", error);
     alert("Failed to remove item. Please try again.");
+  }
+};
+
+// Add item modal functions
+const openAddItemModal = (): void => {
+  newItemName.value = "";
+  newItemDescription.value = "";
+  isAddItemModalOpen.value = true;
+};
+
+const closeAddItemModal = (): void => {
+  if (isAddingItem.value) return; // Prevent closing while adding
+  isAddItemModalOpen.value = false;
+  newItemName.value = "";
+  newItemDescription.value = "";
+};
+
+const addItemToReport = async (): Promise<void> => {
+  if (!newItemName.value.trim() || !report.value) return;
+
+  try {
+    isAddingItem.value = true;
+
+    const itemData = {
+      name: newItemName.value.trim(),
+      description: newItemDescription.value.trim() || undefined,
+      reportId: report.value.id,
+    };
+
+    const newItem = await itemStore.createItem(itemData);
+
+    if (newItem) {
+      // Refresh the report to get updated items list
+      await loadReport();
+    }
+  } catch (error) {
+    console.error("Error adding item:", error);
+
+    // Show error message
+    const alert = await alertController.create({
+      header: "Error",
+      message: "Failed to add item. Please try again.",
+      buttons: ["OK"],
+    });
+    await alert.present();
+  } finally {
+    isAddingItem.value = false;
+    // Always close modal regardless of success or failure
+    closeAddItemModal();
   }
 };
 
@@ -876,7 +1028,9 @@ onMounted(async () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
 .section-title {
@@ -993,9 +1147,21 @@ onMounted(async () => {
 }
 
 .empty-items p {
-  margin: 0 0 16px 0;
+  margin: 8px 0 16px 0;
   color: var(--ion-color-medium);
   font-size: 14px;
+}
+
+.add-item-form {
+  padding: 16px;
+}
+
+.modal-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 24px;
+  padding: 16px 0;
 }
 
 @media (max-width: 768px) {

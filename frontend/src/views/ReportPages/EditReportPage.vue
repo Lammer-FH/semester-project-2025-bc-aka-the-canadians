@@ -24,9 +24,6 @@
 
       <div v-else class="form-content">
         <div class="form-header">
-          <ion-icon :icon="createOutline" class="header-icon"></ion-icon>
-          <h2>Edit Report #{{ report.id }}</h2>
-          <p>Update the report details</p>
           <div v-if="report.createdAt" class="last-modified">
             <ion-icon :icon="timeOutline" class="time-icon"></ion-icon>
             Created: {{ formatDate(report.createdAt) }}
@@ -106,7 +103,6 @@
               <div class="select-option">
                 <ion-icon :icon="searchOutline" class="option-icon"></ion-icon>
                 <div>
-                  <strong>Open</strong>
                   <p>Items still available</p>
                 </div>
               </div>
@@ -121,7 +117,6 @@
                   class="option-icon"
                 ></ion-icon>
                 <div>
-                  <strong>Resolved</strong>
                   <p>All items have been claimed</p>
                 </div>
               </div>
@@ -142,10 +137,8 @@
               :icon="informationCircleOutline"
               class="section-icon"
             ></ion-icon>
-            Report Context (Read-Only)
+            Report Context
           </h3>
-          <p class="context-description">This information cannot be edited:</p>
-
           <div class="context-grid">
             <div class="context-item">
               <ion-icon :icon="documentOutline" class="context-icon"></ion-icon>
@@ -197,15 +190,6 @@
           </ion-button>
         </div>
       </div>
-
-      <!-- Delete Alert -->
-      <ion-alert
-        :is-open="showDeleteAlert"
-        header="Delete Report"
-        :message="`Are you sure you want to delete Report #${report.id}? This will also delete all associated items. This action cannot be undone.`"
-        :buttons="alertButtons"
-        @didDismiss="showDeleteAlert = false"
-      ></ion-alert>
     </div>
   </template-page>
 </template>
@@ -217,7 +201,6 @@ import {
   IonButton,
   IonSpinner,
   IonIcon,
-  IonAlert,
 } from "@ionic/vue";
 import {
   alertCircleOutline,
@@ -272,7 +255,6 @@ const errors = ref({
 const isLoading = ref(false);
 const error = ref<string | null>(null);
 const isSaving = ref(false);
-const showDeleteAlert = ref(false);
 const availableLocations = ref<Location[]>([]);
 
 const leftFooterButton = computed(() => ({
@@ -302,22 +284,10 @@ const isValid = computed(() => {
 
 const canBeResolved = computed(() => {
   const items = report.value.items ?? [];
-  return items.length > 0 && items.every(item => item.status === ItemStatus.CLAIMED);
+  return (
+    items.length > 0 && items.every(item => item.status === ItemStatus.CLAIMED)
+  );
 });
-
-const alertButtons = [
-  {
-    text: "Cancel",
-    role: "cancel",
-    cssClass: "alert-button-cancel",
-  },
-  {
-    text: "Delete",
-    role: "destructive",
-    cssClass: "alert-button-confirm",
-    handler: () => confirmDelete(),
-  },
-];
 
 const formatDate = (dateString: string) => {
   try {
@@ -441,17 +411,7 @@ const handleSave = async () => {
 };
 
 const handleDelete = () => {
-  showDeleteAlert.value = true;
-};
-
-const confirmDelete = async () => {
-  try {
-    await reportStore.deleteReport(report.value.id);
-    router.push("/reports/overview");
-  } catch (error) {
-    console.error("Error deleting report:", error);
-    // You might want to show an error toast here
-  }
+  alert("Delete needs to be refactored");
 };
 
 // Watch for location changes to clear errors

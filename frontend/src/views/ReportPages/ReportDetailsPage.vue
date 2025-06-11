@@ -23,26 +23,6 @@
       </div>
 
       <div v-else-if="report" class="report-content">
-        <!-- Report Header -->
-        <div class="report-header">
-          <div class="header-info">
-            <h1>Report #{{ report.id }}</h1>
-            <div class="status-chip" :class="getStatusClass(report.status)">
-              <ion-icon
-                :icon="getStatusIcon(report.status)"
-                class="chip-icon"
-              ></ion-icon>
-              <span>{{ getStatusText(report.status) }}</span>
-            </div>
-          </div>
-          <div class="header-actions">
-            <ion-button fill="outline" size="small" @click="editReport">
-              <ion-icon :icon="createOutline" slot="start"></ion-icon>
-              Edit Report
-            </ion-button>
-          </div>
-        </div>
-
         <!-- Report Information -->
         <ion-card class="info-card">
           <ion-card-header>
@@ -94,7 +74,7 @@
           <ion-card-header>
             <ion-card-title>
               <ion-icon :icon="cubeOutline" class="section-icon"></ion-icon>
-              Items ({{ report.items?.length || 0 }})
+              Item
             </ion-card-title>
           </ion-card-header>
           <ion-card-content>
@@ -106,33 +86,9 @@
                 v-for="item in report.items"
                 :key="item.id"
                 class="item-card"
-                @click="navigateToItem(item.id)"
               >
                 <div class="item-header">
                   <h3>{{ item.name }}</h3>
-                  <div
-                    class="item-status"
-                    :class="{
-                      claimed: item.status === 'CLAIMED',
-                      unclaimed: item.status === 'UNCLAIMED',
-                    }"
-                  >
-                    <ion-icon
-                      :icon="
-                        item.status === 'CLAIMED'
-                          ? checkmarkCircleOutline
-                          : searchOutline
-                      "
-                      class="status-icon"
-                    ></ion-icon>
-                    <span>{{
-                      item.status === "CLAIMED"
-                        ? "Claimed"
-                        : item.status === "UNCLAIMED"
-                          ? "Unclaimed"
-                          : ""
-                    }}</span>
-                  </div>
                 </div>
                 <p v-if="item.description" class="item-description">
                   {{ truncateDescription(item.description, 100) }}
@@ -158,16 +114,6 @@
                   >
                     View Details
                   </ion-button>
-                  <ion-button
-                    v-if="item.status === 'UNCLAIMED'"
-                    fill="solid"
-                    size="small"
-                    color="success"
-                    @click.stop="claimItem(item)"
-                  >
-                    <ion-icon :icon="handRightOutline" slot="start"></ion-icon>
-                    Claim
-                  </ion-button>
                 </div>
               </div>
             </div>
@@ -178,52 +124,13 @@
             </div>
           </ion-card-content>
         </ion-card>
-
-        <!-- Actions -->
-        <div class="report-actions">
-          <ion-button expand="block" fill="outline" @click="editReport">
-            <ion-icon :icon="createOutline" slot="start"></ion-icon>
-            Edit Report
-          </ion-button>
-          <ion-button
-            expand="block"
-            color="danger"
-            fill="outline"
-            @click="showDeleteConfirmation = true"
-          >
-            <ion-icon :icon="trashOutline" slot="start"></ion-icon>
-            Delete Report
-          </ion-button>
-        </div>
       </div>
-
-      <!-- Delete Confirmation Alert -->
-      <ion-alert
-        :is-open="showDeleteConfirmation"
-        header="Delete Report"
-        message="Are you sure you want to delete this report? This action cannot be undone."
-        :buttons="[
-          {
-            text: 'Cancel',
-            role: 'cancel',
-            handler: () => {
-              showDeleteConfirmation = false;
-            },
-          },
-          {
-            text: 'Delete',
-            role: 'destructive',
-            handler: handleDeleteReport,
-          },
-        ]"
-        @did-dismiss="showDeleteConfirmation = false"
-      ></ion-alert>
     </div>
   </template-page>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
+import { computed, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import TemplatePage from "@/components/TemplatePage.vue";
 import {
@@ -234,7 +141,6 @@ import {
   IonButton,
   IonIcon,
   IonSpinner,
-  IonAlert,
 } from "@ionic/vue";
 import {
   alertCircleOutline,
@@ -242,25 +148,17 @@ import {
   informationCircleOutline,
   createOutline,
   cubeOutline,
-  checkmarkCircleOutline,
-  searchOutline,
   timeOutline,
   personOutline,
-  handRightOutline,
-  trashOutline,
   arrowBackOutline,
 } from "ionicons/icons";
 import { useReportStore } from "@/stores/reportStore";
-import { Item } from "@/models/item";
 import { ReportStatus } from "@/models/report";
 const ReportStatusEnum = ReportStatus;
 
 const router = useRouter();
 const route = useRoute();
 const reportStore = useReportStore();
-
-// Reactive data
-const showDeleteConfirmation = ref(false);
 
 // Computed properties
 const report = computed(() => reportStore.getCurrentReport);
@@ -286,17 +184,6 @@ const getStatusText = (status: ReportStatus): string => {
       return "Resolved";
     default:
       return "Unknown";
-  }
-};
-
-const getStatusIcon = (status: ReportStatus): string => {
-  switch (status) {
-    case ReportStatusEnum.OPEN:
-      return searchOutline;
-    case ReportStatusEnum.RESOLVED:
-      return checkmarkCircleOutline;
-    default:
-      return alertCircleOutline;
   }
 };
 
@@ -359,23 +246,6 @@ const editReport = (): void => {
 
 const navigateToItem = (itemId: number): void => {
   router.push(`/items/${itemId}`);
-};
-
-const claimItem = (item: Item): void => {
-  // Navigate to the claim flow or show claim modal
-  // For now, navigate to item details where claim can be handled
-  router.push(`/items/${item.id}`);
-};
-
-const handleDeleteReport = async (): Promise<void> => {
-  try {
-    const reportId = parseInt(route.params.id as string);
-    await reportStore.deleteReport(reportId);
-    router.push("/reports/overview");
-  } catch (error) {
-    console.error("Error deleting report:", error);
-    // You might want to show an error toast here
-  }
 };
 
 // Lifecycle

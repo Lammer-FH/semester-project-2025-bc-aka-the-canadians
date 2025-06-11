@@ -1,5 +1,5 @@
 <template>
-  <template-page :show-profile-button="false">
+  <template-page :show-profile-button="true">
     <div class="home-container">
       <div class="hero-section">
         <div class="hero-content">

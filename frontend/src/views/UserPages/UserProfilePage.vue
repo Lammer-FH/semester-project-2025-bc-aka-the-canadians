@@ -24,15 +24,6 @@
       </div>
 
       <div v-else-if="user" class="content-wrapper">
-        <div class="profile-header">
-          <div class="user-info">
-            <h1>{{ user.name }}</h1>
-            <p>{{ user.email }}</p>
-            <p class="user-id">User ID: {{ user.id }}</p>
-            <p class="created-at">Joined: {{ formatDate(user.createdAt) }}</p>
-          </div>
-        </div>
-
         <div class="profile-form">
           <h3>Personal Information</h3>
 
@@ -124,38 +115,7 @@
           </div>
         </div>
 
-        <div class="statistics-section">
-          <h3>Your Activity</h3>
-          <div class="stats-grid">
-            <div class="stat-card">
-              <ion-icon :icon="bagOutline" class="stat-icon"></ion-icon>
-              <div class="stat-content">
-                <div class="stat-number">{{ userStats.itemsReported }}</div>
-                <div class="stat-label">Items Reported</div>
-              </div>
-            </div>
-            <div class="stat-card">
-              <ion-icon
-                :icon="checkmarkCircleOutline"
-                class="stat-icon"
-              ></ion-icon>
-              <div class="stat-content">
-                <div class="stat-number">{{ userStats.itemsClaimed }}</div>
-                <div class="stat-label">Items Collected</div>
-              </div>
-            </div>
-            <div class="stat-card">
-              <ion-icon :icon="trophyOutline" class="stat-icon"></ion-icon>
-              <div class="stat-content">
-                <div class="stat-number">{{ userStats.helpfulReports }}</div>
-                <div class="stat-label">Helpful Reports</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
         <div class="danger-zone">
-          <h3>Danger Zone</h3>
           <ion-button
             fill="outline"
             color="danger"
@@ -169,14 +129,6 @@
         </div>
       </div>
     </div>
-
-    <ion-alert
-      :is-open="showDeleteAlert"
-      header="Delete Account"
-      message="Are you sure you want to delete your account? This action cannot be undone and all your data will be permanently deleted."
-      :buttons="deleteAlertButtons"
-      @didDismiss="showDeleteAlert = false"
-    ></ion-alert>
   </template-page>
 </template>
 
@@ -189,7 +141,6 @@ import {
   IonButton,
   IonIcon,
   IonSpinner,
-  IonAlert,
 } from "@ionic/vue";
 import {
   personOutline,
@@ -197,9 +148,6 @@ import {
   checkmarkOutline,
   mailOutline,
   alertCircleOutline,
-  bagOutline,
-  checkmarkCircleOutline,
-  trophyOutline,
   trashOutline,
   closeOutline,
   saveOutline,
@@ -238,7 +186,6 @@ const errors = ref({
 
 const editingField = ref<"name" | "email" | null>(null);
 const hasChanges = ref(false);
-const showDeleteAlert = ref(false);
 
 const leftFooterButton = computed(() => ({
   name: "Back",
@@ -252,20 +199,6 @@ const rightFooterButton = computed(() => ({
   icon: saveOutline,
   disabled: !hasChanges.value,
 }));
-
-const deleteAlertButtons = [
-  {
-    text: "Cancel",
-    role: "cancel",
-    cssClass: "alert-button-cancel",
-  },
-  {
-    text: "Delete Account",
-    role: "destructive",
-    cssClass: "alert-button-confirm",
-    handler: () => confirmDeleteAccount(),
-  },
-];
 
 onMounted(async () => {
   await loadUserProfile();
@@ -286,15 +219,6 @@ const loadUserStats = async () => {
     itemsClaimed: 8,
     helpfulReports: 15,
   };
-};
-
-const formatDate = (dateString: string): string => {
-  const date = new Date(dateString);
-  return date.toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
 };
 
 const validateField = (fieldName: keyof typeof errors.value) => {
@@ -368,16 +292,7 @@ const handleSave = async () => {
 };
 
 const deleteAccount = () => {
-  showDeleteAlert.value = true;
-};
-
-const confirmDeleteAccount = async () => {
-  try {
-    console.log("Delete account confirmed");
-    router.push("/");
-  } catch (error) {
-    console.error("Error deleting account:", error);
-  }
+  alert("Need to implement delete account functionality");
 };
 
 watch(

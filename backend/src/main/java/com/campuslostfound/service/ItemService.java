@@ -33,6 +33,11 @@ public class ItemService {
         Item existingItem = itemRepository.findById(itemId).orElseThrow(
             () -> new IllegalArgumentException("Item not found with id: " + itemId));
 
+        // Prevent editing items from resolved reports
+        if (existingItem.getReport() != null && existingItem.getReport().getStatus() == ReportStatus.RESOLVED) {
+            throw new IllegalArgumentException("Cannot edit items from a resolved report. Resolved reports are immutable.");
+        }
+
         // Store old status to check for changes
         ItemStatus oldStatus = existingItem.getStatus();
 
@@ -63,11 +68,14 @@ public class ItemService {
         }
 
         return savedItem;
-    }
-
-    public Item createItemFromReportId(String name, String description, Long reportId) {
+    }    public Item createItemFromReportId(String name, String description, Long reportId) {
         Report report = reportService.getReportById(reportId).orElseThrow(
             () -> new IllegalArgumentException("Report not found with id: " + reportId));
+
+        // Prevent adding items to resolved reports
+        if (report.getStatus() == ReportStatus.RESOLVED) {
+            throw new IllegalArgumentException("Cannot add items to a resolved report. Resolved reports are immutable.");
+        }
 
         Item item = new Item();
         item.setName(name);
@@ -82,6 +90,11 @@ public class ItemService {
             () -> new IllegalArgumentException("Item not found with id: " + id));
         
         Report report = item.getReport();
+        
+        // Prevent deleting items from resolved reports
+        if (report != null && report.getStatus() == ReportStatus.RESOLVED) {
+            throw new IllegalArgumentException("Cannot delete items from a resolved report. Resolved reports are immutable.");
+        }
         
         // Delete the item
         itemRepository.deleteById(id);

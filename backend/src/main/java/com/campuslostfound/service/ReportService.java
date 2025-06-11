@@ -108,11 +108,14 @@ public class ReportService {
 
         // Save the report with items
         return reportRepository.save(report);
-    }
-
-    public Report updateReportById(Long reportId, Long locationId, ReportStatus status) {
+    }    public Report updateReportById(Long reportId, Long locationId, ReportStatus status) {
         Report existingReport = reportRepository.findById(reportId).orElseThrow(
             () -> new IllegalArgumentException("Report not found with id: " + reportId));
+
+        // Prevent editing resolved reports
+        if (existingReport.getStatus() == ReportStatus.RESOLVED) {
+            throw new IllegalArgumentException("Cannot edit a resolved report. Resolved reports are immutable.");
+        }
 
         if (locationId != null) {
             Location location =
@@ -126,7 +129,7 @@ public class ReportService {
         }
 
         return reportRepository.save(existingReport);
-    }    public Report resolveReportById(Long reportId) {
+    }public Report resolveReportById(Long reportId) {
         Report report = reportRepository.findById(reportId).orElseThrow(
             () -> new IllegalArgumentException("Report not found with id: " + reportId));
 
@@ -150,9 +153,15 @@ public class ReportService {
             report.setStatus(ReportStatus.OPEN);
             reportRepository.save(report);
         }
-    }
-
-    public void deleteReport(Long id) {
+    }    public void deleteReport(Long id) {
+        Report report = reportRepository.findById(id).orElseThrow(
+            () -> new IllegalArgumentException("Report not found with id: " + id));
+        
+        // Prevent deleting resolved reports
+        if (report.getStatus() == ReportStatus.RESOLVED) {
+            throw new IllegalArgumentException("Cannot delete a resolved report. Resolved reports are immutable.");
+        }
+        
         reportRepository.deleteById(id);
     }
 }

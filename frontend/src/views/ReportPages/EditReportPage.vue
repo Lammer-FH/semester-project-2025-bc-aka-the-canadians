@@ -21,8 +21,22 @@
           Try Again
         </ion-button>
       </div>
-
       <div v-else class="form-content">
+        <!-- Resolved Report Warning -->
+        <div
+          v-if="report.status === ReportStatusEnum.RESOLVED"
+          class="resolved-warning"
+        >
+          <ion-icon :icon="lockClosedOutline" class="warning-icon"></ion-icon>
+          <div class="warning-content">
+            <h3>Report is Resolved</h3>
+            <p>
+              This report cannot be edited because it has been resolved. All
+              items have been claimed and the report is now immutable.
+            </p>
+          </div>
+        </div>
+
         <div class="form-header">
           <ion-icon :icon="createOutline" class="header-icon"></ion-icon>
           <p>Update the details for this report</p>
@@ -32,6 +46,16 @@
           </div>
         </div>
 
+        <!-- Editable Report Fields -->
+        <div class="editable-section">
+          <h3 class="section-header">
+            <ion-icon :icon="createOutline" class="section-icon"></ion-icon>
+            Editable Report Fields
+          </h3>
+          <p class="section-description">
+            These report-specific fields can be edited:
+          </p>
+        </div>
         <div class="input-group">
           <ion-select
             v-model="report.locationId"
@@ -44,6 +68,7 @@
               'select-filled': report.locationId,
               'select-error': errors.locationId,
             }"
+            :disabled="report.status === ReportStatusEnum.RESOLVED"
             @ionChange="validateField('locationId')"
           >
             <ion-icon
@@ -168,6 +193,7 @@
                     color="primary"
                     @click="navigateToEditItem(item.id)"
                     title="Edit Item"
+                    :disabled="report.status === ReportStatusEnum.RESOLVED"
                   >
                     <ion-icon :icon="createOutline" slot="icon-only"></ion-icon>
                   </ion-button>
@@ -177,6 +203,7 @@
                     color="danger"
                     @click="confirmRemoveItem(item)"
                     title="Remove Item from Report"
+                    :disabled="report.status === ReportStatusEnum.RESOLVED"
                   >
                     <ion-icon :icon="trashOutline" slot="icon-only"></ion-icon>
                   </ion-button>
@@ -277,6 +304,7 @@ import {
   flagOutline,
   informationCircleOutline,
   locationOutline,
+  lockClosedOutline,
   personOutline,
   refreshOutline,
   searchOutline,
@@ -334,10 +362,19 @@ const rightFooterButton = computed(() => ({
     ? "Saving..."
     : isValid.value
       ? "Save Changes"
-      : "Fill Required Fields",
-  color: isValid.value ? "primary" : "medium",
+      : report.value.status === ReportStatusEnum.RESOLVED
+        ? "Report is Resolved"
+        : "Fill Required Fields",
+  color:
+    isValid.value && report.value.status !== ReportStatusEnum.RESOLVED
+      ? "primary"
+      : "medium",
   icon: checkmarkCircleOutline,
-  disabled: !isValid.value || isSaving.value || isLoading.value,
+  disabled:
+    !isValid.value ||
+    isSaving.value ||
+    isLoading.value ||
+    report.value.status === ReportStatusEnum.RESOLVED,
 }));
 
 const isValid = computed(() => {
@@ -518,7 +555,7 @@ const navigateToEditItem = (itemId: number) => {
 const confirmRemoveItem = async (item: Item) => {
   // Check if this is the last item in the report
   const remainingItemsCount = (report.value.items?.length || 0) - 1;
-  
+
   let confirmMessage;
   if (remainingItemsCount === 0) {
     confirmMessage = `Are you sure you want to remove "${item.name}"? This is the last item in the report, so the entire report will be deleted. This action cannot be undone.`;
@@ -531,7 +568,7 @@ const confirmRemoveItem = async (item: Item) => {
 
   try {
     await itemStore.deleteItem(item.id);
-    
+
     // If this was the last item, the backend automatically deletes the empty report
     if (remainingItemsCount === 0) {
       // Navigate to reports overview since the report no longer exists
@@ -613,7 +650,40 @@ onMounted(async () => {
   margin-bottom: 16px;
 }
 
+.resolved-warning {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  margin-bottom: 24px;
+  background: var(--ion-color-warning-tint);
+  border: 1px solid var(--ion-color-warning);
+  border-radius: 8px;
+  color: var(--ion-color-warning-contrast);
+}
+
+.warning-icon {
+  font-size: 24px;
+  color: var(--ion-color-warning);
+  flex-shrink: 0;
+}
+
+.warning-content h3 {
+  margin: 0 0 4px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ion-color-warning-shade);
+}
+
+.warning-content p {
+  margin: 0;
+  font-size: 14px;
+  color: var(--ion-color-warning-shade);
+  line-height: 1.4;
+}
+
 .form-header {
+  margin-bottom: 24px;
   text-align: center;
   margin-bottom: 40px;
 }

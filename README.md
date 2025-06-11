@@ -17,6 +17,10 @@ You can find the documentation for the planning and specification [here](documen
 
 You can find the documentation for the partial implementation [here](documentation/partial_implementation.md)
 
+# Finalized Implementation:
+
+You can find the documentation for the finalized implementation [here](documentation/final_implementation.md)
+
 # Contribution Guidelines
 
 1. Consistent class / variable naming

@@ -1,14 +1,15 @@
 package com.campuslostfound.service;
 
-import com.campuslostfound.model.*;
 import com.campuslostfound.dto.ItemCreateRequest;
+import com.campuslostfound.model.*;
 import com.campuslostfound.repository.ReportRepository;
-import java.util.List;
-import java.util.Optional;
-import java.util.ArrayList;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -16,6 +17,15 @@ public class ReportService {
     private final ReportRepository reportRepository;
     private final UserService userService;
     private final LocationService locationService;
+
+    private static Report getReport(ReportType type, User user, Location location) {
+        Report report = new Report();
+        report.setUser(user);
+        report.setLocation(location);
+        report.setType(type);
+        report.setStatus(ReportStatus.OPEN);
+        return report;
+    }
 
     public List<Report> getAllReports() {
         return reportRepository.findAllWithItems();
@@ -35,7 +45,9 @@ public class ReportService {
 
     public Report saveReport(Report report) {
         return reportRepository.save(report);
-    }    public Report createReportFromIds(Long userId, Long locationId, ReportType type) {
+    }
+
+    public Report createReportFromIds(Long userId, Long locationId, ReportType type) {
         if (userId == null) {
             throw new IllegalArgumentException("User ID cannot be null");
         }
@@ -53,11 +65,7 @@ public class ReportService {
             locationService.getLocationById(locationId)
                 .orElseThrow(() -> new IllegalArgumentException("Location not found with id: " + locationId));
 
-        Report report = new Report();
-        report.setUser(user);
-        report.setLocation(location);
-        report.setType(type);
-        report.setStatus(ReportStatus.OPEN);
+        Report report = getReport(type, user, location);
 
         return reportRepository.save(report);
     }
@@ -85,11 +93,7 @@ public class ReportService {
                 .orElseThrow(() -> new IllegalArgumentException("Location not found with id: " + locationId));
 
         // Create the report
-        Report report = new Report();
-        report.setUser(user);
-        report.setLocation(location);
-        report.setType(type);
-        report.setStatus(ReportStatus.OPEN);
+        Report report = getReport(type, user, location);
         report.setItems(new ArrayList<>());
 
         // Save the report first to get the ID
@@ -108,7 +112,9 @@ public class ReportService {
 
         // Save the report with items
         return reportRepository.save(report);
-    }    public Report updateReportById(Long reportId, Long locationId, ReportStatus status) {
+    }
+
+    public Report updateReportById(Long reportId, Long locationId, ReportStatus status) {
         Report existingReport = reportRepository.findById(reportId).orElseThrow(
             () -> new IllegalArgumentException("Report not found with id: " + reportId));
 
@@ -129,7 +135,9 @@ public class ReportService {
         }
 
         return reportRepository.save(existingReport);
-    }public Report resolveReportById(Long reportId) {
+    }
+
+    public Report resolveReportById(Long reportId) {
         Report report = reportRepository.findById(reportId).orElseThrow(
             () -> new IllegalArgumentException("Report not found with id: " + reportId));
 
@@ -142,9 +150,9 @@ public class ReportService {
             () -> new IllegalArgumentException("Report not found with id: " + reportId));
 
         // Check if all items are claimed
-        boolean allItemsClaimed = report.getItems() != null && 
-                                  !report.getItems().isEmpty() &&
-                                  report.getItems().stream().allMatch(item -> item.getStatus() == ItemStatus.CLAIMED);
+        boolean allItemsClaimed = report.getItems() != null &&
+            !report.getItems().isEmpty() &&
+            report.getItems().stream().allMatch(item -> item.getStatus() == ItemStatus.CLAIMED);
 
         if (allItemsClaimed && report.getStatus() != ReportStatus.RESOLVED) {
             report.setStatus(ReportStatus.RESOLVED);
@@ -153,15 +161,17 @@ public class ReportService {
             report.setStatus(ReportStatus.OPEN);
             reportRepository.save(report);
         }
-    }    public void deleteReport(Long id) {
+    }
+
+    public void deleteReport(Long id) {
         Report report = reportRepository.findById(id).orElseThrow(
             () -> new IllegalArgumentException("Report not found with id: " + id));
-        
+
         // Prevent deleting resolved reports
         if (report.getStatus() == ReportStatus.RESOLVED) {
             throw new IllegalArgumentException("Cannot delete a resolved report. Resolved reports are immutable.");
         }
-        
+
         reportRepository.deleteById(id);
     }
 }

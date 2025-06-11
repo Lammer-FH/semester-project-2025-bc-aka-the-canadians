@@ -1,14 +1,13 @@
 package com.campuslostfound.dto;
 
-import java.sql.Timestamp;
-
 import com.campuslostfound.model.ItemStatus;
 import com.campuslostfound.model.ReportStatus;
 import com.campuslostfound.model.ReportType;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.sql.Timestamp;
 
 @Data
 @AllArgsConstructor

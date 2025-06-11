@@ -1,9 +1,10 @@
 package com.campuslostfound.model;
 
-import lombok.Data;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.sql.Timestamp;
 import java.util.List;
 
@@ -29,6 +30,6 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Report> reports;
 
-    @OneToMany(mappedBy = "claimedByUser", cascade = CascadeType.ALL, orphanRemoval = false)
+    @OneToMany(mappedBy = "claimedByUser", cascade = CascadeType.ALL)
     private List<Item> claimedItems;
 }

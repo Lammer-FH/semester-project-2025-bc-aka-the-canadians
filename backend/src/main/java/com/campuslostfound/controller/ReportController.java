@@ -1,13 +1,11 @@
 package com.campuslostfound.controller;
 
-import com.campuslostfound.dto.ReportDTO;
 import com.campuslostfound.dto.ReportCreateRequest;
+import com.campuslostfound.dto.ReportDTO;
 import com.campuslostfound.mapper.ReportMapper;
 import com.campuslostfound.model.Report;
 import com.campuslostfound.service.ReportService;
-
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -37,11 +35,13 @@ public class ReportController {
 
         return report.map(r -> ResponseEntity.ok(reportMapper.toDTO(r)))
             .orElse(ResponseEntity.notFound().build());
-    }    @PostMapping
+    }
+
+    @PostMapping
     public ResponseEntity<ReportDTO> createReport(@RequestBody ReportCreateRequest request) {
         try {
             Report savedReport;
-            
+
             // If items are provided, use the new method; otherwise use the old method for backward compatibility
             if (request.getItems() != null && !request.getItems().isEmpty()) {
                 savedReport = reportService.createReportWithItems(

@@ -9,7 +9,7 @@ import java.util.List;
  * @param <D> Der DTO-Typ
  */
 public interface GenericMapper<E, D> {
-    
+
     /**
      * Konvertiert eine Entität in ein DTO.
      *
@@ -17,7 +17,7 @@ public interface GenericMapper<E, D> {
      * @return Das resultierende DTO
      */
     D toDTO(E entity);
-    
+
     /**
      * Konvertiert ein DTO in eine Entität.
      *
@@ -25,7 +25,7 @@ public interface GenericMapper<E, D> {
      * @return Die resultierende Entität
      */
     E toEntity(D dto);
-    
+
     /**
      * Konvertiert eine Liste von Entitäten in eine Liste von DTOs.
      *
@@ -33,7 +33,7 @@ public interface GenericMapper<E, D> {
      * @return Eine Liste der konvertierten DTOs
      */
     List<D> toDTOList(List<E> entities);
-    
+
     /**
      * Konvertiert eine Liste von DTOs in eine Liste von Entitäten.
      *
@@ -41,4 +41,4 @@ public interface GenericMapper<E, D> {
      * @return Eine Liste der konvertierten Entitäten
      */
     List<E> toEntityList(List<D> dtos);
-} 
+}

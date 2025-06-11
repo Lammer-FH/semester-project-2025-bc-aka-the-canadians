@@ -2,9 +2,8 @@ package com.campuslostfound.mapper;
 
 import com.campuslostfound.dto.ItemDTO;
 import com.campuslostfound.model.Item;
-
-
-import org.mapstruct.*;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring", uses = {UserMapper.class})
 public interface ItemMapper extends GenericMapper<Item, ItemDTO> {

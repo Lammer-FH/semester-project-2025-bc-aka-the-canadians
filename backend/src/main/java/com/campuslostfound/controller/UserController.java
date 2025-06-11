@@ -4,9 +4,7 @@ import com.campuslostfound.dto.UserDTO;
 import com.campuslostfound.mapper.UserMapper;
 import com.campuslostfound.model.User;
 import com.campuslostfound.service.UserService;
-
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -31,7 +29,7 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("An error occurred while creating the user");
+                .body("An error occurred while creating the user");
         }
     }
 
@@ -40,7 +38,7 @@ public class UserController {
         Optional<User> user = userService.getUserById(id);
 
         return user.map(value -> ResponseEntity.ok(userMapper.toDTO(value)))
-                .orElseGet(() -> ResponseEntity.notFound().build());
+            .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @GetMapping("/email/{email}")
@@ -48,7 +46,7 @@ public class UserController {
         Optional<User> user = userService.getUserByEmail(email);
 
         return user.map(value -> ResponseEntity.ok(userMapper.toDTO(value)))
-                .orElseGet(() -> ResponseEntity.notFound().build());
+            .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PutMapping("/{id}")
@@ -65,7 +63,7 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("An error occurred while updating the user");
+                .body("An error occurred while updating the user");
         }
     }
 

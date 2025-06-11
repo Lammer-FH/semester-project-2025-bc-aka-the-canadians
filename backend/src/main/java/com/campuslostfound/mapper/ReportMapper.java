@@ -3,7 +3,6 @@ package com.campuslostfound.mapper;
 import com.campuslostfound.dto.ReportDTO;
 import com.campuslostfound.model.Item;
 import com.campuslostfound.model.Report;
-
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
@@ -13,6 +12,12 @@ import java.util.stream.Collectors;
 
 @Mapper(componentModel = "spring", uses = {LocationMapper.class, UserMapper.class, ItemMapper.class})
 public interface ReportMapper extends GenericMapper<Report, ReportDTO> {
+    @Named("reportItemListToIdList")
+    static List<Long> itemListToIdList(
+        List<Item> items) {
+        return UserMapper.itemListToIdList(items);
+    }
+
     @Override
     @Mapping(target = "userId", source = "user.id")
     @Mapping(target = "locationId", source = "location.id")
@@ -27,15 +32,6 @@ public interface ReportMapper extends GenericMapper<Report, ReportDTO> {
     @Mapping(target = "location", ignore = true)
     @Mapping(target = "items", ignore = true)
     Report toEntity(ReportDTO dto);
-
-    @Named("reportItemListToIdList")
-    public static List<Long> itemListToIdList(
-            List<Item> items) {
-        if (items == null) return null;
-        return items.stream()
-                .map(Item::getId)
-                .collect(Collectors.toList());
-    }
 
     List<ReportDTO> toDTOList(List<Report> reports);
 }

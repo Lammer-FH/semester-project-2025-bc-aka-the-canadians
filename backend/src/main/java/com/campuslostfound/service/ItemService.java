@@ -29,7 +29,9 @@ public class ItemService {
 
     public Item saveItem(Item item) {
         return itemRepository.save(item);
-    }    public Item updateItem(Long itemId, String name, String description, ItemStatus status, Long claimedByUserId) {
+    }
+
+    public Item updateItem(Long itemId, String name, String description, ItemStatus status, Long claimedByUserId) {
         Item existingItem = itemRepository.findById(itemId).orElseThrow(
             () -> new IllegalArgumentException("Item not found with id: " + itemId));
 
@@ -68,7 +70,9 @@ public class ItemService {
         }
 
         return savedItem;
-    }    public Item createItemFromReportId(String name, String description, Long reportId) {
+    }
+
+    public Item createItemFromReportId(String name, String description, Long reportId) {
         Report report = reportService.getReportById(reportId).orElseThrow(
             () -> new IllegalArgumentException("Report not found with id: " + reportId));
 
@@ -84,29 +88,31 @@ public class ItemService {
         item.setStatus(ItemStatus.UNCLAIMED);
 
         return itemRepository.save(item);
-    }    public void deleteItem(Long id) {
+    }
+
+    public void deleteItem(Long id) {
         // Get the item first to check if it's the last item in a report
         Item item = itemRepository.findById(id).orElseThrow(
             () -> new IllegalArgumentException("Item not found with id: " + id));
-        
+
         Report report = item.getReport();
-        
+
         // Prevent deleting items from resolved reports
         if (report != null && report.getStatus() == ReportStatus.RESOLVED) {
             throw new IllegalArgumentException("Cannot delete items from a resolved report. Resolved reports are immutable.");
         }
-        
+
         // Delete the item
         itemRepository.deleteById(id);
-        
+
         // If the item was part of a report, check if it was the last item
         if (report != null) {
             // Refresh the report to get updated item count
             Optional<Report> updatedReport = reportService.getReportById(report.getId());
-            
+
             if (updatedReport.isPresent()) {
                 List<Item> remainingItems = updatedReport.get().getItems();
-                
+
                 // If no items remain, delete the empty report
                 if (remainingItems == null || remainingItems.isEmpty()) {
                     reportService.deleteReport(report.getId());

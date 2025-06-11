@@ -5,9 +5,7 @@ import com.campuslostfound.repository.ItemRepository;
 import com.campuslostfound.repository.LocationRepository;
 import com.campuslostfound.repository.ReportRepository;
 import com.campuslostfound.repository.UserRepository;
-
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

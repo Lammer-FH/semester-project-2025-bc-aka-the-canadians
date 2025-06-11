@@ -124,7 +124,7 @@
         <ion-icon
           v-if="action.icon"
           :icon="action.icon"
-          :slot="action.iconSlot || 'start'"
+          slot="start"
         ></ion-icon>
         {{ action.label }}
       </ion-button>
@@ -179,7 +179,7 @@ interface ContentSection {
   type: "stats" | "list" | "text";
   className?: string;
   maxItems?: number;
-  data: any;
+  data: unknown;
 }
 
 interface Props {
@@ -197,7 +197,13 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
+  description: "",
   descriptionLength: 120,
+  status: "",
+  details: () => [],
+  metadata: () => [],
+  actions: () => [],
+  contentSections: () => [],
   cardType: "item",
   animationDelay: 0,
   clickable: true,
@@ -206,7 +212,7 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<{
   cardClick: [];
   actionClick: [action: CardAction];
-  listItemClick: [item: any, sectionKey: string];
+  listItemClick: [item: unknown, sectionKey: string];
 }>();
 
 const cardClasses = computed(() => ({
@@ -293,7 +299,7 @@ const handleActionClick = (action: CardAction): void => {
   emit("actionClick", action);
 };
 
-const handleListItemClick = (item: any, sectionKey: string): void => {
+const handleListItemClick = (item: unknown, sectionKey: string): void => {
   emit("listItemClick", item, sectionKey);
 };
 </script>

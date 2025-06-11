@@ -112,7 +112,7 @@ import { ReportStatus } from "@/models/report";
 const ReportStatusEnum = ReportStatus;
 import TemplatePage from "@/components/TemplatePage.vue";
 import NavigationTabs from "@/components/NavigationTabs.vue";
-import Filter from "@/components/Filter.vue";
+import Filter from "@/components/FilterComponent.vue";
 import UniversalCard from "@/components/OverviewCard.vue";
 import type { Report } from "@/models/report";
 import type { Item } from "@/models/item";

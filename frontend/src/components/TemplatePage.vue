@@ -55,12 +55,7 @@
       </ion-toolbar>
     </ion-footer>
 
-    <ion-fab
-      v-if="addButtonPath"
-      vertical="bottom"
-      horizontal="end"
-      slot="fixed"
-    >
+    <ion-fab v-if="addButtonPath" vertical="bottom" horizontal="end">
       <ion-fab-button @click="navigateTo(addButtonPath)">
         <ion-icon :icon="addOutline"></ion-icon>
       </ion-fab-button>
@@ -99,7 +94,7 @@ const props = defineProps({
       name?: string;
       color?: string;
       path?: string;
-      icon?: any;
+      icon?: string;
       disabled?: boolean;
     },
     default: () => ({}),
@@ -109,7 +104,7 @@ const props = defineProps({
       name?: string;
       color?: string;
       path?: string;
-      icon?: any;
+      icon?: string;
       disabled?: boolean;
     },
     default: () => ({}),

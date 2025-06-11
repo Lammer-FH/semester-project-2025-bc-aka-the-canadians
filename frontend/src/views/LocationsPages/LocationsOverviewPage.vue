@@ -153,11 +153,13 @@ const filteredLocations = computed(() => {
 });
 
 const totalOpenReports = computed(() => {
-  return reports.value.filter(report => report.status === ReportStatus.OPEN).length;
+  return reports.value.filter(report => report.status === ReportStatus.OPEN)
+    .length;
 });
 
 const totalResolvedReports = computed(() => {
-  return reports.value.filter(report => report.status === ReportStatus.RESOLVED).length;
+  return reports.value.filter(report => report.status === ReportStatus.RESOLVED)
+    .length;
 });
 
 const totalReports = computed(() => {

@@ -17,7 +17,7 @@
           class="custom-searchbar"
         ></ion-searchbar>
 
-        <Filter
+        <FilterComponent
           modal-title="Filter Items"
           :filter-configs="itemFilterConfigs"
           :filters="filters"
@@ -107,10 +107,10 @@ import {
 } from "ionicons/icons";
 import { useItemStore } from "@/stores/itemStore";
 import { Item, ItemStatus } from "@/models/item";
-import { ReportStatus } from "@/models/report";
+
 import TemplatePage from "@/components/TemplatePage.vue";
 import NavigationTabs from "@/components/NavigationTabs.vue";
-import Filter from "@/components/Filter.vue";
+import FilterComponent from "@/components/FilterComponent.vue";
 import UniversalCard from "@/components/OverviewCard.vue";
 
 const router = useRouter();
@@ -129,7 +129,8 @@ const itemFilterConfigs = computed(() => [
     title: "Claim Status",
     type: "radio" as const,
     icon: personOutline,
-    getLabel: (value: ItemStatus) => (value === ItemStatus.CLAIMED ? "Claimed" : "Unclaimed"),
+    getLabel: (value: ItemStatus) =>
+      value === ItemStatus.CLAIMED ? "Claimed" : "Unclaimed",
     options: [
       { value: null, label: "All Items" },
       { value: ItemStatus.UNCLAIMED, label: "Unclaimed Items" },
@@ -164,7 +165,9 @@ const filteredItems = computed(() => {
   }
 
   if (filters.value.claimedStatus !== null) {
-    filtered = filtered.filter(item => item.status === filters.value.claimedStatus);
+    filtered = filtered.filter(
+      item => item.status === filters.value.claimedStatus
+    );
   }
 
   return filtered;
@@ -180,7 +183,7 @@ const unclaimedItemsCount = computed(
 
 const getItemStatus = (item: Item): string => {
   if (item.status === ItemStatus.CLAIMED) {
-    return 'claimed';
+    return "claimed";
   } else {
     return "unclaimed";
   }
@@ -202,12 +205,12 @@ const getItemMetadata = (item: Item) => [
   },
 ];
 
-const updateFilter = (key: string, value: any): void => {
-  filters.value[key as keyof typeof filters.value] = value;
+const updateFilter = (key: string, value: unknown): void => {
+  filters.value[key as keyof typeof filters.value] = value as ItemStatus | null;
 };
 
-const clearFilter = (): void => {
-  filters.value.claimedStatus = null;
+const clearFilter = (key: string): void => {
+  filters.value[key as keyof typeof filters.value] = null;
 };
 
 const applyFilters = (): void => {

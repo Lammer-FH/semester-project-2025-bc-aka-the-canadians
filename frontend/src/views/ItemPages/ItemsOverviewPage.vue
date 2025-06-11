@@ -129,11 +129,11 @@ const itemFilterConfigs = computed(() => [
     title: "Claim Status",
     type: "radio" as const,
     icon: personOutline,
-    getLabel: (value: boolean) => (value ? "Claimed" : "Unclaimed"),
+    getLabel: (value: ItemStatus) => (value === ItemStatus.CLAIMED ? "Claimed" : "Unclaimed"),
     options: [
       { value: null, label: "All Items" },
-      { value: false, label: "Unclaimed Items" },
-      { value: true, label: "Claimed Items" },
+      { value: ItemStatus.UNCLAIMED, label: "Unclaimed Items" },
+      { value: ItemStatus.CLAIMED, label: "Claimed Items" },
     ],
   },
 ]);
@@ -164,11 +164,7 @@ const filteredItems = computed(() => {
   }
 
   if (filters.value.claimedStatus !== null) {
-    if (filters.value.claimedStatus) {
-      filtered = filtered.filter(item => item.claimedByUserId !== null);
-    } else {
-      filtered = filtered.filter(item => item.claimedByUserId === null);
-    }
+    filtered = filtered.filter(item => item.status === filters.value.claimedStatus);
   }
 
   return filtered;

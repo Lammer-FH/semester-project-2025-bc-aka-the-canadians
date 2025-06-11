@@ -25,19 +25,24 @@ export const userService = {
             console.error("Error fetching user by email:", error);
             throw error;
         }
-    },
-
-    async createUser(userData: UserCreateData): Promise<User> {
+    }, async createUser(userData: UserCreateData): Promise<User> {
         try {
             const response = await axios.post<User>(API_URL, userData);
             return response.data;
         } catch (error) {
+            if (axios.isAxiosError(error)) {
+                if (error.response?.status === 409) {
+                    // Conflict - user already exists
+                    const message = typeof error.response.data === 'string'
+                        ? error.response.data
+                        : 'A user with this email already exists';
+                    throw new Error(message);
+                }
+            }
             console.error("Error creating user:", error);
             throw error;
         }
-    },
-
-    async updateUser(id: number, userData: UserUpdateData): Promise<User> {
+    }, async updateUser(id: number, userData: UserUpdateData): Promise<User> {
         try {
             const response = await axios.put<User>(
                 `${API_URL}/${id}`,
@@ -45,7 +50,25 @@ export const userService = {
             );
             return response.data;
         } catch (error) {
+            if (axios.isAxiosError(error)) {
+                if (error.response?.status === 409) {
+                    // Conflict - email already exists
+                    const message = typeof error.response.data === 'string'
+                        ? error.response.data
+                        : 'Email address is already in use by another user';
+                    throw new Error(message);
+                }
+            }
             console.error("Error updating user:", error);
+            throw error;
+        }
+    },
+
+    async deleteUser(id: number): Promise<void> {
+        try {
+            await axios.delete(`${API_URL}/${id}`);
+        } catch (error) {
+            console.error("Error deleting user:", error);
             throw error;
         }
     },

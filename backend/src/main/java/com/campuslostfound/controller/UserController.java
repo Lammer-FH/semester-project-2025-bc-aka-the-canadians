@@ -23,16 +23,19 @@ public class UserController {
 
     @PostMapping
     public ResponseEntity<?> createUser(@RequestBody UserDTO userDTO) {
-        if (userService.existsByEmail(userDTO.getEmail())) {
-            return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body("User with email " + userDTO.getEmail() + " already exists");
+        try {
+            User user = userMapper.toEntity(userDTO);
+            User savedUser = userService.saveUser(user);
+            return ResponseEntity.status(HttpStatus.CREATED).body(userMapper.toDTO(savedUser));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("An error occurred while creating the user");
         }
+    }
 
-        User user = userMapper.toEntity(userDTO);
-        User savedUser = userService.saveUser(user);
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(userMapper.toDTO(savedUser));
-    }    @GetMapping("/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<UserDTO> getUserById(@PathVariable Long id) {
         Optional<User> user = userService.getUserById(id);
 
@@ -49,19 +52,30 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<UserDTO> updateUser(@PathVariable Long id, @RequestBody UserDTO userDTO) {
+    public ResponseEntity<?> updateUser(@PathVariable Long id, @RequestBody UserDTO userDTO) {
         if (userService.getUserById(id).isEmpty()) {
             return ResponseEntity.notFound().build();
         }
 
-        Optional<User> existingUserWithEmail = userService.getUserByEmail(userDTO.getEmail());
-        if (existingUserWithEmail.isPresent() && !existingUserWithEmail.get().getId().equals(id)) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        try {
+            userDTO.setId(id);
+            User updatedUser = userService.saveUser(userMapper.toEntity(userDTO));
+            return ResponseEntity.ok(userMapper.toDTO(updatedUser));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("An error occurred while updating the user");
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
+        if (userService.getUserById(id).isEmpty()) {
+            return ResponseEntity.notFound().build();
         }
 
-        userDTO.setId(id);
-        User updatedUser = userService.saveUser(userMapper.toEntity(userDTO));
-
-        return ResponseEntity.ok(userMapper.toDTO(updatedUser));
+        userService.deleteUser(id);
+        return ResponseEntity.noContent().build();
     }
 }

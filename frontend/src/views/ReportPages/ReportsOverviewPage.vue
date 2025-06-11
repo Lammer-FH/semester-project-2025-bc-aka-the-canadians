@@ -146,7 +146,7 @@ const reportFilterConfigs = computed(() => [
     title: "Status",
     type: "radio" as const,
     icon: flagOutline,
-    getLabel: (value: ReportStatus) => getStatusText(value),
+    getLabel: (value: unknown) => getStatusText(value as ReportStatus),
     options: [
       { value: null, label: "All Reports" },
       { value: ReportStatusEnum.OPEN, label: "Open Reports" },
@@ -159,7 +159,7 @@ const reportFilterConfigs = computed(() => [
     type: "select" as const,
     placeholder: "Select Location",
     icon: locationOutline,
-    getLabel: (value: string) => value,
+    getLabel: (value: unknown) => value as string,
     options: [
       { value: "", label: "All Locations" },
       ...uniqueLocations.value.map(location => ({
@@ -258,19 +258,14 @@ const getReportMetadata = (report: Report) => [
   },
 ];
 
-const handleReportListClick = (
-  item: { data?: Item; title: string; subtitle?: string },
-  sectionKey: string
-) => {
-  if (sectionKey === "items" && item.data) {
-    router.push(`/items/${item.data.id}`);
+const handleReportListClick = (item: unknown, sectionKey: string) => {
+  const typedItem = item as { data?: Item; title: string; subtitle?: string };
+  if (sectionKey === "items" && typedItem.data) {
+    router.push(`/items/${typedItem.data.id}`);
   }
 };
 
-const updateFilter = (
-  key: string,
-  value: ReportStatus | string | null
-): void => {
+const updateFilter = (key: string, value: unknown): void => {
   if (key === "status") {
     filters.value.status = value as ReportStatus | null;
   } else if (key === "location") {

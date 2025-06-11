@@ -55,8 +55,8 @@
             @ionChange="updateFilter(filterConfig.key, $event.detail.value)"
           >
             <ion-radio
-              v-for="option in filterConfig.options"
-              :key="option.value"
+              v-for="(option, index) in filterConfig.options"
+              :key="`${filterConfig.key}-${index}`"
               :value="option.value"
               class="filter-radio"
             >
@@ -70,8 +70,8 @@
             @ionChange="updateFilter(filterConfig.key, $event.detail.value)"
           >
             <ion-radio
-              v-for="option in filterConfig.options"
-              :key="option.value"
+              v-for="(option, index) in filterConfig.options"
+              :key="`${filterConfig.key}-select-${index}`"
               :value="option.value"
               class="filter-radio"
             >

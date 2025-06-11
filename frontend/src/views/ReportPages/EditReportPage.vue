@@ -118,6 +118,81 @@
             {{ errors.status }}
           </div>
         </div>
+        <!-- Items Management Section -->
+        <div class="divider"></div>
+
+        <div class="items-section">
+          <div class="section-header">
+            <h3 class="section-title">
+              <ion-icon :icon="cubeOutline" class="section-icon"></ion-icon>
+              Items in this Report
+            </h3>
+          </div>
+          <p class="section-description">
+            Manage the items associated with this report. You can edit existing
+            items or remove items from the report.
+          </p>
+
+          <div
+            v-if="report.items && report.items.length > 0"
+            class="items-list"
+          >
+            <div v-for="item in report.items" :key="item.id" class="item-card">
+              <div class="item-header">
+                <div class="item-info">
+                  <h4 class="item-name">{{ item.name }}</h4>
+                  <div class="item-status">
+                    <ion-icon
+                      :icon="getItemStatusIcon(item.status)"
+                      class="status-icon"
+                      :class="getItemStatusClass(item.status)"
+                    ></ion-icon>
+                    <span :class="getItemStatusClass(item.status)">
+                      {{ getItemStatusText(item.status) }}
+                    </span>
+                  </div>
+                </div>
+                <div class="item-actions">
+                  <ion-button
+                    fill="clear"
+                    size="small"
+                    color="primary"
+                    @click="navigateToItemDetails(item.id)"
+                    title="View Item Details"
+                  >
+                    <ion-icon :icon="eyeOutline" slot="icon-only"></ion-icon>
+                  </ion-button>
+                  <ion-button
+                    fill="clear"
+                    size="small"
+                    color="primary"
+                    @click="navigateToEditItem(item.id)"
+                    title="Edit Item"
+                  >
+                    <ion-icon :icon="createOutline" slot="icon-only"></ion-icon>
+                  </ion-button>
+                  <ion-button
+                    fill="clear"
+                    size="small"
+                    color="danger"
+                    @click="confirmRemoveItem(item)"
+                    title="Remove Item from Report"
+                  >
+                    <ion-icon :icon="trashOutline" slot="icon-only"></ion-icon>
+                  </ion-button>
+                </div>
+              </div>
+              <p v-if="item.description" class="item-description">
+                {{ truncateText(item.description, 100) }}
+              </p>
+            </div>
+          </div>
+          <div v-else class="empty-items">
+            <ion-icon :icon="cubeOutline" class="empty-icon"></ion-icon>
+            <h4>No Items in Report</h4>
+            <p>This report doesn't have any items yet.</p>
+          </div>
+        </div>
 
         <!-- Report Context Information (Read-Only) -->
         <div class="divider"></div>
@@ -155,14 +230,11 @@
               </div>
             </div>
 
-            <div
-              v-if="report.items && report.items.length > 0"
-              class="context-item"
-            >
+            <div class="context-item">
               <ion-icon :icon="cubeOutline" class="context-icon"></ion-icon>
               <div class="context-content">
                 <label>Items Count</label>
-                <span>{{ report.items.length }} item(s)</span>
+                <span>{{ report.items?.length || 0 }} item(s)</span>
               </div>
             </div>
           </div>
@@ -210,15 +282,17 @@ import {
   searchOutline,
   timeOutline,
   trashOutline,
+  eyeOutline,
 } from "ionicons/icons";
 import TemplatePage from "@/components/TemplatePage.vue";
 import { ref, computed, watch, onMounted, nextTick } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { useReportStore } from "@/stores/reportStore";
 import { useLocationStore } from "@/stores/locationStore";
+import { useItemStore } from "@/stores/itemStore";
 import type { Report } from "@/models/report";
 import { ReportStatus, ReportType } from "@/models/report";
-import { ItemStatus } from "@/models/item";
+import { ItemStatus, type Item } from "@/models/item";
 import type { Location } from "@/models/location";
 
 const ReportStatusEnum = ReportStatus;
@@ -227,6 +301,7 @@ const router = useRouter();
 const route = useRoute();
 const reportStore = useReportStore();
 const locationStore = useLocationStore();
+const itemStore = useItemStore();
 
 // Initialize with proper default values
 const report = ref<Report>({
@@ -412,6 +487,63 @@ const handleDelete = () => {
       console.error("Error deleting report:", error);
       // You might want to show an error toast here
     });
+};
+
+// Item management functions
+const getItemStatusIcon = (status: ItemStatus) => {
+  return status === ItemStatus.CLAIMED ? checkmarkCircleOutline : cubeOutline;
+};
+
+const getItemStatusClass = (status: ItemStatus) => {
+  return status === ItemStatus.CLAIMED ? "status-claimed" : "status-unclaimed";
+};
+
+const getItemStatusText = (status: ItemStatus) => {
+  return status === ItemStatus.CLAIMED ? "Claimed" : "Available";
+};
+
+const truncateText = (text: string, maxLength: number) => {
+  if (!text) return "";
+  return text.length > maxLength ? text.substring(0, maxLength) + "..." : text;
+};
+
+const navigateToItemDetails = (itemId: number) => {
+  router.push(`/items/${itemId}`);
+};
+
+const navigateToEditItem = (itemId: number) => {
+  router.push(`/items/${itemId}/edit`);
+};
+
+const confirmRemoveItem = async (item: Item) => {
+  // Check if this is the last item in the report
+  const remainingItemsCount = (report.value.items?.length || 0) - 1;
+  
+  let confirmMessage;
+  if (remainingItemsCount === 0) {
+    confirmMessage = `Are you sure you want to remove "${item.name}"? This is the last item in the report, so the entire report will be deleted. This action cannot be undone.`;
+  } else {
+    confirmMessage = `Are you sure you want to remove "${item.name}" from this report? This action cannot be undone.`;
+  }
+
+  const confirmed = confirm(confirmMessage);
+  if (!confirmed) return;
+
+  try {
+    await itemStore.deleteItem(item.id);
+    
+    // If this was the last item, the backend automatically deletes the empty report
+    if (remainingItemsCount === 0) {
+      // Navigate to reports overview since the report no longer exists
+      router.push("/reports/overview");
+    } else {
+      // Reload the report to update the items list
+      await loadReport();
+    }
+  } catch (error) {
+    console.error("Error removing item:", error);
+    alert("Failed to remove item. Please try again.");
+  }
 };
 
 // Watch for location changes to clear errors
@@ -675,6 +807,137 @@ onMounted(async () => {
   font-weight: 500;
 }
 
+/* Items Management Section */
+.items-section {
+  margin: 24px 0;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  color: var(--ion-color-dark);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.item-card {
+  background: var(--ion-item-background);
+  border: 1px solid var(--ion-color-light-shade);
+  border-radius: 8px;
+  padding: 16px;
+  transition: all 0.2s ease;
+}
+
+.item-card:hover {
+  background: var(--ion-color-light-tint);
+  border-color: var(--ion-color-primary-tint);
+}
+
+.item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+
+.item-info {
+  flex: 1;
+}
+
+.item-name {
+  margin: 0 0 8px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ion-color-dark);
+}
+
+.item-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.status-icon {
+  font-size: 16px;
+}
+
+.status-claimed {
+  color: var(--ion-color-success);
+}
+
+.status-unclaimed {
+  color: var(--ion-color-warning);
+}
+
+.item-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.item-actions ion-button {
+  --padding-start: 8px;
+  --padding-end: 8px;
+  --padding-top: 8px;
+  --padding-bottom: 8px;
+  min-height: 32px;
+  min-width: 32px;
+}
+
+.item-actions ion-button:hover {
+  transform: scale(1.1);
+  transition: transform 0.2s ease;
+}
+
+.item-description {
+  margin: 0;
+  font-size: 14px;
+  color: var(--ion-color-medium);
+  line-height: 1.4;
+}
+
+.empty-items {
+  text-align: center;
+  padding: 40px 20px;
+  background: var(--ion-color-light-tint);
+  border-radius: 8px;
+  border: 2px dashed var(--ion-color-light-shade);
+}
+
+.empty-icon {
+  font-size: 48px;
+  color: var(--ion-color-medium);
+  margin-bottom: 16px;
+}
+
+.empty-items h4 {
+  margin: 0 0 8px 0;
+  color: var(--ion-color-dark);
+}
+
+.empty-items p {
+  margin: 0 0 16px 0;
+  color: var(--ion-color-medium);
+  font-size: 14px;
+}
+
 @media (max-width: 768px) {
   .form-container {
     padding: 16px;
@@ -692,6 +955,22 @@ onMounted(async () => {
     padding: 6px 12px;
     font-size: 0.8em;
   }
+
+  .section-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .item-header {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .item-actions {
+    justify-content: flex-start;
+  }
 }
 
 @media (max-width: 480px) {
@@ -701,6 +980,14 @@ onMounted(async () => {
 
   .input-group {
     margin-bottom: 20px;
+  }
+
+  .items-section {
+    margin: 20px 0;
+  }
+
+  .empty-items {
+    padding: 30px 16px;
   }
 }
 </style>

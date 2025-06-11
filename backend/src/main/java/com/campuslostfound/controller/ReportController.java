@@ -1,6 +1,7 @@
 package com.campuslostfound.controller;
 
 import com.campuslostfound.dto.ReportDTO;
+import com.campuslostfound.dto.ReportCreateRequest;
 import com.campuslostfound.mapper.ReportMapper;
 import com.campuslostfound.model.Report;
 import com.campuslostfound.service.ReportService;
@@ -36,16 +37,26 @@ public class ReportController {
 
         return report.map(r -> ResponseEntity.ok(reportMapper.toDTO(r)))
             .orElse(ResponseEntity.notFound().build());
-    }
-
-    @PostMapping
-    public ResponseEntity<ReportDTO> createReport(@RequestBody ReportDTO reportDTO) {
+    }    @PostMapping
+    public ResponseEntity<ReportDTO> createReport(@RequestBody ReportCreateRequest request) {
         try {
-            Report savedReport = reportService.createReportFromIds(
-                reportDTO.getUserId(),
-                reportDTO.getLocationId(),
-                reportDTO.getType()
-            );
+            Report savedReport;
+            
+            // If items are provided, use the new method; otherwise use the old method for backward compatibility
+            if (request.getItems() != null && !request.getItems().isEmpty()) {
+                savedReport = reportService.createReportWithItems(
+                    request.getUserId(),
+                    request.getLocationId(),
+                    request.getType(),
+                    request.getItems()
+                );
+            } else {
+                savedReport = reportService.createReportFromIds(
+                    request.getUserId(),
+                    request.getLocationId(),
+                    request.getType()
+                );
+            }
 
             return ResponseEntity.status(HttpStatus.CREATED).body(reportMapper.toDTO(savedReport));
         } catch (IllegalArgumentException e) {

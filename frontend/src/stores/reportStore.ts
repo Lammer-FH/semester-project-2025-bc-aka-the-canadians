@@ -49,30 +49,30 @@ export const useReportStore = defineStore("report", () => {
     }
   };
 
-  const fetchReportById = async (id: number) => {
-    try {
-      loading.value = true;
-      currentReport.value = await reportService.getReportById(id);
-    } catch (err) {
-      error.value = err instanceof Error ? err.message : "An error occurred";
-    } finally {
-      loading.value = false;
-    }
-  };
-
-  const createReport = async (reportData: ReportCreateData) => {
-    try {
-      loading.value = true;
-      const newReport = await reportService.createReport(reportData);
-      reports.value.push(newReport);
-      return newReport;
-    } catch (err) {
-      error.value = err instanceof Error ? err.message : "An error occurred";
-      throw err;
-    } finally {
-      loading.value = false;
-    }
-  };
+    const fetchReportById = async (id: number) => {
+        try {
+            loading.value = true;
+            currentReport.value = await reportService.getReportById(id);
+        } catch (err) {
+            error.value =
+                err instanceof Error ? err.message : "An error occurred";
+        } finally {
+            loading.value = false;
+        }
+    }; const createReport = async (reportData: ReportCreateData) => {
+        try {
+            loading.value = true;
+            const newReport = await reportService.createReport(reportData);
+            reports.value.push(newReport);
+            return newReport;
+        } catch (err) {
+            error.value =
+                err instanceof Error ? err.message : "An error occurred";
+            throw err;
+        } finally {
+            loading.value = false;
+        }
+    };
 
   const updateReport = async (id: number, reportData: ReportUpdateData) => {
     try {

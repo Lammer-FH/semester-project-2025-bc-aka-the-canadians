@@ -29,25 +29,40 @@ public class ItemService {
 
     public Item saveItem(Item item) {
         return itemRepository.save(item);
-    }
-
-    public Item updateItem(Long itemId, String name, String description, ItemStatus status, Long claimedByUserId) {
+    }    public Item updateItem(Long itemId, String name, String description, ItemStatus status, Long claimedByUserId) {
         Item existingItem = itemRepository.findById(itemId).orElseThrow(
             () -> new IllegalArgumentException("Item not found with id: " + itemId));
 
-        existingItem.setName(name);
-        existingItem.setDescription(description);
-        existingItem.setStatus(status);
+        // Store old status to check for changes
+        ItemStatus oldStatus = existingItem.getStatus();
 
-        if (claimedByUserId != null) {
-            User claimedByUser = userService.getUserById(claimedByUserId).orElseThrow(
-                () -> new IllegalArgumentException("User not found with id: " + claimedByUserId));
-            existingItem.setClaimedByUser(claimedByUser);
-        } else {
-            existingItem.setClaimedByUser(null);
+        if (name != null) {
+            existingItem.setName(name);
+        }
+        if (description != null) {
+            existingItem.setDescription(description);
+        }
+        if (status != null) {
+            existingItem.setStatus(status);
+
+            // Handle claimed by user
+            if (status == ItemStatus.CLAIMED && claimedByUserId != null) {
+                User claimedByUser = userService.getUserById(claimedByUserId).orElseThrow(
+                    () -> new IllegalArgumentException("User not found with id: " + claimedByUserId));
+                existingItem.setClaimedByUser(claimedByUser);
+            } else if (status == ItemStatus.UNCLAIMED) {
+                existingItem.setClaimedByUser(null);
+            }
         }
 
-        return itemRepository.save(existingItem);
+        Item savedItem = itemRepository.save(existingItem);
+
+        // Update report status if item status changed
+        if (oldStatus != savedItem.getStatus() && savedItem.getReport() != null) {
+            reportService.updateReportStatusBasedOnItems(savedItem.getReport().getId());
+        }
+
+        return savedItem;
     }
 
     public Item createItemFromReportId(String name, String description, Long reportId) {
@@ -61,9 +76,29 @@ public class ItemService {
         item.setStatus(ItemStatus.UNCLAIMED);
 
         return itemRepository.save(item);
-    }
-
-    public void deleteItem(Long id) {
+    }    public void deleteItem(Long id) {
+        // Get the item first to check if it's the last item in a report
+        Item item = itemRepository.findById(id).orElseThrow(
+            () -> new IllegalArgumentException("Item not found with id: " + id));
+        
+        Report report = item.getReport();
+        
+        // Delete the item
         itemRepository.deleteById(id);
+        
+        // If the item was part of a report, check if it was the last item
+        if (report != null) {
+            // Refresh the report to get updated item count
+            Optional<Report> updatedReport = reportService.getReportById(report.getId());
+            
+            if (updatedReport.isPresent()) {
+                List<Item> remainingItems = updatedReport.get().getItems();
+                
+                // If no items remain, delete the empty report
+                if (remainingItems == null || remainingItems.isEmpty()) {
+                    reportService.deleteReport(report.getId());
+                }
+            }
+        }
     }
 }

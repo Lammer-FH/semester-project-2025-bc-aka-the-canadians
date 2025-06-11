@@ -42,7 +42,7 @@
               <div class="select-option">
                 <ion-icon :icon="searchOutline" class="option-icon"></ion-icon>
                 <div>
-                  <p>I have lost an item</p>
+                  <p>I have lost an item(s)</p>
                 </div>
               </div>
             </ion-select-option>
@@ -50,7 +50,7 @@
               <div class="select-option">
                 <ion-icon :icon="eyeOutline" class="option-icon"></ion-icon>
                 <div>
-                  <p>I have found an item</p>
+                  <p>I have found an item(s)</p>
                 </div>
               </div>
             </ion-select-option>
@@ -60,41 +60,85 @@
             {{ errors.type }}
           </div>
         </div>
-
         <div class="input-group">
-          <ion-input
-            v-model="reportData.itemName"
-            label="Item Name *"
-            label-placement="stacked"
-            placeholder="e.g. iPhone 14, Key Chain, Backpack..."
-            class="modern-input"
-            :class="{
-              'input-filled': reportData.itemName,
-              'input-error': errors.itemName,
-            }"
-            @ionBlur="validateField('itemName')"
-          ></ion-input>
-          <div v-if="errors.itemName" class="error-message">
-            <ion-icon :icon="alertCircleOutline"></ion-icon>
-            {{ errors.itemName }}
-          </div>
-        </div>
+          <h3 class="section-title">
+            <ion-icon :icon="cubeOutline" class="section-icon"></ion-icon>
+            Items to Report
+          </h3>
+          <p class="section-description">
+            Add one or more items to this report. You can report multiple items
+            found or lost together.
+          </p>
 
-        <div class="input-group">
-          <ion-textarea
-            v-model="reportData.description"
-            label="Description *"
-            label-placement="stacked"
-            placeholder="Describe the item in detail: color, size, special features, where you lost/found it..."
-            class="modern-textarea"
-            :class="{
-              'textarea-filled': reportData.description,
-            }"
-            :rows="4"
-          ></ion-textarea>
-          <div v-if="errors.description" class="error-message">
-            <ion-icon :icon="alertCircleOutline"></ion-icon>
-            {{ errors.description }}
+          <div class="items-section">
+            <div
+              v-for="(item, index) in reportData.items"
+              :key="index"
+              class="item-card"
+            >
+              <div class="item-header">
+                <h4>Item {{ index + 1 }}</h4>
+                <ion-button
+                  v-if="reportData.items.length > 1"
+                  fill="clear"
+                  color="danger"
+                  size="small"
+                  @click="removeItem(index)"
+                >
+                  <ion-icon :icon="trashOutline" slot="icon-only"></ion-icon>
+                </ion-button>
+              </div>
+
+              <div class="item-inputs">
+                <ion-input
+                  v-model="item.name"
+                  label="Item Name *"
+                  label-placement="stacked"
+                  placeholder="e.g. iPhone 14, Key Chain, Backpack..."
+                  class="modern-input"
+                  :class="{
+                    'input-filled': item.name,
+                    'input-error': errors.items[index]?.name,
+                  }"
+                  @ionBlur="validateItemField(index, 'name')"
+                ></ion-input>
+                <div v-if="errors.items[index]?.name" class="error-message">
+                  <ion-icon :icon="alertCircleOutline"></ion-icon>
+                  {{ errors.items[index].name }}
+                </div>
+
+                <ion-textarea
+                  v-model="item.description"
+                  label="Description *"
+                  label-placement="stacked"
+                  placeholder="Describe the item in detail: color, size, special features..."
+                  class="modern-textarea"
+                  :class="{
+                    'textarea-filled': item.description,
+                    'input-error': errors.items[index]?.description,
+                  }"
+                  :rows="3"
+                  @ionBlur="validateItemField(index, 'description')"
+                ></ion-textarea>
+                <div
+                  v-if="errors.items[index]?.description"
+                  class="error-message"
+                >
+                  <ion-icon :icon="alertCircleOutline"></ion-icon>
+                  {{ errors.items[index].description }}
+                </div>
+              </div>
+            </div>
+
+            <ion-button
+              fill="outline"
+              color="primary"
+              @click="addItem"
+              class="add-item-button"
+            >
+              <ion-icon :icon="addOutline" slot="start"></ion-icon>
+              Add Another Item
+            </ion-button>
           </div>
         </div>
 
@@ -196,6 +240,7 @@ import {
   IonIcon,
   IonSelect,
   IonSelectOption,
+  IonButton,
 } from "@ionic/vue";
 import {
   megaphoneOutline,
@@ -205,6 +250,9 @@ import {
   personOutline,
   searchOutline,
   eyeOutline,
+  cubeOutline,
+  addOutline,
+  trashOutline,
 } from "ionicons/icons";
 import { ref, computed, watch, onMounted } from "vue";
 import { useRouter } from "vue-router";
@@ -212,8 +260,11 @@ import { useItemStore } from "@/stores/itemStore";
 import { useLocationStore } from "@/stores/locationStore";
 import { useReportStore } from "@/stores/reportStore";
 import { useUserStore } from "@/stores/userStore";
-import { type ItemCreateData } from "@/models/item";
-import { ReportType, type ReportCreateData } from "@/models/report";
+import {
+  ReportType,
+  type ReportCreateData,
+  type ReportItemCreateData,
+} from "@/models/report";
 
 const router = useRouter();
 const itemStore = useItemStore();
@@ -223,20 +274,28 @@ const userStore = useUserStore();
 
 const reportData = ref({
   type: null as ReportType | null,
-  itemName: "",
-  description: "",
   location: "",
   reporterName: "",
   contactInfo: "",
+  items: [
+    {
+      name: "",
+      description: "",
+    },
+  ] as ReportItemCreateData[],
 });
 
 const errors = ref({
   type: "",
-  itemName: "",
-  description: "",
   location: "",
   reporterName: "",
   contactInfo: "",
+  items: [
+    {
+      name: "",
+      description: "",
+    },
+  ] as Array<{ name: string; description: string }>,
 });
 
 const isSubmitting = computed(() => itemStore.isLoading);
@@ -259,12 +318,15 @@ const rightFooterButton = computed(() => ({
 const isValid = computed(() => {
   const baseValid =
     reportData.value.type !== null &&
-    typeof reportData.value.itemName === "string" &&
-    reportData.value.itemName.trim() !== "" &&
-    typeof reportData.value.description === "string" &&
-    reportData.value.description.trim() !== "" &&
     typeof reportData.value.location === "string" &&
-    reportData.value.location.trim() !== "";
+    reportData.value.location.trim() !== "" &&
+    reportData.value.items.length > 0 &&
+    reportData.value.items.every(
+      item =>
+        item.name.trim() !== "" &&
+        item.description &&
+        item.description.trim() !== ""
+    );
 
   // If there's a current user, we don't need contact info
   if (currentUser.value) {
@@ -282,14 +344,14 @@ const isValid = computed(() => {
 });
 
 const completionPercentage = computed(() => {
-  const baseFields = ["type", "itemName", "description", "location"];
-
+  const baseFields = ["type", "location"];
   const contactFields = currentUser.value
     ? []
     : ["reporterName", "contactInfo"];
   const requiredFields = [...baseFields, ...contactFields];
 
-  const requiredFilled = requiredFields.filter(field => {
+  let totalFields = requiredFields.length + reportData.value.items.length * 2; // name and description per item
+  let filledFields = requiredFields.filter(field => {
     const value = reportData.value[field as keyof typeof reportData.value];
     if (field === "type") {
       return value !== null;
@@ -300,7 +362,13 @@ const completionPercentage = computed(() => {
     return typeof value === "string" && value.trim() !== "";
   }).length;
 
-  return Math.round((requiredFilled / requiredFields.length) * 100);
+  // Add item fields
+  reportData.value.items.forEach(item => {
+    if (item.name.trim() !== "") filledFields++;
+    if (item.description && item.description.trim() !== "") filledFields++;
+  });
+
+  return Math.round((filledFields / totalFields) * 100);
 });
 
 onMounted(async () => {
@@ -312,6 +380,51 @@ const validateEmail = (email: string) => {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 };
 
+// Item management functions
+const addItem = () => {
+  reportData.value.items.push({
+    name: "",
+    description: "",
+  });
+  errors.value.items.push({
+    name: "",
+    description: "",
+  });
+};
+
+const removeItem = (index: number) => {
+  if (reportData.value.items.length > 1) {
+    reportData.value.items.splice(index, 1);
+    errors.value.items.splice(index, 1);
+  }
+};
+
+const validateItemField = (
+  itemIndex: number,
+  fieldName: "name" | "description"
+) => {
+  const item = reportData.value.items[itemIndex];
+  const value = item[fieldName] || "";
+
+  switch (fieldName) {
+    case "name":
+      if (!value.trim()) {
+        errors.value.items[itemIndex].name = "Item name is required";
+      } else if (value.trim().length < 2) {
+        errors.value.items[itemIndex].name =
+          "Name must be at least 2 characters long";
+      } else {
+        errors.value.items[itemIndex].name = "";
+      }
+      break;
+    case "description":
+      errors.value.items[itemIndex].description = !value.trim()
+        ? "Description is required"
+        : "";
+      break;
+  }
+};
+
 const validateField = (fieldName: keyof typeof errors.value) => {
   const value = String(
     reportData.value[fieldName as keyof typeof reportData.value] || ""
@@ -319,19 +432,9 @@ const validateField = (fieldName: keyof typeof errors.value) => {
 
   switch (fieldName) {
     case "type":
-      errors.value.type = !value ? "Please select the report type" : "";
-      break;
-    case "itemName":
-      if (!value) {
-        errors.value.itemName = "Item name is required";
-      } else if (value.length < 2) {
-        errors.value.itemName = "Name must be at least 2 characters long";
-      } else {
-        errors.value.itemName = "";
-      }
-      break;
-    case "description":
-      errors.value.description = !value ? "Description is required" : "";
+      errors.value.type = !reportData.value.type
+        ? "Please select the report type"
+        : "";
       break;
     case "location":
       errors.value.location = !value ? "Please select a location" : "";
@@ -359,9 +462,13 @@ const validateField = (fieldName: keyof typeof errors.value) => {
 
 const validateAllFields = () => {
   validateField("type");
-  validateField("itemName");
-  validateField("description");
   validateField("location");
+
+  // Validate all items
+  reportData.value.items.forEach((_, index) => {
+    validateItemField(index, "name");
+    validateItemField(index, "description");
+  });
 
   // Only validate contact fields if no current user
   if (!currentUser.value) {
@@ -430,27 +537,15 @@ const handleSubmit = async () => {
       userId: user.id,
       locationId: selectedLocation.id,
       type: reportData.value.type!,
+      items: reportData.value.items,
     };
 
     const newReport = await reportStore.createReport(reportCreateData);
 
-    if (!newReport) {
-      console.error("Failed to create report");
-      return;
-    }
-
-    // Now create the item with the report ID
-    const itemData: ItemCreateData = {
-      name: reportData.value.itemName,
-      description: reportData.value.description,
-      reportId: newReport.id,
-    };
-
-    const newItem = await itemStore.createItem(itemData);
-
-    if (newItem) {
-      console.log("Report submitted successfully:", newItem);
-      router.push(`/items/${newItem.id}`);
+    if (newReport) {
+      console.log("Report submitted successfully:", newReport);
+      // Navigate to the report details page
+      router.push(`/reports/${newReport.id}`);
     }
   } catch (error) {
     console.error("Error submitting report:", error);
@@ -461,13 +556,6 @@ watch(
   () => reportData.value.type,
   () => {
     if (errors.value.type) validateField("type");
-  }
-);
-
-watch(
-  () => reportData.value.itemName,
-  () => {
-    if (errors.value.itemName) validateField("itemName");
   }
 );
 
@@ -705,6 +793,55 @@ watch(
 .tip-text strong {
   color: var(--ion-color-dark-shade);
   font-weight: 600;
+}
+
+.items-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.item-card {
+  background: var(--ion-color-light-tint);
+  border-radius: 12px;
+  padding: 20px;
+  border: 2px solid var(--ion-color-light-shade);
+}
+
+.item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.item-header h4 {
+  margin: 0;
+  color: var(--ion-color-dark);
+  font-size: 1.1em;
+  font-weight: 600;
+}
+
+.item-inputs {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.add-item-button {
+  --background: transparent;
+  --color: var(--ion-color-primary);
+  --border-color: var(--ion-color-primary);
+  --border-width: 2px;
+  --border-style: dashed;
+  --border-radius: 12px;
+  font-weight: 600;
+  height: 48px;
+  margin-top: 8px;
+}
+
+.add-item-button:hover {
+  --background: var(--ion-color-primary-tint);
 }
 
 @keyframes slideInUp {

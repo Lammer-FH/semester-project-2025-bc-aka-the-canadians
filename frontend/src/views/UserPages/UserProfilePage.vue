@@ -31,9 +31,8 @@
             <ion-item
               class="modern-item"
               :class="{
-                'item-editing': editingField === 'name',
                 'item-error': errors.name,
-                'item-filled': user.name,
+                'item-filled': editData.name,
               }"
             >
               <ion-label position="stacked" class="custom-label">
@@ -41,28 +40,12 @@
                 Name *
               </ion-label>
               <ion-input
-                v-if="editingField === 'name'"
                 v-model="editData.name"
                 placeholder="Enter your name"
                 @ionBlur="validateField('name')"
                 :class="{ 'input-error': errors.name }"
                 autofocus
               ></ion-input>
-              <div v-else class="display-value">{{ user.name }}</div>
-              <ion-button
-                fill="clear"
-                size="small"
-                slot="end"
-                :color="editingField === 'name' ? 'success' : 'primary'"
-                @click="toggleEdit('name')"
-              >
-                <ion-icon
-                  :icon="
-                    editingField === 'name' ? checkmarkOutline : createOutline
-                  "
-                  slot="icon-only"
-                ></ion-icon>
-              </ion-button>
             </ion-item>
             <div v-if="errors.name" class="error-message">
               <ion-icon :icon="alertCircleOutline"></ion-icon>
@@ -74,9 +57,8 @@
             <ion-item
               class="modern-item"
               :class="{
-                'item-editing': editingField === 'email',
                 'item-error': errors.email,
-                'item-filled': user.email,
+                'item-filled': editData.email,
               }"
             >
               <ion-label position="stacked" class="custom-label">
@@ -84,29 +66,12 @@
                 Email Address *
               </ion-label>
               <ion-input
-                v-if="editingField === 'email'"
                 v-model="editData.email"
                 type="email"
                 placeholder="your.email@example.com"
                 @ionBlur="validateField('email')"
                 :class="{ 'input-error': errors.email }"
-                autofocus
               ></ion-input>
-              <div v-else class="display-value">{{ user.email }}</div>
-              <ion-button
-                fill="clear"
-                size="small"
-                slot="end"
-                :color="editingField === 'email' ? 'success' : 'primary'"
-                @click="toggleEdit('email')"
-              >
-                <ion-icon
-                  :icon="
-                    editingField === 'email' ? checkmarkOutline : createOutline
-                  "
-                  slot="icon-only"
-                ></ion-icon>
-              </ion-button>
             </ion-item>
             <div v-if="errors.email" class="error-message">
               <ion-icon :icon="alertCircleOutline"></ion-icon>
@@ -144,8 +109,6 @@ import {
 } from "@ionic/vue";
 import {
   personOutline,
-  createOutline,
-  checkmarkOutline,
   mailOutline,
   alertCircleOutline,
   trashOutline,
@@ -184,7 +147,6 @@ const errors = ref({
   email: "",
 });
 
-const editingField = ref<"name" | "email" | null>(null);
 const hasChanges = ref(false);
 
 const leftFooterButton = computed(() => ({
@@ -202,6 +164,10 @@ const rightFooterButton = computed(() => ({
 
 onMounted(async () => {
   await loadUserProfile();
+  if (user.value) {
+    editData.name = user.value.name;
+    editData.email = user.value.email;
+  }
 });
 
 const loadUserProfile = async () => {
@@ -247,48 +213,17 @@ const validateField = (fieldName: keyof typeof errors.value) => {
   }
 };
 
-const toggleEdit = async (fieldName: "name" | "email") => {
-  if (editingField.value === fieldName) {
-    validateField(fieldName);
-
-    if (!errors.value[fieldName] && user.value) {
-      user.value[fieldName] = editData[fieldName];
-      editingField.value = null;
-      hasChanges.value = true;
-    }
-  } else {
-    if (user.value) {
-      editData[fieldName] = user.value[fieldName] as string;
-      editingField.value = fieldName;
-    }
-  }
-};
-
 const handleCancel = () => {
-  if (hasChanges.value) {
+  if (hasChanges.value && user.value) {
+    editData.name = user.value.name;
+    editData.email = user.value.email;
     hasChanges.value = false;
-    editingField.value = null;
   }
   router.back();
 };
 
 const handleSave = async () => {
-  if (!hasChanges.value || !user.value) return;
-
-  try {
-    const updateData: UserUpdateData = {
-      name: user.value.name,
-      email: user.value.email,
-    };
-
-    await userStore.updateUser(user.value.id, updateData);
-    hasChanges.value = false;
-    editingField.value = null;
-
-    console.log("Profile updated successfully");
-  } catch (error) {
-    console.error("Error updating profile:", error);
-  }
+  alert("Need to implement save/update functionality");
 };
 
 const deleteAccount = () => {

@@ -56,23 +56,12 @@
             <p>Loading items...</p>
           </div>
 
-          <div v-else-if="itemsAtLocation.length === 0" class="empty-state">
-            <ion-icon :icon="bagOutline" class="empty-icon"></ion-icon>
-            <h4>No Items Found</h4>
-            <p>No items have been reported at this location yet.</p>
-            <ion-button fill="outline" @click="navigateToReportItem">
-              <ion-icon :icon="addOutline" slot="start"></ion-icon>
-              Report Item
-            </ion-button>
-          </div>
-
           <div v-else class="items-grid">
             <ion-card
               v-for="(item, index) in itemsAtLocation"
               :key="item.id"
               class="item-card"
               :style="{ '--animation-delay': `${index * 0.1}s` }"
-              @click="navigateToItem(item.id)"
             >
               <ion-card-header>
                 <div class="item-header">
@@ -85,15 +74,6 @@
                 <p v-if="item.description" class="item-description">
                   {{ item.description }}
                 </p>
-                <div class="item-metadata">
-                  <div class="metadata-row">
-                    <ion-icon
-                      :icon="timeOutline"
-                      class="item-metadata-icon"
-                    ></ion-icon>
-                    {{ formatDate(item.createdAt) }}
-                  </div>
-                </div>
               </ion-card-content>
               <div class="item-actions">
                 <ion-button
@@ -138,10 +118,8 @@ import {
   locationOutline,
   createOutline,
   trashOutline,
-  timeOutline,
   refreshOutline,
   bagOutline,
-  addOutline,
   eyeOutline,
   alertCircleOutline,
 } from "ionicons/icons";
@@ -188,16 +166,6 @@ const alertButtons = [
     handler: () => confirmDelete(),
   },
 ];
-
-const formatDate = (dateString: string) => {
-  return new Date(dateString).toLocaleDateString("en-US", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-};
 
 const loadLocation = async () => {
   try {
@@ -255,10 +223,6 @@ const confirmDelete = async () => {
 
 const navigateToItem = (itemId: number) => {
   router.push(`/items/${itemId}`);
-};
-
-const navigateToReportItem = () => {
-  router.push("/items/report");
 };
 
 onMounted(() => {

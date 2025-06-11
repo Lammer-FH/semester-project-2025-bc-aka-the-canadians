@@ -656,15 +656,15 @@ onMounted(async () => {
   gap: 12px;
   padding: 16px;
   margin-bottom: 24px;
-  background: var(--ion-color-warning-tint);
-  border: 1px solid var(--ion-color-warning);
+  background: #fff3cd;
+  border: 1px solid #f0ad4e;
   border-radius: 8px;
-  color: var(--ion-color-warning-contrast);
+  color: #856404;
 }
 
 .warning-icon {
   font-size: 24px;
-  color: var(--ion-color-warning);
+  color: #f0ad4e;
   flex-shrink: 0;
 }
 
@@ -672,13 +672,13 @@ onMounted(async () => {
   margin: 0 0 4px 0;
   font-size: 16px;
   font-weight: 600;
-  color: var(--ion-color-warning-shade);
+  color: #856404;
 }
 
 .warning-content p {
   margin: 0;
   font-size: 14px;
-  color: var(--ion-color-warning-shade);
+  color: #856404;
   line-height: 1.4;
 }
 

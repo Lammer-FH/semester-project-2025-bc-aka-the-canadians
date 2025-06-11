@@ -92,35 +92,17 @@ export const useUserStore = defineStore("user", () => {
     };
 
     const createUserFromContactInfo = async (name: string, email: string) => {
-        // Check if user already exists by email
-        try {
-            const existingUser = await userService.getUserByEmail(email);
-            if (existingUser) {
-                setCurrentUser(existingUser);
-                return existingUser;
-            }
-        } catch (error) {
-            // User doesn't exist, create new one
-            console.log('User not found, will create new user');
-        }
-
-        // Try to create the user - this will now handle uniqueness at the backend level
+        // Always try to create a new user first
+        // This will fail if email already exists, which is what we want
         try {
             return await createUser({ name, email });
         } catch (error) {
-            // If creation fails due to uniqueness, try to fetch the user again
-            // This handles race conditions where another process created the user
+            // If creation fails due to email uniqueness, throw the error
+            // Don't automatically log in as existing user - that's a security issue
             if (error instanceof Error && error.message.toLowerCase().includes('email')) {
-                try {
-                    const existingUser = await userService.getUserByEmail(email);
-                    if (existingUser) {
-                        setCurrentUser(existingUser);
-                        return existingUser;
-                    }
-                } catch (fetchError) {
-                    console.error('Failed to fetch user after creation conflict:', fetchError);
-                }
+                throw new Error("A user with this email already exists. Please use a different email address.");
             }
+            // For other errors, re-throw them
             throw error;
         }
     };

@@ -178,8 +178,9 @@
             Reporting as
           </h3>
           <p class="section-description">
-            You're logged in as {{ currentUser.name }} ({{ currentUser.email }}).
-            This report will be associated with your profile.
+            You're logged in as {{ currentUser.name }} ({{
+              currentUser.email
+            }}). This report will be associated with your profile.
           </p>
         </div>
       </div>
@@ -256,15 +257,14 @@ const rightFooterButton = computed(() => ({
 }));
 
 const isValid = computed(() => {
-  const baseValid = (
+  const baseValid =
     reportData.value.type !== null &&
     typeof reportData.value.itemName === "string" &&
     reportData.value.itemName.trim() !== "" &&
     typeof reportData.value.description === "string" &&
     reportData.value.description.trim() !== "" &&
     typeof reportData.value.location === "string" &&
-    reportData.value.location.trim() !== ""
-  );
+    reportData.value.location.trim() !== "";
 
   // If there's a current user, we don't need contact info
   if (currentUser.value) {
@@ -282,14 +282,11 @@ const isValid = computed(() => {
 });
 
 const completionPercentage = computed(() => {
-  const baseFields = [
-    "type",
-    "itemName",
-    "description",
-    "location",
-  ];
+  const baseFields = ["type", "itemName", "description", "location"];
 
-  const contactFields = currentUser.value ? [] : ["reporterName", "contactInfo"];
+  const contactFields = currentUser.value
+    ? []
+    : ["reporterName", "contactInfo"];
   const requiredFields = [...baseFields, ...contactFields];
 
   const requiredFilled = requiredFields.filter(field => {
@@ -365,7 +362,7 @@ const validateAllFields = () => {
   validateField("itemName");
   validateField("description");
   validateField("location");
-  
+
   // Only validate contact fields if no current user
   if (!currentUser.value) {
     validateField("reporterName");
@@ -385,20 +382,38 @@ const handleSubmit = async () => {
 
   try {
     let user;
-    
+
     if (currentUser.value) {
       // Use existing current user
       user = currentUser.value;
     } else {
       // Create or get user from contact information
-      user = await userStore.createUserFromContactInfo(
-        reportData.value.reporterName,
-        reportData.value.contactInfo
-      );
+      try {
+        user = await userStore.createUserFromContactInfo(
+          reportData.value.reporterName,
+          reportData.value.contactInfo
+        );
 
-      if (!user) {
-        console.error("Failed to create or get user");
-        return;
+        if (!user) {
+          console.error("Failed to create or get user");
+          return;
+        }
+      } catch (userError) {
+        console.error("Error creating user:", userError);
+
+        // Check if it's an email uniqueness error
+        if (
+          userError instanceof Error &&
+          userError.message.toLowerCase().includes("email")
+        ) {
+          errors.value.contactInfo = userError.message;
+          return;
+        } else {
+          // For other user creation errors, show generic error
+          errors.value.contactInfo =
+            "Failed to create user profile. Please try again.";
+          return;
+        }
       }
     }
 

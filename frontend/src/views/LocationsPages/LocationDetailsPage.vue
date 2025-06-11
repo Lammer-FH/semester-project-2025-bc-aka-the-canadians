@@ -3,7 +3,7 @@
     :headline="location?.name || 'Location Details'"
     :leftFooterButton="leftFooterButton"
     :rightFooterButton="rightFooterButton"
-    @leftFooterButtonClicked="handleDelete"
+    @leftFooterButtonClicked="handleBack"
     @rightFooterButtonClicked="handleEdit"
   >
     <div class="details-container">
@@ -90,14 +90,6 @@
         </div>
       </div>
     </div>
-
-    <ion-alert
-      :is-open="showDeleteAlert"
-      header="Delete Location"
-      message="Are you sure you want to delete this location? This action cannot be undone."
-      :buttons="alertButtons"
-      @didDismiss="showDeleteAlert = false"
-    ></ion-alert>
   </template-page>
 </template>
 
@@ -112,18 +104,17 @@ import {
   IonCardTitle,
   IonCardContent,
   IonSpinner,
-  IonAlert,
 } from "@ionic/vue";
 import {
   locationOutline,
   createOutline,
-  trashOutline,
   refreshOutline,
   bagOutline,
   eyeOutline,
   alertCircleOutline,
+  arrowBack,
 } from "ionicons/icons";
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, nextTick } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { useLocationStore } from "@/stores/locationStore";
 import type { Location } from "@/models/location";
@@ -135,16 +126,20 @@ const locationStore = useLocationStore();
 
 const location = ref<Location | null>(null);
 const itemsAtLocation = ref<Item[]>([]);
-const showDeleteAlert = ref(false);
 const itemsLoading = ref(false);
 
-const isLoading = computed(() => locationStore.isLoading && !location.value);
-const error = computed(() => locationStore.getError);
+const localIsLoading = ref(false);
+const localError = ref<string | null>(null);
+
+const isLoading = computed(
+  () => localIsLoading.value || (locationStore.isLoading && !location.value)
+);
+const error = computed(() => localError.value || locationStore.getError);
 
 const leftFooterButton = computed(() => ({
-  name: "Delete",
-  color: "danger",
-  icon: trashOutline,
+  name: "Back",
+  color: "medium",
+  icon: arrowBack,
 }));
 
 const rightFooterButton = computed(() => ({
@@ -153,71 +148,57 @@ const rightFooterButton = computed(() => ({
   icon: createOutline,
 }));
 
-const alertButtons = [
-  {
-    text: "Cancel",
-    role: "cancel",
-    cssClass: "alert-button-cancel",
-  },
-  {
-    text: "Delete",
-    role: "destructive",
-    cssClass: "alert-button-confirm",
-    handler: () => confirmDelete(),
-  },
-];
-
 const loadLocation = async () => {
   try {
+    localIsLoading.value = true;
+    localError.value = null;
+
     const locationId = Number(route.params.id);
-    if (!locationId) {
+    if (!locationId || isNaN(locationId)) {
       throw new Error("Invalid location ID");
     }
 
-    const loadedLocation = await locationStore.fetchLocationById(locationId);
+    await locationStore.fetchLocationById(locationId);
+    const loadedLocation = locationStore.getCurrentLocation;
+
     if (loadedLocation) {
-      location.value = loadedLocation;
-      await loadItemsAtLocation(locationId);
+      await nextTick();
+      location.value = { ...loadedLocation };
     } else {
       throw new Error("Location not found");
     }
-  } catch (error) {
-    console.error("Error loading location:", error);
-    router.back();
+  } catch (err) {
+    console.error("Error loading location:", err);
+    localError.value = err instanceof Error ? err.message : "Unknown error";
+    setTimeout(() => {
+      router.back();
+    }, 2000);
+  } finally {
+    localIsLoading.value = false;
   }
 };
 
 const loadItemsAtLocation = async (locationId: number) => {
   try {
     itemsLoading.value = true;
-    itemsAtLocation.value =
-      await locationStore.fetchItemsByLocation(locationId);
-  } catch (error) {
-    console.error("Error loading items at location:", error);
+    // Use the correct store method name
+    const allItems = await locationStore.fetchItemsByLocation(locationId);
+    itemsAtLocation.value = allItems || [];
+  } catch (err) {
+    console.error("Error loading items at location:", err);
     itemsAtLocation.value = [];
   } finally {
     itemsLoading.value = false;
   }
 };
 
+const handleBack = () => {
+  router.back();
+};
+
 const handleEdit = () => {
-  if (location.value) {
+  if (location.value?.id) {
     router.push(`/locations/${location.value.id}/edit`);
-  }
-};
-
-const handleDelete = () => {
-  showDeleteAlert.value = true;
-};
-
-const confirmDelete = async () => {
-  if (!location.value) return;
-
-  try {
-    await locationStore.deleteLocation(location.value.id);
-    router.push("/locations/overview");
-  } catch (error) {
-    console.error("Error deleting location:", error);
   }
 };
 
@@ -225,8 +206,11 @@ const navigateToItem = (itemId: number) => {
   router.push(`/items/${itemId}`);
 };
 
-onMounted(() => {
-  loadLocation();
+onMounted(async () => {
+  await loadLocation();
+  if (location.value?.id) {
+    await loadItemsAtLocation(location.value.id);
+  }
 });
 </script>
 

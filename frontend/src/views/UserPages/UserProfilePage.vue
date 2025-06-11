@@ -119,7 +119,6 @@ import {
 import { ref, computed, reactive, watch, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useUserStore } from "@/stores/userStore";
-import type { UserUpdateData } from "@/models/user";
 
 const router = useRouter();
 const userStore = useUserStore();

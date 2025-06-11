@@ -175,15 +175,15 @@ const filteredItems = computed(() => {
 });
 
 const claimedItemsCount = computed(
-  () => items.value.filter(item => item.reportStatus == ReportStatus.RESOLVED).length
+  () => items.value.filter(item => item.status === ItemStatus.CLAIMED).length
 );
 
 const unclaimedItemsCount = computed(
-  () => items.value.filter(item => item.reportStatus == ReportStatus.OPEN).length
+  () => items.value.filter(item => item.status === ItemStatus.UNCLAIMED).length
 );
 
 const getItemStatus = (item: Item): string => {
-  if (item.reportStatus === ReportStatus.RESOLVED) {
+  if (item.status === ItemStatus.CLAIMED) {
     return 'claimed';
   } else {
     return "unclaimed";

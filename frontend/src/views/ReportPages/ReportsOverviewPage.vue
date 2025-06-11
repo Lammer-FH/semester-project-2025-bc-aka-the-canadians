@@ -66,7 +66,7 @@
         <p v-else>
           No reports created yet. Be the first to report a found or lost item!
         </p>
-        <ion-button routerLink="/items/report" class="btn-primary-action">
+        <ion-button @click="navigateToReportItem" class="btn-primary-action">
           <ion-icon :icon="addOutline" slot="start"></ion-icon>
           Create First Report
         </ion-button>
@@ -314,6 +314,10 @@ const getTimeAgo = (dateString: string): string => {
 
 const navigateToReport = (reportId: number): void => {
   router.push(`/reports/${reportId}`);
+};
+
+const navigateToReportItem = (): void => {
+  router.push("/items/report");
 };
 
 const loadReports = async (): Promise<void> => {

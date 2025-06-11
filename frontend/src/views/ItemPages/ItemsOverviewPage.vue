@@ -129,8 +129,8 @@ const itemFilterConfigs = computed(() => [
     title: "Claim Status",
     type: "radio" as const,
     icon: personOutline,
-    getLabel: (value: ItemStatus) =>
-      value === ItemStatus.CLAIMED ? "Claimed" : "Unclaimed",
+    getLabel: (value: unknown) =>
+      (value as ItemStatus) === ItemStatus.CLAIMED ? "Claimed" : "Unclaimed",
     options: [
       { value: null, label: "All Items" },
       { value: ItemStatus.UNCLAIMED, label: "Unclaimed Items" },

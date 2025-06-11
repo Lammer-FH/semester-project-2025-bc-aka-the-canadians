@@ -47,7 +47,7 @@ export const itemService = {
     try {
       // Exclude read-only fields from update
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { id, createdAt, report, claimedByUser, ...updateData } = itemData;
+      const { id: _id, createdAt, report, claimedByUser, ...updateData } = itemData;
 
       const response = await axios.put<Item>(`${API_URL}/${id}`, updateData);
       return response.data;

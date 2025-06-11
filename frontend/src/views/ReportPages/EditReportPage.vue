@@ -46,16 +46,6 @@
           </div>
         </div>
 
-        <!-- Editable Report Fields -->
-        <div class="editable-section">
-          <h3 class="section-header">
-            <ion-icon :icon="createOutline" class="section-icon"></ion-icon>
-            Editable Report Fields
-          </h3>
-          <p class="section-description">
-            These report-specific fields can be edited:
-          </p>
-        </div>
         <div class="input-group">
           <ion-select
             v-model="report.locationId"

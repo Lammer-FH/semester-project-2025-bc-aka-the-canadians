@@ -64,18 +64,13 @@
             <h1 class="item-title">
               {{ item.name || "Unknown Item" }}
             </h1>
-            <div class="title-actions">
-              <ion-button fill="clear" size="small" @click="shareItem">
-                <ion-icon :icon="shareOutline" slot="icon-only"></ion-icon>
-              </ion-button>
-            </div>
           </div>
 
           <div class="status-section">
             <div
               v-if="
                 item.status === ItemStatus.UNCLAIMED &&
-                item.report?.type === ReportType.FOUND
+                item.reportType === ReportType.FOUND
               "
               class="found-item-section"
             >
@@ -94,7 +89,7 @@
                   size="large"
                   color="success"
                   class="claim-button"
-                  @click="showClaimDialog"
+                  @click="claimItem"
                 >
                   <ion-icon :icon="handRightOutline" slot="start"></ion-icon>
                   Claim Item
@@ -105,7 +100,7 @@
             <div
               v-else-if="
                 item.status === ItemStatus.UNCLAIMED &&
-                item.report?.type === ReportType.LOST
+                item.reportType === ReportType.LOST
               "
               class="lost-item-section"
             >
@@ -128,7 +123,7 @@
                   size="large"
                   color="warning"
                   class="report-found-button"
-                  @click="reportFound"
+                  @click="foundItemByReporter"
                 >
                   <ion-icon :icon="megaphoneOutline" slot="start"></ion-icon>
                   I Found This Item
@@ -206,39 +201,6 @@
                 item.locationName || "Unknown Location"
               }}</span>
             </div>
-            <ion-button fill="clear" size="small" @click="viewLocationReports">
-              <ion-icon :icon="flagOutline" slot="start"></ion-icon>
-              More Reports at this Location
-            </ion-button>
-          </div>
-        </div>
-
-        <div class="info-card timeline-info">
-          <h3>
-            <ion-icon :icon="timeOutline" class="section-icon"></ion-icon>
-            Report History
-          </h3>
-          <div class="timeline">
-            <div class="timeline-item">
-              <div class="timeline-marker created"></div>
-              <div class="timeline-content">
-                <h4>Report Created</h4>
-                <p>{{ formatDetailedDate(item.createdAt || "") }}</p>
-                <span class="timeline-type">{{
-                  getReportType(item.report?.type)
-                }}</span>
-              </div>
-            </div>
-            <div
-              v-if="item.status === ItemStatus.CLAIMED"
-              class="timeline-item"
-            >
-              <div class="timeline-marker claimed"></div>
-              <div class="timeline-content">
-                <h4>Pickup Requested</h4>
-                <p>Waiting for confirmation</p>
-              </div>
-            </div>
           </div>
         </div>
 
@@ -251,7 +213,7 @@
             expand="block"
             size="large"
             color="success"
-            @click="showClaimDialog"
+            @click="claimItem"
           >
             <ion-icon :icon="handRightOutline" slot="start"></ion-icon>
             Claim Item
@@ -266,53 +228,20 @@
             size="large"
             fill="outline"
             color="warning"
-            @click="reportFound"
+            @click="foundItemByReporter"
           >
             <ion-icon :icon="megaphoneOutline" slot="start"></ion-icon>
             Report as Found
           </ion-button>
-
-          <div class="secondary-actions">
-            <ion-button expand="block" fill="outline" @click="shareItem">
-              <ion-icon :icon="shareOutline" slot="start"></ion-icon>
-              Share Report
-            </ion-button>
-
-            <ion-button
-              expand="block"
-              fill="outline"
-              color="danger"
-              @click="showDeleteConfirmation"
-            >
-              <ion-icon :icon="trashOutline" slot="start"></ion-icon>
-              Delete Report
-            </ion-button>
-          </div>
         </div>
       </div>
     </div>
-
-    <ion-alert
-      :is-open="showClaimAlert"
-      header="Claim Item"
-      :message="claimAlertMessage"
-      :buttons="claimAlertButtons"
-      @didDismiss="showClaimAlert = false"
-    ></ion-alert>
-
-    <ion-alert
-      :is-open="showDeleteAlert"
-      header="Delete Report"
-      message="Do you really want to delete this report? This action cannot be undone."
-      :buttons="deleteAlertButtons"
-      @didDismiss="showDeleteAlert = false"
-    ></ion-alert>
   </template-page>
 </template>
 
 <script setup lang="ts">
 import TemplatePage from "@/components/TemplatePage.vue";
-import { IonIcon, IonButton, IonSpinner, IonChip, IonAlert } from "@ionic/vue";
+import { IonIcon, IonButton, IonSpinner, IonChip } from "@ionic/vue";
 import {
   arrowBackOutline,
   createOutline,
@@ -322,8 +251,6 @@ import {
   locationOutline,
   businessOutline,
   timeOutline,
-  shareOutline,
-  trashOutline,
   eyeOutline,
   flagOutline,
   handRightOutline,
@@ -336,7 +263,7 @@ import { ref, computed, onMounted, nextTick } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { useItemStore } from "@/stores/itemStore";
 import { Item, ItemStatus } from "@/models/item";
-import { ReportType, ReportStatus } from "@/models/report";
+import { ReportType } from "@/models/report";
 
 const router = useRouter();
 const route = useRoute();
@@ -345,8 +272,6 @@ const itemStore = useItemStore();
 const item = ref<Item | null>(null);
 const isLoading = ref(false);
 const error = ref<string | null>(null);
-const showClaimAlert = ref(false);
-const showDeleteAlert = ref(false);
 
 const daysSinceReported = computed(() => {
   if (!item.value?.createdAt) return 0;
@@ -367,49 +292,6 @@ const rightFooterButton = computed(() => ({
   color: "primary",
   icon: createOutline,
 }));
-
-const deleteAlertButtons = [
-  {
-    text: "Cancel",
-    role: "cancel",
-    cssClass: "alert-button-cancel",
-  },
-  {
-    text: "Delete",
-    cssClass: "alert-button-confirm",
-    handler: () => confirmDelete(),
-  },
-];
-
-const claimAlertMessage = computed(() => {
-  if (!item.value) return "Loading...";
-
-  return `
-    <div style="text-align: left; padding: 8px;">
-        <p><strong>Item:</strong> ${item.value.name || "Unknown"}</p>
-        <p><strong>Location:</strong> ${item.value.locationName || "Unknown"}</p>
-        <br>
-        <p>Do you want to request this item for pickup?</p>
-        <p style="color: #666; font-size: 0.9em;">
-            The finder will be notified and can contact you
-            to coordinate the pickup.
-        </p>
-    </div>
-  `;
-});
-
-const claimAlertButtons = [
-  {
-    text: "Cancel",
-    role: "cancel",
-    cssClass: "alert-button-cancel",
-  },
-  {
-    text: "Yes, Claim",
-    cssClass: "alert-button-confirm",
-    handler: () => processClaim(),
-  },
-];
 
 const loadItem = async () => {
   try {
@@ -496,45 +378,11 @@ const getTypeIcon = (type: ReportType): string => {
   }
 };
 
-const getReportType = (type: ReportType | undefined): string => {
-  switch (type) {
-    case ReportType.FOUND:
-      return "Found Report";
-    case ReportType.LOST:
-      return "Claimed Report";
-    default:
-      return "Report";
-  }
-};
-
-const getReportStatusText = (status: ReportStatus | undefined): string => {
-  switch (status) {
-    case ReportStatus.OPEN:
-      return "Open";
-    case ReportStatus.RESOLVED:
-      return "Resolved";
-    default:
-      return "Unknown";
-  }
-};
-
 const formatDate = (dateString: string) => {
   if (!dateString) return "Unknown Date";
   return new Date(dateString).toLocaleDateString("en-US", {
     day: "2-digit",
     month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-};
-
-const formatDetailedDate = (dateString: string) => {
-  if (!dateString) return "Unknown Date";
-  return new Date(dateString).toLocaleDateString("en-US", {
-    weekday: "long",
-    day: "2-digit",
-    month: "long",
     year: "numeric",
     hour: "2-digit",
     minute: "2-digit",
@@ -581,95 +429,22 @@ const handleEdit = () => {
   }
 };
 
-const showDeleteConfirmation = () => {
-  showDeleteAlert.value = true;
-};
-
-const confirmDelete = async () => {
-  if (!item.value?.id) return;
-
-  try {
-    const success = await itemStore.deleteItem(item.value.id);
-    if (success) {
-      router.push("/items/overview");
-    }
-  } catch (error) {
-    console.error("Error deleting item:", error);
-  }
-};
-
-const showClaimDialog = () => {
-  showClaimAlert.value = true;
-};
-
-const processClaim = async () => {
-  if (!item.value?.id) return;
-
-  try {
-    const currentDate = new Date().toLocaleDateString("en-US");
-    const claimDescription = [
-      "--- PICKUP REQUESTED ---",
-      `Requested on: ${currentDate}`,
-      "Status: Waiting for finder confirmation",
-      "",
-      "--- ORIGINAL DESCRIPTION ---",
-      item.value.description || "",
-    ].join("\n");
-
-    const updatedItem = await itemStore.updateItem(item.value.id, {
-      description: claimDescription,
-    });
-
-    if (updatedItem) {
-      item.value = updatedItem;
-    }
-
-    console.log("Item claimed successfully");
-  } catch (error) {
-    console.error("Error claiming item:", error);
-  }
-};
-
-const reportFound = () => {
+const foundItemByReporter = () => {
   if (!item.value) return;
-  router.push({
-    path: "/items/report",
-    query: {
-      type: "FOUND",
-      name: item.value.name || "",
-      location: item.value.locationName || "",
-    },
-  });
+  console.log("Need to implement report found logic");
+  alert("Report found functionality is not implemented yet.");
 };
 
-const shareItem = async () => {
+const claimItem = () => {
   if (!item.value) return;
-
-  try {
-    const shareData = {
-      title: `Lost & Found: ${item.value.name || "Unknown"}`,
-      text: `${getReportStatusText(item.value.reportStatus as ReportStatus | undefined)}: ${
-        item.value.name || "Unknown"
-      } at ${item.value.locationName || "Unknown"}`,
-      url: window.location.href,
-    };
-
-    if (navigator.share) {
-      await navigator.share(shareData);
-    } else {
-      await navigator.clipboard.writeText(window.location.href);
-      console.log("Link copied to clipboard");
-    }
-  } catch (error) {
-    console.error("Error sharing:", error);
-  }
+  console.log("Need to implement claim item logic");
+  alert("Claim item functionality is not implemented yet.");
 };
 
-const viewLocationReports = () => {
-  router.push({
-    path: "/items/overview",
-    query: { location: item.value?.locationName || "" },
-  });
+const deleteItem = () => {
+  if (!item.value) return;
+  console.log("Need to implement delete item logic");
+  alert("Delete item functionality is not implemented yet.");
 };
 
 onMounted(async () => {

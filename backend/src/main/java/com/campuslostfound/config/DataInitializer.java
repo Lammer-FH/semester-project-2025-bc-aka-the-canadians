@@ -49,7 +49,7 @@ public class DataInitializer {
 
 
                 // Create reports
-                Report lostBookReport = new Report(null, alice, library, null, ReportType.LOST, ReportStatus.OPEN, null);
+                Report lostBookReport = new Report(null, alice, library, null, ReportType.FOUND, ReportStatus.OPEN, null);
                 Report foundPhoneReport = new Report(null, bob, cafeteria, null, ReportType.FOUND, ReportStatus.RESOLVED, null);
                 Report lostElectronicsReport = new Report(null, alice, lab, null, ReportType.LOST, ReportStatus.OPEN, null);
                 Report lostUSBReport = new Report(null, charlie, library, null, ReportType.LOST, ReportStatus.RESOLVED, null);
@@ -61,7 +61,7 @@ public class DataInitializer {
                 // Create items
                 Item book = new Item(null, "Calculus Textbook", "Blue cover, Stewart 8th Edition", ItemStatus.UNCLAIMED, lostBookReport, null, null);
                 Item phone = new Item(null, "iPhone 12", "Black, with cracked screen", ItemStatus.CLAIMED, foundPhoneReport, alice, null);
-                Item mouse = new Item(null, "Bluetooth Mouse", "Wireless mouse, black", ItemStatus.CLAIMED, lostElectronicsReport, null, null);
+                Item mouse = new Item(null, "Bluetooth Mouse", "Wireless mouse, black", ItemStatus.UNCLAIMED, lostElectronicsReport, null, null);
                 Item usbStick = new Item(null, "16GB USB Stick", "USB 3.0 flash drive", ItemStatus.CLAIMED, lostUSBReport, null, null);
                 itemRepository.save(book);
                 itemRepository.save(phone);

@@ -24,12 +24,6 @@
 
       <div v-else class="form-content">
         <div class="form-header">
-          <ion-icon :icon="createOutline" class="header-icon"></ion-icon>
-          <h2>Edit Item Details</h2>
-          <p>
-            Update the name and description for this item only. Report
-            information (location, type, etc.) must be edited separately.
-          </p>
           <div v-if="item.createdAt" class="last-modified">
             <ion-icon :icon="timeOutline" class="time-icon"></ion-icon>
             Created: {{ formatDate(item.createdAt) }}
@@ -60,11 +54,6 @@
             }"
             @ionBlur="validateField('name')"
           >
-            <ion-icon
-              :icon="textOutline"
-              slot="start"
-              class="input-icon"
-            ></ion-icon>
           </ion-input>
           <div v-if="errors.name" class="error-message">
             <ion-icon :icon="alertCircleOutline"></ion-icon>
@@ -85,11 +74,6 @@
             :auto-grow="true"
             :rows="3"
           >
-            <ion-icon
-              :icon="documentTextOutline"
-              slot="start"
-              class="input-icon"
-            ></ion-icon>
           </ion-textarea>
         </div>
 

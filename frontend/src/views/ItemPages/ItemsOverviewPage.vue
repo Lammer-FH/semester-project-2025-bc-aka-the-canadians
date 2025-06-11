@@ -78,7 +78,7 @@
           :key="item.id"
           :title="item.name"
           :description="item.description"
-          :status="item.claimedByUserId ? 'claimed' : 'unclaimed'"
+          :status="getItemStatus(item)"
           :details="getItemDetails(item)"
           :metadata="getItemMetadata(item)"
           card-type="item"
@@ -107,6 +107,7 @@ import {
 } from "ionicons/icons";
 import { useItemStore } from "@/stores/itemStore";
 import { Item, ItemStatus } from "@/models/item";
+import { ReportStatus } from "@/models/report";
 import TemplatePage from "@/components/TemplatePage.vue";
 import NavigationTabs from "@/components/NavigationTabs.vue";
 import Filter from "@/components/Filter.vue";
@@ -174,12 +175,20 @@ const filteredItems = computed(() => {
 });
 
 const claimedItemsCount = computed(
-  () => items.value.filter(item => item.claimedByUserId !== null).length
+  () => items.value.filter(item => item.reportStatus == ReportStatus.RESOLVED).length
 );
 
 const unclaimedItemsCount = computed(
-  () => items.value.filter(item => item.claimedByUserId === null).length
+  () => items.value.filter(item => item.reportStatus == ReportStatus.OPEN).length
 );
+
+const getItemStatus = (item: Item): string => {
+  if (item.reportStatus === ReportStatus.RESOLVED) {
+    return 'claimed';
+  } else {
+    return "unclaimed";
+  }
+};
 
 const getItemDetails = (item: Item) => [
   {

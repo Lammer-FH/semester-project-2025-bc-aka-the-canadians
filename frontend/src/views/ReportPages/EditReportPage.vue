@@ -411,7 +411,15 @@ const handleSave = async () => {
 };
 
 const handleDelete = () => {
-  alert("Delete needs to be refactored");
+  // just delete report and push user to reports overview
+  reportStore.deleteReport(report.value.id)
+    .then(() => {
+      router.push("/reports/overview");
+    })
+    .catch(error => {
+      console.error("Error deleting report:", error);
+      // You might want to show an error toast here
+    });
 };
 
 // Watch for location changes to clear errors

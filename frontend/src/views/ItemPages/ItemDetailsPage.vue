@@ -59,7 +59,10 @@
           </div>
         </div>
 
-        <div class="info-card main-info">
+        <div
+          class="info-card main-info"
+          :class="{ claimed: item.status === ItemStatus.CLAIMED }"
+        >
           <div class="card-header">
             <h1 class="item-title">
               {{ item.name || "Unknown Item" }}
@@ -68,10 +71,7 @@
 
           <div class="status-section">
             <div
-              v-if="
-                item.status === ItemStatus.UNCLAIMED &&
-                item.reportType === ReportType.FOUND
-              "
+              v-if="item.reportType === ReportType.FOUND"
               class="found-item-section"
             >
               <div class="action-banner found-banner">
@@ -87,21 +87,32 @@
                 <ion-button
                   expand="block"
                   size="large"
-                  color="success"
+                  :color="
+                    item.status === ItemStatus.CLAIMED ? 'medium' : 'success'
+                  "
                   class="claim-button"
+                  :disabled="item.status === ItemStatus.CLAIMED"
                   @click="claimItem"
                 >
-                  <ion-icon :icon="handRightOutline" slot="start"></ion-icon>
-                  Claim Item
+                  <ion-icon
+                    :icon="
+                      item.status === ItemStatus.CLAIMED
+                        ? checkmarkCircleOutline
+                        : handRightOutline
+                    "
+                    slot="start"
+                  ></ion-icon>
+                  {{
+                    item.status === ItemStatus.CLAIMED
+                      ? "Item Claimed"
+                      : "Claim Item"
+                  }}
                 </ion-button>
               </div>
             </div>
 
             <div
-              v-else-if="
-                item.status === ItemStatus.UNCLAIMED &&
-                item.reportType === ReportType.LOST
-              "
+              v-else-if="item.reportType === ReportType.LOST"
               class="lost-item-section"
             >
               <div class="action-banner lost-banner">
@@ -121,31 +132,27 @@
                 <ion-button
                   expand="block"
                   size="large"
-                  color="warning"
+                  :color="
+                    item.status === ItemStatus.CLAIMED ? 'medium' : 'warning'
+                  "
                   class="report-found-button"
-                  @click="foundItemByReporter"
+                  :disabled="item.status === ItemStatus.CLAIMED"
+                  @click="claimItem"
                 >
-                  <ion-icon :icon="megaphoneOutline" slot="start"></ion-icon>
-                  I Found This Item
-                </ion-button>
-              </div>
-            </div>
-
-            <div
-              v-else-if="item.status === ItemStatus.CLAIMED"
-              class="claimed-item-section"
-            >
-              <div class="action-banner claimed-banner">
-                <div class="banner-content">
                   <ion-icon
-                    :icon="checkmarkCircleOutline"
-                    class="banner-icon"
+                    :icon="
+                      item.status === ItemStatus.CLAIMED
+                        ? checkmarkCircleOutline
+                        : megaphoneOutline
+                    "
+                    slot="start"
                   ></ion-icon>
-                  <div class="banner-text">
-                    <h3>Claimed</h3>
-                    <p>This item has already been requested for pickup.</p>
-                  </div>
-                </div>
+                  {{
+                    item.status === ItemStatus.CLAIMED
+                      ? "Item Found"
+                      : "I Found This Item"
+                  }}
+                </ion-button>
               </div>
             </div>
           </div>
@@ -186,7 +193,10 @@
           </div>
         </div>
 
-        <div class="info-card location-info">
+        <div
+          class="info-card location-info"
+          :class="{ claimed: item.status === ItemStatus.CLAIMED }"
+        >
           <h3>
             <ion-icon :icon="locationOutline" class="section-icon"></ion-icon>
             Location
@@ -206,32 +216,48 @@
 
         <div class="action-buttons">
           <ion-button
-            v-if="
-              item.status === ItemStatus.UNCLAIMED &&
-              item.report?.type === ReportType.FOUND
-            "
+            v-if="item.report?.type === ReportType.FOUND"
             expand="block"
             size="large"
-            color="success"
+            :color="item.status === ItemStatus.CLAIMED ? 'medium' : 'success'"
+            :disabled="item.status === ItemStatus.CLAIMED"
             @click="claimItem"
           >
-            <ion-icon :icon="handRightOutline" slot="start"></ion-icon>
-            Claim Item
+            <ion-icon
+              :icon="
+                item.status === ItemStatus.CLAIMED
+                  ? checkmarkCircleOutline
+                  : handRightOutline
+              "
+              slot="start"
+            ></ion-icon>
+            {{
+              item.status === ItemStatus.CLAIMED ? "Item Claimed" : "Claim Item"
+            }}
           </ion-button>
 
           <ion-button
-            v-else-if="
-              item.status === ItemStatus.UNCLAIMED &&
-              item.report?.type === ReportType.LOST
-            "
+            v-else-if="item.report?.type === ReportType.LOST"
             expand="block"
             size="large"
             fill="outline"
-            color="warning"
-            @click="foundItemByReporter"
+            :color="item.status === ItemStatus.CLAIMED ? 'medium' : 'warning'"
+            :disabled="item.status === ItemStatus.CLAIMED"
+            @click="claimItem"
           >
-            <ion-icon :icon="megaphoneOutline" slot="start"></ion-icon>
-            Report as Found
+            <ion-icon
+              :icon="
+                item.status === ItemStatus.CLAIMED
+                  ? checkmarkCircleOutline
+                  : megaphoneOutline
+              "
+              slot="start"
+            ></ion-icon>
+            {{
+              item.status === ItemStatus.CLAIMED
+                ? "Item Claimed"
+                : "Report as Found"
+            }}
           </ion-button>
         </div>
       </div>
@@ -429,16 +455,31 @@ const handleEdit = () => {
   }
 };
 
-const foundItemByReporter = () => {
+// right now this handles both the "found item" and the "claim item" use cases;
+// this would be disambiguated in a later iteration
+const claimItem = async () => {
   if (!item.value) return;
-  console.log("Need to implement report found logic");
-  alert("Report found functionality is not implemented yet.");
-};
 
-const claimItem = () => {
-  if (!item.value) return;
-  console.log("Need to implement claim item logic");
-  alert("Claim item functionality is not implemented yet.");
+  try {
+    const currentUserId = 1;
+
+    isLoading.value = true;
+    error.value = null;
+
+    const updatedItem = await itemStore.updateItem(item.value.id, {
+      claimedByUserId: currentUserId,
+      status: ItemStatus.CLAIMED,
+    });
+
+    if (updatedItem) {
+      item.value = updatedItem;
+    }
+  } catch (err) {
+    error.value = err instanceof Error ? err.message : "Failed to claim item";
+    console.error("Error claiming item:", err);
+  } finally {
+    isLoading.value = false;
+  }
 };
 
 onMounted(async () => {
@@ -579,8 +620,11 @@ onMounted(async () => {
   border-radius: 12px;
   padding: 20px;
   margin-bottom: 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  border: 1px solid var(--ion-color-light-shade);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.info-card.claimed {
+  background: #fafafa;
 }
 
 .card-header {
@@ -670,7 +714,6 @@ onMounted(async () => {
   --color: white;
   font-weight: 600;
   font-size: 1.1em;
-  animation: pulse 2s infinite;
 }
 
 @keyframes pulse {
@@ -868,6 +911,31 @@ onMounted(async () => {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+@keyframes buttonClick {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(0.95);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.claim-button:active,
+.report-found-button:active {
+  animation: buttonClick 0.2s ease-in-out;
+}
+
+.claim-button:disabled,
+.report-found-button:disabled {
+  animation: none;
+  opacity: 0.6;
+  transform: scale(0.98);
+  transition: all 0.3s ease;
 }
 
 @media (max-width: 768px) {

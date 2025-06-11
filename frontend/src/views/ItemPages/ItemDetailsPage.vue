@@ -441,12 +441,6 @@ const claimItem = () => {
   alert("Claim item functionality is not implemented yet.");
 };
 
-const deleteItem = () => {
-  if (!item.value) return;
-  console.log("Need to implement delete item logic");
-  alert("Delete item functionality is not implemented yet.");
-};
-
 onMounted(async () => {
   await loadItem();
 });

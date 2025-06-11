@@ -347,8 +347,13 @@ const handleSave = async () => {
   }
 };
 
-const deleteItem = () => {
-  alert("Delete Item needs to be implemented");
+const deleteItem = async () => {
+  try {
+    await itemStore.deleteItem(item.value.id);
+    router.push("/items/overview");
+  } catch (error) {
+    console.error("Error deleting item:", error);
+  }
 };
 
 // Watch for name changes to clear errors

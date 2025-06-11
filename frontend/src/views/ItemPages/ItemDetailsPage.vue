@@ -85,29 +85,50 @@
                   </div>
                 </div>
                 <ion-button
+                  v-if="item.status === ItemStatus.UNCLAIMED"
                   expand="block"
                   size="large"
-                  :color="
-                    item.status === ItemStatus.CLAIMED ? 'medium' : 'success'
-                  "
+                  color="success"
                   class="claim-button"
-                  :disabled="item.status === ItemStatus.CLAIMED"
                   @click="claimItem"
                 >
                   <ion-icon
-                    :icon="
-                      item.status === ItemStatus.CLAIMED
-                        ? checkmarkCircleOutline
-                        : handRightOutline
-                    "
+                    :icon="handRightOutline"
                     slot="start"
                   ></ion-icon>
-                  {{
-                    item.status === ItemStatus.CLAIMED
-                      ? "Item Claimed"
-                      : "Claim Item"
-                  }}
+                  Claim Item
                 </ion-button>
+                
+                <div v-else class="claimed-section">
+                  <ion-button
+                    expand="block"
+                    size="large"
+                    color="medium"
+                    class="claimed-status"
+                    disabled
+                  >
+                    <ion-icon
+                      :icon="checkmarkCircleOutline"
+                      slot="start"
+                    ></ion-icon>
+                    Item Claimed
+                  </ion-button>
+                  
+                  <ion-button
+                    expand="block"
+                    size="large"
+                    fill="solid"
+                    color="warning"
+                    class="unclaim-button"
+                    @click="unclaimItem"
+                  >
+                    <ion-icon
+                      :icon="returnUpBackOutline"
+                      slot="start"
+                    ></ion-icon>
+                    Release Claim
+                  </ion-button>
+                </div>
               </div>
             </div>
 
@@ -130,29 +151,50 @@
                   </div>
                 </div>
                 <ion-button
+                  v-if="item.status === ItemStatus.UNCLAIMED"
                   expand="block"
                   size="large"
-                  :color="
-                    item.status === ItemStatus.CLAIMED ? 'medium' : 'warning'
-                  "
+                  color="warning"
                   class="report-found-button"
-                  :disabled="item.status === ItemStatus.CLAIMED"
                   @click="claimItem"
                 >
                   <ion-icon
-                    :icon="
-                      item.status === ItemStatus.CLAIMED
-                        ? checkmarkCircleOutline
-                        : megaphoneOutline
-                    "
+                    :icon="megaphoneOutline"
                     slot="start"
                   ></ion-icon>
-                  {{
-                    item.status === ItemStatus.CLAIMED
-                      ? "Item Found"
-                      : "I Found This Item"
-                  }}
+                  I Found This Item
                 </ion-button>
+                
+                <div v-else class="claimed-section">
+                  <ion-button
+                    expand="block"
+                    size="large"
+                    color="medium"
+                    class="claimed-status"
+                    disabled
+                  >
+                    <ion-icon
+                      :icon="checkmarkCircleOutline"
+                      slot="start"
+                    ></ion-icon>
+                    Item Found
+                  </ion-button>
+                  
+                  <ion-button
+                    expand="block"
+                    size="large"
+                    fill="solid"
+                    color="warning"
+                    class="unclaim-button"
+                    @click="unclaimItem"
+                  >
+                    <ion-icon
+                      :icon="returnUpBackOutline"
+                      slot="start"
+                    ></ion-icon>
+                    Release Claim
+                  </ion-button>
+                </div>
               </div>
             </div>
           </div>
@@ -215,50 +257,98 @@
         </div>
 
         <div class="action-buttons">
-          <ion-button
-            v-if="item.report?.type === ReportType.FOUND"
-            expand="block"
-            size="large"
-            :color="item.status === ItemStatus.CLAIMED ? 'medium' : 'success'"
-            :disabled="item.status === ItemStatus.CLAIMED"
-            @click="claimItem"
-          >
-            <ion-icon
-              :icon="
-                item.status === ItemStatus.CLAIMED
-                  ? checkmarkCircleOutline
-                  : handRightOutline
-              "
-              slot="start"
-            ></ion-icon>
-            {{
-              item.status === ItemStatus.CLAIMED ? "Item Claimed" : "Claim Item"
-            }}
-          </ion-button>
+          <template v-if="item.report?.type === ReportType.FOUND">
+            <ion-button
+              v-if="item.status === ItemStatus.UNCLAIMED"
+              expand="block"
+              size="large"
+              color="success"
+              @click="claimItem"
+            >
+              <ion-icon
+                :icon="handRightOutline"
+                slot="start"
+              ></ion-icon>
+              Claim Item
+            </ion-button>
+            
+            <div v-else class="claimed-action-section">
+              <ion-button
+                expand="block"
+                size="large"
+                color="medium"
+                disabled
+              >
+                <ion-icon
+                  :icon="checkmarkCircleOutline"
+                  slot="start"
+                ></ion-icon>
+                Item Claimed
+              </ion-button>
+              
+              <ion-button
+                expand="block"
+                size="large"
+                fill="solid"
+                color="warning"
+                class="unclaim-button"
+                @click="unclaimItem"
+              >
+                <ion-icon
+                  :icon="returnUpBackOutline"
+                  slot="start"
+                ></ion-icon>
+                Release Claim
+              </ion-button>
+            </div>
+          </template>
 
-          <ion-button
-            v-else-if="item.report?.type === ReportType.LOST"
-            expand="block"
-            size="large"
-            fill="outline"
-            :color="item.status === ItemStatus.CLAIMED ? 'medium' : 'warning'"
-            :disabled="item.status === ItemStatus.CLAIMED"
-            @click="claimItem"
-          >
-            <ion-icon
-              :icon="
-                item.status === ItemStatus.CLAIMED
-                  ? checkmarkCircleOutline
-                  : megaphoneOutline
-              "
-              slot="start"
-            ></ion-icon>
-            {{
-              item.status === ItemStatus.CLAIMED
-                ? "Item Claimed"
-                : "Report as Found"
-            }}
-          </ion-button>
+          <template v-else-if="item.report?.type === ReportType.LOST">
+            <ion-button
+              v-if="item.status === ItemStatus.UNCLAIMED"
+              expand="block"
+              size="large"
+              fill="outline"
+              color="warning"
+              @click="claimItem"
+            >
+              <ion-icon
+                :icon="megaphoneOutline"
+                slot="start"
+              ></ion-icon>
+              Report as Found
+            </ion-button>
+            
+            <div v-else class="claimed-action-section">
+              <ion-button
+                expand="block"
+                size="large"
+                color="medium"
+                disabled
+              >
+                <ion-icon
+                  :icon="checkmarkCircleOutline"
+                  slot="start"
+                ></ion-icon>
+                Item Found
+              </ion-button>
+              
+              <ion-button
+                expand="block"
+                size="large"
+                fill="solid"
+                color="warning"
+                class="unclaim-button"
+                @click="unclaimItem"
+              >
+                <ion-icon
+                  :icon="returnUpBackOutline"
+                  slot="start"
+                ></ion-icon>
+                Release Claim
+              </ion-button>
+            </div>
+          </template>
         </div>
       </div>
     </div>
@@ -284,6 +374,7 @@ import {
   megaphoneOutline,
   checkmarkCircleOutline,
   personOutline,
+  returnUpBackOutline,
 } from "ionicons/icons";
 import { ref, computed, onMounted, nextTick } from "vue";
 import { useRouter, useRoute } from "vue-router";
@@ -455,8 +546,6 @@ const handleEdit = () => {
   }
 };
 
-// right now this handles both the "found item" and the "claim item" use cases;
-// this would be disambiguated in a later iteration
 const claimItem = async () => {
   if (!item.value) return;
 
@@ -478,6 +567,30 @@ const claimItem = async () => {
   } catch (err) {
     error.value = err instanceof Error ? err.message : "Failed to claim item";
     console.error("Error claiming item:", err);
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+const unclaimItem = async () => {
+  if (!item.value) return;
+
+  try {
+    isLoading.value = true;
+    error.value = null;
+
+    const updatedItem = await itemStore.updateItem(item.value.id, {
+      ...item.value,
+      claimedByUserId: undefined,
+      status: ItemStatus.UNCLAIMED,
+    });
+
+    if (updatedItem) {
+      item.value = updatedItem;
+    }
+  } catch (err) {
+    error.value = err instanceof Error ? err.message : "Failed to unclaim item";
+    console.error("Error unclaiming item:", err);
   } finally {
     isLoading.value = false;
   }
@@ -894,6 +1007,81 @@ onMounted(async () => {
   flex-direction: column;
   gap: 12px;
   margin-top: 24px;
+}
+
+.claimed-section,
+.claimed-action-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.claimed-status {
+  margin-bottom: 4px;
+  opacity: 0.8;
+}
+
+.unclaim-button {
+  --background: linear-gradient(135deg, var(--ion-color-warning-tint), var(--ion-color-warning));
+  --background-hover: linear-gradient(135deg, var(--ion-color-warning), var(--ion-color-warning-shade));
+  --color: white;
+  --border-radius: 12px;
+  --box-shadow: 0 4px 12px rgba(var(--ion-color-warning-rgb), 0.3);
+  --transition: all 0.3s ease;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  margin-top: 8px;
+  position: relative;
+  overflow: hidden;
+}
+
+.unclaim-button:hover {
+  --box-shadow: 0 6px 20px rgba(var(--ion-color-warning-rgb), 0.4);
+  transform: translateY(-2px);
+}
+
+.unclaim-button:active {
+  transform: translateY(0px);
+  --box-shadow: 0 2px 8px rgba(var(--ion-color-warning-rgb), 0.3);
+}
+
+.unclaim-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.unclaim-button:hover::before {
+  left: 100%;
+}
+
+/* Zusätzliche Verbesserungen für bessere Optik */
+.unclaim-button ion-icon {
+  transition: transform 0.3s ease;
+}
+
+.unclaim-button:hover ion-icon {
+  transform: scale(1.1) rotate(-10deg);
+}
+
+/* Sanfte Fokus-Animation */
+.unclaim-button:focus {
+  outline: none;
+  --box-shadow: 0 0 0 3px rgba(var(--ion-color-warning-rgb), 0.3);
+}
+
+/* Responsives Design für kleinere Bildschirme */
+@media (max-width: 768px) {
+  .unclaim-button {
+    --padding-top: 14px;
+    --padding-bottom: 14px;
+  }
 }
 
 .secondary-actions {

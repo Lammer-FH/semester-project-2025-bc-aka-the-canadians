@@ -86,6 +86,7 @@
                 v-for="item in report.items"
                 :key="item.id"
                 class="item-card"
+                @click="navigateToItem(item.id)"
               >
                 <div class="item-header">
                   <h3>{{ item.name }}</h3>
@@ -105,15 +106,6 @@
                     ></ion-icon>
                     Claimed by {{ item.claimedByUser.name }}
                   </span>
-                </div>
-                <div class="item-actions">
-                  <ion-button
-                    fill="clear"
-                    size="small"
-                    @click.stop="navigateToItem(item.id)"
-                  >
-                    View Details
-                  </ion-button>
                 </div>
               </div>
             </div>
@@ -451,13 +443,6 @@ function handleBack() {
 
 .meta-icon {
   font-size: 14px;
-}
-
-.item-actions {
-  display: flex;
-  gap: 8px;
-  margin-top: 12px;
-  justify-content: flex-end;
 }
 
 .empty-items {

@@ -42,52 +42,61 @@
           <p>{{ location.description }}</p>
         </div>
 
-        <div class="items-section">
-          <div class="section-header">
-            <h3>Items at this Location</h3>
-            <ion-chip color="primary">
-              <ion-icon :icon="bagOutline" class="chip-icon"></ion-icon>
-              {{ itemsAtLocation.length }}
-            </ion-chip>
-          </div>
-
-          <div v-if="itemsLoading" class="loading-container">
-            <ion-spinner name="crescent" color="primary"></ion-spinner>
-            <p>Loading items...</p>
-          </div>
-
-          <div v-else class="items-grid">
-            <ion-card
-              v-for="(item, index) in itemsAtLocation"
-              :key="item.id"
-              class="item-card"
-              :style="{ '--animation-delay': `${index * 0.1}s` }"
+        <!-- Items List -->
+        <ion-card class="items-card">
+          <ion-card-header>
+            <ion-card-title>
+              <ion-icon :icon="cubeOutline" class="section-icon"></ion-icon>
+              Items at this Location
+              <ion-chip color="primary" style="margin-left: 12px">
+                <ion-icon :icon="bagOutline" class="chip-icon"></ion-icon>
+                {{ itemsAtLocation.length }}
+              </ion-chip>
+            </ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <div v-if="itemsLoading" class="loading-container">
+              <ion-spinner name="crescent" color="primary"></ion-spinner>
+              <p>Loading items...</p>
+            </div>
+            <div
+              v-else-if="itemsAtLocation && itemsAtLocation.length > 0"
+              class="items-list"
             >
-              <ion-card-header>
+              <div
+                v-for="item in itemsAtLocation"
+                :key="item.id"
+                class="item-card"
+                @click="navigateToItem(item.id)"
+              >
                 <div class="item-header">
-                  <ion-card-title class="item-name">{{
-                    item.name
-                  }}</ion-card-title>
+                  <h3>{{ item.name }}</h3>
                 </div>
-              </ion-card-header>
-              <ion-card-content>
                 <p v-if="item.description" class="item-description">
-                  {{ item.description }}
+                  {{ truncateDescription(item.description, 100) }}
                 </p>
-              </ion-card-content>
-              <div class="item-actions">
-                <ion-button
-                  fill="clear"
-                  size="small"
-                  @click.stop="navigateToItem(item.id)"
-                >
-                  <ion-icon :icon="eyeOutline" slot="start"></ion-icon>
-                  Details
-                </ion-button>
+                <div class="item-meta">
+                  <span class="meta-item">
+                    <ion-icon :icon="timeOutline" class="meta-icon"></ion-icon>
+                    {{ formatDate(item.createdAt) }}
+                  </span>
+                  <span v-if="item.claimedByUser" class="meta-item">
+                    <ion-icon
+                      :icon="personOutline"
+                      class="meta-icon"
+                    ></ion-icon>
+                    Claimed by {{ item.claimedByUser.name }}
+                  </span>
+                </div>
               </div>
-            </ion-card>
-          </div>
-        </div>
+            </div>
+            <div v-else class="empty-items">
+              <ion-icon :icon="cubeOutline" class="empty-icon"></ion-icon>
+              <h3>No Items</h3>
+              <p>No items have been found at this location yet.</p>
+            </div>
+          </ion-card-content>
+        </ion-card>
       </div>
     </div>
   </template-page>
@@ -110,15 +119,36 @@ import {
   createOutline,
   refreshOutline,
   bagOutline,
-  eyeOutline,
   alertCircleOutline,
   arrowBack,
+  timeOutline,
+  personOutline,
+  cubeOutline,
 } from "ionicons/icons";
 import { ref, computed, onMounted, nextTick } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { useLocationStore } from "@/stores/locationStore";
 import type { Location } from "@/models/location";
 import type { Item } from "@/models/item";
+
+const formatDate = (dateString: string): string => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
+
+const truncateDescription = (
+  description: string,
+  maxLength: number = 100
+): string => {
+  if (description.length <= maxLength) return description;
+  return description.substring(0, maxLength) + "...";
+};
 
 const router = useRouter();
 const route = useRoute();
@@ -424,77 +454,99 @@ onMounted(async () => {
   font-weight: 600;
 }
 
-.items-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+.items-card {
+  margin: 0;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.section-icon {
+  margin-right: 8px;
+  font-size: 20px;
+}
+
+.items-list {
+  display: flex;
+  flex-direction: column;
   gap: 16px;
 }
 
 .item-card {
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
+  padding: 16px;
+  border: 1px solid var(--ion-color-light-shade);
+  border-radius: 8px;
   cursor: pointer;
-  animation: slideInUp 0.6s ease-out;
-  animation-delay: var(--animation-delay);
-  animation-fill-mode: backwards;
+  transition: all 0.2s ease;
 }
 
 .item-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  background: var(--ion-color-light-tint);
+  border-color: var(--ion-color-primary-tint);
 }
 
 .item-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 12px;
+  margin-bottom: 8px;
 }
 
-.item-name {
-  color: var(--ion-color-dark);
-  font-size: 1.1em;
+.item-header h3 {
+  margin: 0;
+  font-size: 16px;
   font-weight: 600;
-  margin: 0;
-  flex: 1;
-}
-
-.status-chip {
-  margin: 0;
+  color: var(--ion-color-dark);
 }
 
 .item-description {
+  margin: 8px 0;
+  font-size: 14px;
   color: var(--ion-color-medium-shade);
-  line-height: 1.5;
-  margin: 0 0 16px 0;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  line-height: 1.4;
 }
 
-.item-metadata {
-  padding-top: 12px;
-  border-top: 1px solid var(--ion-color-light-shade);
+.item-meta {
+  display: flex;
+  gap: 16px;
+  margin: 8px 0;
+  flex-wrap: wrap;
 }
 
-.metadata-row {
+.meta-item {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 0.85em;
+  gap: 4px;
+  font-size: 12px;
   color: var(--ion-color-medium);
 }
 
-.item-metadata-icon {
+.meta-icon {
   font-size: 14px;
 }
 
-.item-actions {
-  padding: 8px 16px 16px;
-  border-top: 1px solid var(--ion-color-light-shade);
-  background: var(--ion-color-light-tint);
+.empty-items {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 32px 16px;
+  text-align: center;
+}
+
+.empty-icon {
+  font-size: 48px;
+  color: var(--ion-color-medium);
+}
+
+.empty-items h3 {
+  margin: 0;
+  color: var(--ion-color-dark);
+}
+
+.empty-items p {
+  margin: 0;
+  color: var(--ion-color-medium);
+  font-size: 14px;
 }
 
 @keyframes fadeInUp {
@@ -547,14 +599,10 @@ onMounted(async () => {
     grid-template-columns: 1fr;
   }
 
-  .section-header {
+  .item-header {
     flex-direction: column;
-    align-items: flex-start;
     gap: 8px;
-  }
-
-  .items-grid {
-    grid-template-columns: 1fr;
+    align-items: flex-start;
   }
 }
 
@@ -566,23 +614,9 @@ onMounted(async () => {
   .location-info {
     gap: 4px;
   }
-
-  .item-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-  }
-
-  .status-chip {
-    align-self: flex-start;
-  }
 }
 
 @media (min-width: 768px) {
-  .items-grid {
-    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-  }
-
   .metadata-grid {
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   }
